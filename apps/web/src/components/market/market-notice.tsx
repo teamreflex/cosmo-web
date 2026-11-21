@@ -1,7 +1,6 @@
 import {
   ArtWell,
   FeedbackArt,
-  type ListingKind,
   ListingKindArt,
   MatchesArt,
   SendingArt,
@@ -24,6 +23,7 @@ import { env } from "@/lib/env/client";
 import { dismissedNoticesQuery } from "@/lib/queries/market";
 import { cn } from "@/lib/utils";
 import { CLAIM_CAP_BASE, CLAIM_CAP_CEILING } from "@apollo/trades/caps";
+import type { ListingType } from "@apollo/trades/listing";
 import { CLAIM_WINDOW, FEEDBACK_WINDOW_DAYS } from "@apollo/trades/timers";
 import { ParaglideMessage } from "@inlang/paraglide-js-react";
 import {
@@ -83,7 +83,7 @@ const LISTING_KINDS = [
     body: m.market_notice_listing_buy,
   },
 ] as const satisfies readonly {
-  kind: ListingKind;
+  kind: ListingType;
   label: () => string;
   body: typeof m.market_notice_listing_trade;
 }[];

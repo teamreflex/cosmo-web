@@ -748,7 +748,6 @@
   "trade_page_event_accepted_staff": "{#b}{claimer}{/b}が{#b}{poster}{/b}の出品を承諾しました。",
   "trade_page_event_extended_staff": "{appName}スタッフが双方の期限を{#time}{when}{/time}まで延長しました。",
   "listing_detail_title": "トレード出品",
-  "listing_detail_kind_trade": "トレード",
   "listing_detail_posted": "{#time}{when}{/time}に投稿",
   "listing_detail_error": "この出品を読み込めませんでした。",
   "listing_detail_you_get": "受け取る · {count}",

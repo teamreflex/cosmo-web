@@ -192,6 +192,7 @@ export async function lockTrade(tx: WebTx, tradeId: string) {
       confirmedAt: tradeOfferItems.confirmedAt,
       amount: tradeOfferItems.amount,
       currency: tradeOfferItems.currency,
+      method: tradeOfferItems.method,
     })
     .from(tradeOfferItems)
     .where(eq(tradeOfferItems.offerId, tradeId))

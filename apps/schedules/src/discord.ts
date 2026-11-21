@@ -65,6 +65,7 @@ export class Discord extends Context.Service<Discord>()("app/Discord", {
           .where(inArray(user.id, userIds));
         const items = yield* db
           .select({
+            id: tradeOfferItems.id,
             sender: tradeOfferItems.sender,
             kind: tradeOfferItems.kind,
             tokenId: tradeOfferItems.tokenId,
@@ -74,6 +75,7 @@ export class Discord extends Context.Service<Discord>()("app/Discord", {
             currency: tradeOfferItems.currency,
             method: tradeOfferItems.method,
             markedPaidAt: tradeOfferItems.markedPaidAt,
+            confirmedAt: tradeOfferItems.confirmedAt,
           })
           .from(tradeOfferItems)
           .where(eq(tradeOfferItems.offerId, alert.tradeId))

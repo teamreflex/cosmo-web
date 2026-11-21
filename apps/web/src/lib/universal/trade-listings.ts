@@ -3,6 +3,7 @@ import {
   type ListingOfferMode,
   liveTradeStatuses,
   type PaymentMethod,
+  type TradeItemKind,
   type TradeSide,
   type TradeWantKind,
 } from "@apollo/database/web/types";
@@ -23,12 +24,16 @@ import {
 import {
   type ListingAcceptance,
   listingAcceptance,
+  listingParts,
   type ListingUnits,
   listingUnits,
+  type NextStep,
+  type TradeParts,
 } from "@apollo/trades/lifecycle";
 import {
   fromNumeric,
   type ListingPayment,
+  parsePaymentItem,
   type TradePayment,
 } from "@apollo/trades/payment";
 import type {
@@ -140,14 +145,6 @@ export type ListingOption<TWant = ObjektWant> = {
   wants: TWant[];
   payment: ListingPayment | null;
 };
-
-/**
- * The option a trade from a listing gave. A trade from a listing with no
- * option recorded gave the listing's first option, 0.
- */
-export function tradeListingOption(trade: { listingOption: number | null }) {
-  return trade.listingOption ?? 0;
-}
 
 /**
  * A listing's payment priced by one payment want row, from the side,
@@ -308,38 +305,18 @@ export const storedObjektItemSchema = z
   .transform(({ tokenId, ...attributes }) => ({ tokenId, attributes }));
 
 /**
- * A payment item as stored, its amount in minor units, and whether its
- * recipient confirmed it.
- */
-export const storedPaymentItemSchema = z
-  .object({
-    amount: z.string().transform(fromNumeric),
-    currency: z.string(),
-    confirmedAt: z.date().nullable(),
-  })
-  .transform(({ amount, currency, confirmedAt }) => ({
-    amount,
-    currency,
-    confirmed: confirmedAt !== null,
-  }));
-
-/**
  * A trade's payment, every unit's together, and the side that sends it, or
  * null without one.
  */
 export function tradePayment(
-  items: readonly {
-    kind: "objekt" | "payment";
-    sender: TradeSide;
-    amount: string | null;
-    currency: string | null;
-    confirmedAt: Date | null;
-  }[],
+  items: readonly ({ kind: TradeItemKind } & Parameters<
+    typeof parsePaymentItem
+  >[0])[],
 ): TradePayment | null {
   const item = items.find((each) => each.kind === "payment");
   if (item === undefined) return null;
-  const { amount, currency } = storedPaymentItemSchema.parse(item);
-  return { side: item.sender, amount, currency };
+  const { sender, amount, currency } = parsePaymentItem(item);
+  return { sender, amount, currency };
 }
 
 /**
@@ -602,6 +579,20 @@ export function listingAt(listing: TradeListing, option: number): ListingAt {
 }
 
 /**
+ * What each side does in the trade the listing at one option would start
+ * (listingParts()).
+ */
+export function optionParts(
+  listing: Pick<ListingAt, "units" | "wants" | "payment">,
+) {
+  return listingParts({
+    units: listing.units.kind,
+    paymentSide: listing.payment?.side ?? null,
+    objektWants: listing.wants.length,
+  });
+}
+
+/**
  * The listing's pool: the objekts it offers that haven't left it, in posted
  * order, whatever else they're doing.
  */
@@ -657,7 +648,11 @@ export type TradeRatio = {
   give: number;
   get: number;
   // a listing's asking price, null when it only takes offers, or a trade's payment
-  payment: Pick<ListingPayment, "side" | "amount" | "currency"> | null;
+  payment: {
+    sender: TradeSide;
+    amount: number | null;
+    currency: string;
+  } | null;
 };
 
 /**
@@ -838,8 +833,8 @@ export function refusedOfferToken(
  * A pending offer on the poster's listing: who sent it, the listing's
  * option it gives, the poster's objekts it picked from the pool and the
  * claimer's it gives, each with its serial, its payment for every unit it
- * takes, when it expires, and why it can't be accepted now, null when it
- * can.
+ * takes, what each side does (tradeParts()), when it expires, and why it
+ * can't be accepted now, null when it can.
  */
 export type ListingOfferSummary = {
   tradeId: string;
@@ -848,6 +843,7 @@ export type ListingOfferSummary = {
   picks: ListingFeedItem[];
   given: ListingFeedItem[];
   payment: TradePayment | null;
+  parts: TradeParts;
   expiresAt: Date;
   refusal: OfferRefusal | null;
 };
@@ -855,7 +851,7 @@ export type ListingOfferSummary = {
 /**
  * A trade a claim or an accepted offer started from the poster's listing:
  * the pool objekts it took, how many the claimer gives, and where it stands
- * as My trades says it (needsYou() for an accepted one).
+ * as My trades says it (the poster's nextStep() on an accepted one).
  */
 export type ListingTrade = {
   tradeId: string;
@@ -870,10 +866,7 @@ export type ListingTrade = {
   | {
       status: "accepted";
       deadlineAt: Date;
-      toSend: number;
-      // whether the poster pays and hasn't marked it paid
-      toMarkPaid: boolean;
-      needsYou: boolean;
+      nextStep: NextStep | null;
     }
   | { status: "disputed"; deadlineAt: Date; dispute: TradeDispute | null }
   | { status: "completed" | "cancelled" | "timed_out"; endedAt: Date }

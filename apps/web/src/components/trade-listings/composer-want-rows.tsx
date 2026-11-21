@@ -1,9 +1,10 @@
 import { m } from "@/i18n/messages";
 import type { ComposerDisplay } from "@/lib/client/trade-listings";
 import type { Objekt } from "@/lib/universal/objekt-conversion";
-import type {
-  ListingFormValues,
-  ListingFormWant,
+import {
+  dirtyOptions,
+  type ListingFormValues,
+  type ListingFormWant,
 } from "@/lib/universal/trade-listing-form";
 import { MAX_LISTING_OPTIONS } from "@apollo/trades/caps";
 import {
@@ -39,8 +40,6 @@ type Props = {
   onPaymentRemoved: () => void;
   /** an option's claimer amount was typed, which may change the offer mode */
   onPaymentAmount: (option: number, amount: string) => void;
-  /** the claimer's payment takes offers, so an empty amount asks for none */
-  openToOffers: boolean;
 };
 
 /**
@@ -54,18 +53,24 @@ type Props = {
 export default function ComposerOptions(props: Props) {
   const { form } = props;
   const { formState } = form;
-  const options = useWatch({ control: form.control, name: "options" });
-  const [keys, setKeys] = useState(() => options.map((_, index) => index));
-  const next = useRef(options.length);
-  const canAdd = options.length < MAX_LISTING_OPTIONS;
-  const several = options.length > 1;
-  const formOptions = {
-    shouldDirty: true,
-    shouldValidate: formState.isSubmitted,
-  };
+  const count = useWatch({
+    control: form.control,
+    name: "options",
+    compute: (options) => options.length,
+  });
+  const [keys, setKeys] = useState(() =>
+    Array.from({ length: count }, (_, index) => index),
+  );
+  const next = useRef(count);
+  const canAdd = count < MAX_LISTING_OPTIONS;
+  const several = count > 1;
 
   function addOption() {
-    form.setValue("options", [...form.getValues("options"), []], formOptions);
+    form.setValue(
+      "options",
+      [...form.getValues("options"), []],
+      dirtyOptions(form),
+    );
     setKeys((current) => [...current, next.current++]);
   }
 
@@ -74,7 +79,7 @@ export default function ComposerOptions(props: Props) {
     form.setValue(
       "options",
       form.getValues("options").filter((_, option) => option !== index),
-      formOptions,
+      dirtyOptions(form),
     );
     setKeys((current) => [
       ...current.slice(0, index),
@@ -103,7 +108,7 @@ export default function ComposerOptions(props: Props) {
         )}
       </div>
 
-      {options.map((_, index) => (
+      {Array.from({ length: count }, (_, index) => (
         <Fragment key={keys[index] ?? `reset-${index}`}>
           {index > 0 && <OrDivider />}
           <OptionRows
@@ -149,7 +154,6 @@ function OptionRows({
   onPaymentAdded,
   onPaymentRemoved,
   onPaymentAmount,
-  openToOffers,
   option,
   onRemoveOption,
 }: Props & {
@@ -162,9 +166,14 @@ function OptionRows({
     control,
     name: `options.${option}`,
   });
-  const [wants, offeredPayment] = useWatch({
+  const wants = useWatch({ control, name: `options.${option}` });
+  // while the claimer's payment takes offers, an empty amount asks for no price
+  const mode = useWatch({ control, name: "payment.mode" });
+  // the poster pays on top, so no option can ask for a payment
+  const posterPays = useWatch({
     control,
-    name: [`options.${option}`, "offeredPayment"],
+    name: "offeredPayment",
+    compute: (offered) => offered !== undefined,
   });
   const [searching, setSearching] = useState(false);
   const roomForRow = canAddWant(wants);
@@ -176,13 +185,9 @@ function OptionRows({
     else insert(paymentRow, want);
   }
   const firstRange = wants.findIndex((want) => want.kind === "range");
-  const validate = formState.isSubmitted;
 
   function setWant(index: number, want: ListingFormWant) {
-    form.setValue(`options.${option}.${index}`, want, {
-      shouldDirty: true,
-      shouldValidate: validate,
-    });
+    form.setValue(`options.${option}.${index}`, want, dirtyOptions(form));
   }
 
   function pickCollection(collection: Objekt.Collection) {
@@ -200,8 +205,7 @@ function OptionRows({
     paymentRow !== -1 && totalWanted(wants) === 0
       ? m.listing_detail_kind_payment()
       : m.listing_composer_trade_total({ count: totalWanted(wants) });
-  const paymentDisabled =
-    !roomForRow || paymentRow !== -1 || offeredPayment !== undefined;
+  const paymentDisabled = !roomForRow || paymentRow !== -1 || posterPays;
   function addPayment() {
     append({ kind: "payment", amount: "" });
     onPaymentAdded();
@@ -249,9 +253,10 @@ function OptionRows({
               key={field.id}
               currency={currency}
               amount={want.amount ?? ""}
-              label={m.listing_composer_payment_amount()}
               placeholder={
-                openToOffers ? m.listing_composer_payment_no_price() : undefined
+                (mode ?? "price_only") !== "price_only"
+                  ? m.listing_composer_payment_no_price()
+                  : undefined
               }
               onChange={(amount) => onPaymentAmount(option, amount)}
               onRemove={() => {

@@ -24,12 +24,15 @@ import {
   listingInputSchema,
   type ListingOptionTerms,
   type ListingType,
-  listingType,
   listingTypesOf,
   offeredTokensInputSchema,
   offerInputSchema,
 } from "../src/listing";
-import { MAX_NUMERIC_AMOUNT, MAX_PAYMENT_AMOUNT } from "../src/payment";
+import {
+  MAX_NUMERIC_AMOUNT,
+  MAX_PAYMENT_AMOUNT,
+  toNumeric,
+} from "../src/payment";
 import {
   MAX_RANGE_CLAUSES,
   MAX_RANGE_VALUES,
@@ -1020,16 +1023,11 @@ describe("buy listings", () => {
       listingInputSchema.safeParse({
         ...buy,
         maxUnits: MAX_BUY_UNITS,
-        offeredPayment: toNumericText(MAX_PAYMENT_AMOUNT),
+        offeredPayment: toNumeric(MAX_PAYMENT_AMOUNT),
       }).success,
     ).toBe(true);
   });
 });
-
-// minor units as an amount is typed, "99999999.99"
-function toNumericText(amount: number) {
-  return `${Math.trunc(amount / 100)}.${String(amount % 100).padStart(2, "0")}`;
-}
 
 describe("listingTypesOf", () => {
   test.each([
@@ -1068,7 +1066,7 @@ describe("listingTypesOf", () => {
   });
 });
 
-describe("listingType", () => {
+describe("one option's type", () => {
   test.each([
     ["no payment", "pool", null, 1, "trade"],
     ["a payment row alone", "pool", "to", 0, "sell"],
@@ -1082,7 +1080,9 @@ describe("listingType", () => {
     number,
     ListingType,
   ][])("%s is a %s", (_, units, paymentSide, objektWants, expected) => {
-    expect(listingType({ units, paymentSide, objektWants })).toBe(expected);
+    expect(
+      listingTypesOf({ units, paymentSide, options: [{ objektWants }] }),
+    ).toEqual([expected]);
   });
 
   test("a pool listing paying on top whose picks are all on their way stays a trade", () => {

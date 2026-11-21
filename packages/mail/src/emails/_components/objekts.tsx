@@ -1,4 +1,4 @@
-import { formatPayment, fromNumeric } from "@apollo/trades/payment";
+import { formatPaymentText, fromNumeric } from "@apollo/trades/payment";
 import { formatSerial } from "@apollo/util";
 import { Text } from "react-email";
 import type { MailObjekt, MailPayment, MailTradeSide } from "../../content";
@@ -88,12 +88,7 @@ function moreHtml(count: number) {
 
 // "USD 12.50", every currency at two decimals as the trade records it
 function paymentText(payment: MailPayment) {
-  return formatPayment(
-    fromNumeric(payment.amount),
-    payment.currency,
-    "en-US",
-    "code",
-  );
+  return formatPaymentText(fromNumeric(payment.amount), payment.currency);
 }
 
 // "3 objekts and USD 12.50"

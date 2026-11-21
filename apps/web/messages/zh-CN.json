@@ -750,7 +750,6 @@
   "trade_page_event_accepted_staff": "{#b}{claimer}{/b} 接受了 {#b}{poster}{/b} 的挂单。",
   "trade_page_event_extended_staff": "{appName} 工作人员将双方的截止时间延长至 {#time}{when}{/time}。",
   "listing_detail_title": "交换挂单",
-  "listing_detail_kind_trade": "交换",
   "listing_detail_posted": "发布于 {#time}{when}{/time}",
   "listing_detail_error": "无法加载此挂单。",
   "listing_detail_you_get": "你获得 · {count}",

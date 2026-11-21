@@ -38,7 +38,6 @@ import {
   offerRefusal,
   offerRefusalError,
   storedObjektItemSchema,
-  tradeListingOption,
   tradeOption,
   tradePayment,
 } from "../../universal/trade-listings";
@@ -487,8 +486,8 @@ export async function insertTrade(
   if (claim.payment !== null) {
     await tx.insert(tradeOfferItems).values({
       offerId: trade.id,
-      listingId: claim.payment.side === "from" ? listing.id : null,
-      sender: claim.payment.side,
+      listingId: claim.payment.sender === "from" ? listing.id : null,
+      sender: claim.payment.sender,
       kind: "payment",
       live: false,
       amount: toNumeric(claim.payment.amount * units),
@@ -555,9 +554,19 @@ export async function recheckListingOffer(
   if (offered === undefined) {
     throw new Error(`trade ${trade.id} has no listing`);
   }
-  // trade_offers_trade_chk pins the claimer's address; trade_offers_pending_chk an expiry
-  if (trade.toAddress === null || trade.expiresAt === null) {
-    throw new Error(`offer ${trade.id} has no claimer address or expiry`);
+  /**
+   * trade_offers_trade_chk pins the claimer's address and
+   * trade_offers_pending_chk an expiry, and every write of a trade from a
+   * listing records the option it gives
+   */
+  if (
+    trade.toAddress === null ||
+    trade.expiresAt === null ||
+    trade.listingOption === null
+  ) {
+    throw new Error(
+      `offer ${trade.id} has no claimer address, expiry or option`,
+    );
   }
   const [listingId, picks] = offered;
   const [listing] = await tx
@@ -592,7 +601,7 @@ export async function recheckListingOffer(
   const refusal = offerRefusal(
     {
       expiresAt: trade.expiresAt,
-      option: tradeListingOption(trade),
+      option: trade.listingOption,
       picks,
       units: trade.units,
       given,

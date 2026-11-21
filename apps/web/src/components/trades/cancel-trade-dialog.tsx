@@ -3,17 +3,25 @@ import { m } from "@/i18n/messages";
 import { formatError } from "@/lib/client/errors";
 import { $cancelTrade } from "@/lib/functions/trades";
 import type { TradeSide } from "@apollo/database/web/types";
+import type { TradePart } from "@apollo/trades/lifecycle";
 import { useMutation } from "@tanstack/react-query";
 import { toast } from "sonner";
 import ConfirmActionDialog from "../confirm-action-dialog";
+
+// what cancelling tells a listing's poster, who on a buy listing only pays
+const posterDescriptions = {
+  send: m.trade_page_cancel_description_poster,
+  send_pay: m.trade_page_cancel_description_poster,
+  pay: m.trade_page_cancel_description_buying,
+} satisfies Record<TradePart, () => string>;
 
 type Props = {
   tradeId: string;
   listingId: string | null;
   /** the viewer's side */
   side: TradeSide;
-  /** whether the viewer gives objekts, which a buy listing's poster doesn't */
-  givesObjekts: boolean;
+  /** what the viewer does in the trade */
+  part: TradePart;
   /** the other party's name */
   name: string;
   open: boolean;
@@ -28,7 +36,7 @@ export default function CancelTradeDialog({
   tradeId,
   listingId,
   side,
-  givesObjekts,
+  part,
   name,
   open,
   onOpenChange,
@@ -54,9 +62,7 @@ export default function CancelTradeDialog({
           ? undefined
           : side === "to"
             ? m.trade_page_cancel_description_claimer({ name })
-            : givesObjekts
-              ? m.trade_page_cancel_description_poster()
-              : m.trade_page_cancel_description_buying()
+            : posterDescriptions[part]()
       }
       cancelLabel={m.trade_page_cancel_keep()}
       confirmLabel={m.trade_page_cancel()}

@@ -6,4 +6,7 @@ export const tones = {
   bad: "border-transparent bg-destructive/10 text-destructive dark:bg-destructive/20",
   cosmo:
     "border-transparent bg-cosmo/15 text-cosmo dark:bg-cosmo/30 dark:text-cosmo-text",
+  teal: "border-transparent bg-teal-500/10 text-teal-700 dark:text-teal-500",
+  // an outline for a step still waiting on someone
+  waiting: "border-amber-500/40 text-amber-700 dark:text-amber-400",
 } as const;

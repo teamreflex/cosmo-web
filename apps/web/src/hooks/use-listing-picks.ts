@@ -4,6 +4,7 @@ import {
   type ListingAt,
   type ListingFeedWant,
   type ListingPick,
+  optionParts,
   toggleOffered,
 } from "@/lib/universal/trade-listings";
 import { fitsWant, scaleWants, type TradeWant } from "@apollo/trades/allocate";
@@ -82,7 +83,6 @@ export function useListingPicks(
     // a buy listing's units, which bound the stepper in place of a pool
     buying: listing.units.kind === "buy" ? listing.units : null,
     acceptance,
-    takesOffers: acceptance !== "claim",
     offered,
     offeredCount,
     picked,
@@ -90,6 +90,8 @@ export function useListingPicks(
     wants: scaled,
     // the listing's payment for each unit, on whichever side sends it
     payment: listing.payment,
+    // what each side of the claim does
+    parts: optionParts(listing),
     valid:
       offered.length === offeredCount &&
       validateAssignment(

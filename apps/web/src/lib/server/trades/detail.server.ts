@@ -1,3 +1,4 @@
+import { sum } from "@/lib/utils";
 import {
   cosmoAccounts,
   tradeOfferItems,
@@ -20,7 +21,7 @@ import {
   type ClaimStats,
   MAX_TOTAL_WANTED,
 } from "@apollo/trades/caps";
-import { needsYou, tradeState } from "@apollo/trades/lifecycle";
+import { nextStep, tradeParts, tradeState } from "@apollo/trades/lifecycle";
 import { isEqual } from "@apollo/util";
 import {
   and,
@@ -47,7 +48,6 @@ import {
   type ListingViewer,
   offerRefusal,
   storedObjektItemSchema,
-  tradeListingOption,
   tradeOption,
   tradePayment,
   type TradeRatio,
@@ -422,10 +422,14 @@ async function readPosterSide(listing: {
     if (row.toAddress === null) {
       throw new Error(`offer ${row.id} has no claimer address`);
     }
+    // every write of a trade from a listing records the option it gives
+    if (row.listingOption === null) {
+      throw new Error(`offer ${row.id} has no listing option`);
+    }
     return [
       {
         row,
-        option: tradeListingOption(row),
+        option: row.listingOption,
         expiresAt: row.expiresAt,
         toAddress: row.toAddress,
         sides: tradeSides(row),
@@ -462,6 +466,7 @@ async function readPosterSide(listing: {
           picks: sides.from.map((item) => feedItem(item, indexed)),
           given: sides.to.map((item) => feedItem(item, indexed)),
           payment,
+          parts: tradeParts(row.items),
           expiresAt,
           refusal: offerRefusal(
             { expiresAt, option, picks, units: row.units, given, payment },
@@ -515,20 +520,7 @@ async function readPosterSide(listing: {
               ...trade,
               status: row.status,
               deadlineAt: row.deadlineAt,
-              toSend: row.items.filter(
-                (item) =>
-                  item.sender === "from" &&
-                  item.kind === "objekt" &&
-                  item.transferredAt === null,
-              ).length,
-              toMarkPaid: row.items.some(
-                (item) =>
-                  item.sender === "from" &&
-                  item.kind === "payment" &&
-                  item.markedPaidAt === null &&
-                  item.confirmedAt === null,
-              ),
-              needsYou: needsYou(state, "from", {
+              nextStep: nextStep(state, "from", {
                 deadlinePassed: deadlinePassed(
                   state,
                   row.deadlineAt,
@@ -607,9 +599,12 @@ async function readCandidateSide(
     return {
       units,
       rows: wants.map((want, index): CandidateRow => ({
-        owned: [...owned.values()]
-          .filter((collection) => fitsWant(want, collection))
-          .reduce((total, collection) => total + collection.owned, 0),
+        owned: sum(
+          [...owned.values()].filter((collection) =>
+            fitsWant(want, collection),
+          ),
+          (collection) => collection.owned,
+        ),
         // allocate() answers every want, in order
         missing: allocation[index]?.missing ?? want.count,
       })),

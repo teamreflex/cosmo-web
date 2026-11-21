@@ -761,7 +761,6 @@
   "trade_page_event_accepted_staff": "{#b}{claimer}{/b} a accepté l'annonce de {#b}{poster}{/b}.",
   "trade_page_event_extended_staff": "L'équipe {appName} a accordé aux deux parties jusqu'au {#time}{when}{/time}.",
   "listing_detail_title": "Annonce d'échange",
-  "listing_detail_kind_trade": "Échange",
   "listing_detail_posted": "publiée {#time}{when}{/time}",
   "listing_detail_error": "Impossible de charger cette annonce.",
   "listing_detail_you_get": "Vous recevez · {count}",

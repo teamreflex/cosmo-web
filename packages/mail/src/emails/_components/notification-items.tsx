@@ -1,6 +1,7 @@
+import type { TradePart } from "@apollo/trades/lifecycle";
 import { accountName } from "@apollo/util";
 import { Section, Text } from "react-email";
-import type { MailTradeSide, NotificationItem } from "../../content";
+import type { NotificationItem } from "../../content";
 import { ActionButton } from "./layout";
 import type { RenderConfig } from "./layout";
 import { TradeSummary } from "./objekts";
@@ -69,7 +70,7 @@ function itemDetail(item: NotificationItem): string | null {
     case "trade_deadline_extended":
       return item.deadlineAt === null
         ? null
-        : `${sendYourSide(item.youSend)} by ${formatTime(item.deadlineAt)}.`;
+        : `${sendYourSide[item.youSend.part]} by ${formatTime(item.deadlineAt)}.`;
     case "trade_disputed":
       return "The trade is frozen until a moderator settles it.";
     case "trade_cancelled":
@@ -79,10 +80,11 @@ function itemDetail(item: NotificationItem): string | null {
 }
 
 // what the recipient does before the deadline: send, pay outside Apollo, or both
-function sendYourSide(side: MailTradeSide) {
-  if (side.payments.length === 0) return "Send your side";
-  return side.objekts.length === 0 ? "Pay" : "Send your side and pay";
-}
+const sendYourSide = {
+  send: "Send your side",
+  pay: "Pay",
+  send_pay: "Send your side and pay",
+} as const satisfies Record<TradePart, string>;
 
 /**
  * One notification: its line, what to do by when, both sides of its trade,

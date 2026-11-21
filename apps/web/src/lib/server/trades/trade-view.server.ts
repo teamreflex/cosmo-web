@@ -13,10 +13,11 @@ import type {
 import {
   isOpenTrade,
   tradeListingId,
+  tradeParts,
   type TradeState,
   tradeState,
 } from "@apollo/trades/lifecycle";
-import { fromNumeric } from "@apollo/trades/payment";
+import { parsePaymentItem } from "@apollo/trades/payment";
 import { DRAIN_CURSOR_NAME, isTimedOut } from "@apollo/trades/timers";
 import { itemStatus, paymentStatus } from "@apollo/trades/transfers";
 import { and, eq, isNull, sql } from "drizzle-orm";
@@ -32,7 +33,6 @@ import {
   type TradeNamedItem,
   type TradeParty,
   type TradePartyName,
-  type TradePaymentView,
   type TradeStage,
   type TradeView,
 } from "../../universal/trades";
@@ -42,66 +42,25 @@ import { feedbackRepColumns } from "../feedback.server";
 import { readIndexed } from "./feed.server";
 
 /**
- * A payment item as the trade page shows it, its amount parsed from the
- * `numeric(14,2)` column into minor units.
- */
-function toPaymentView(
-  item: Pick<
-    TradeOfferItem,
-    | "id"
-    | "sender"
-    | "amount"
-    | "currency"
-    | "markedPaidAt"
-    | "confirmedAt"
-    | "method"
-  >,
-  state: TradeState,
-): TradePaymentView {
-  // trade_offer_items_objekt_chk: a payment has its amount and currency
-  if (item.amount === null || item.currency === null) {
-    throw new Error(`payment item ${item.id} has no amount`);
-  }
-  const shown = {
-    id: item.id,
-    sender: item.sender,
-    amount: fromNumeric(item.amount),
-    currency: item.currency,
-  };
-  const status = paymentStatus(item, state.status);
-  if (status === "paid") {
-    // paymentStatus() reads paid from the stamp
-    if (item.markedPaidAt === null) {
-      throw new Error(`payment item ${item.id} is paid without a time`);
-    }
-    return { ...shown, status, markedPaidAt: item.markedPaidAt };
-  }
-  if (status !== "confirmed") return { ...shown, status };
-  // $confirmPayment stamps the time and the method together
-  if (item.confirmedAt === null || item.method === null) {
-    throw new Error(`payment item ${item.id} is confirmed without a method`);
-  }
-  return {
-    ...shown,
-    status,
-    confirmedAt: item.confirmedAt,
-    method: item.method,
-  };
-}
-
-/**
- * A trade's payment as its page shows it, and the methods it may arrive
- * by, which the trade took from its listing when claimed.
+ * A trade's payment as its page shows it (TradePaymentView), and the
+ * methods it may arrive by, which the trade took from its listing when
+ * claimed.
  */
 function paymentViewOf(
   items: readonly TradeOfferItem[],
   paymentMethods: TradeView["paymentMethods"],
   state: TradeState,
 ): Pick<TradeView, "payment" | "paymentMethods"> {
-  const payment = items.find((item) => item.kind === "payment");
-  return payment === undefined
-    ? { payment: null, paymentMethods: [] }
-    : { payment: toPaymentView(payment, state), paymentMethods };
+  const row = items.find((item) => item.kind === "payment");
+  if (row === undefined) return { payment: null, paymentMethods: [] };
+  const payment = parsePaymentItem(row);
+  return {
+    payment: {
+      ...payment,
+      status: paymentStatus(payment.progress.stage, state.status),
+    },
+    paymentMethods,
+  };
 }
 
 /**
@@ -377,6 +336,7 @@ export async function readTradeView(
     id: row.id,
     ...paymentViewOf(row.items, row.paymentMethods, state),
     state,
+    parts: tradeParts(row.items),
     endedAt: row.endedAt,
     dispute: tradeDispute(state, events),
     listingId,

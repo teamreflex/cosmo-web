@@ -750,7 +750,6 @@
   "trade_page_event_accepted_staff": "{#b}{claimer}{/b} 接受了 {#b}{poster}{/b} 的刊登。",
   "trade_page_event_extended_staff": "{appName} 工作人員將雙方的期限延長至 {#time}{when}{/time}。",
   "listing_detail_title": "交換刊登",
-  "listing_detail_kind_trade": "交換",
   "listing_detail_posted": "刊登於 {#time}{when}{/time}",
   "listing_detail_error": "無法載入這則刊登。",
   "listing_detail_you_get": "你獲得 · {count}",

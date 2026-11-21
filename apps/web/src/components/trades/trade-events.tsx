@@ -2,7 +2,6 @@ import { m } from "@/i18n/messages";
 import { reportReasonLabel } from "@/lib/client/reports";
 import {
   formatAmount,
-  owedAtDeadline,
   partyName,
   paymentMethodLabel,
 } from "@/lib/client/trade-listings";
@@ -20,7 +19,7 @@ import type {
   TradeEvent,
   TradeSide,
 } from "@apollo/database/web/types";
-import { otherSide } from "@apollo/trades/lifecycle";
+import { otherSide, owedAtDeadline } from "@apollo/trades/lifecycle";
 import { ParaglideMessage } from "@inlang/paraglide-js-react";
 import { IconCheck, IconExternalLink } from "@tabler/icons-react";
 import { Link } from "@tanstack/react-router";
@@ -441,7 +440,7 @@ function describeDispute(
         objekts: m.trade_page_event_disputed_deadline,
         payment: m.trade_page_event_disputed_deadline_payment,
         both: m.trade_page_event_disputed_deadline_both,
-      }[owedAtDeadline(trade)]({ appName });
+      }[owedAtDeadline(trade.state.items)]({ appName });
     default:
       return event.by === side ? (
         m.trade_page_event_disputed_you({

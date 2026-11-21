@@ -1,3 +1,4 @@
+import type { TradePart } from "@apollo/trades/lifecycle";
 import type { ReactElement } from "react";
 
 /**
@@ -17,8 +18,9 @@ export type MailObjekt = {
 // a numeric amount as Postgres returns it, e.g. "20.00", and its ISO 4217 code
 export type MailPayment = { amount: string; currency: string };
 
-// what one party of a trade sends
+// what one party of a trade does, and what it sends
 export type MailTradeSide = {
+  part: TradePart;
   objekts: MailObjekt[];
   payments: MailPayment[];
 };

@@ -16,6 +16,7 @@ import type {
   NewTradeListingWant,
   NewTradeListingWantRange,
   NewTradeOfferItem,
+  TradeOffer,
   TradeOfferStatus,
 } from "@apollo/database/web/types";
 import type { InventoryObjekt } from "@apollo/trades/allocate";
@@ -227,8 +228,7 @@ export async function endListingOffers(
 }
 
 /**
- * The caller's own listing by id. Other people's listings and trade rows
- * read as missing, so a refusal never says what someone else's row is.
+ * The caller's own listing by id, with its units' columns. Other people's listings and trade rows read as missing, so a refusal never says what someone else's row is.
  */
 export function ownListing(
   executor: DbOrTx,
@@ -236,7 +236,12 @@ export function ownListing(
   listingId: string,
 ) {
   return executor
-    .select({ status: tradeOffers.status })
+    .select({
+      id: tradeOffers.id,
+      status: tradeOffers.status,
+      unitSize: tradeOffers.unitSize,
+      maxUnits: tradeOffers.maxUnits,
+    })
     .from(tradeOffers)
     .where(
       and(
@@ -269,7 +274,9 @@ export function listingRefusal(
   return listing.status === "open" ? null : "listing_closed";
 }
 
-export function refuseEdit(listing: { status: TradeOfferStatus } | undefined) {
+export function refuseEdit<TListing extends { status: TradeOfferStatus }>(
+  listing: TListing | undefined,
+): asserts listing is TListing {
   const refusal = listingRefusal(listing);
   if (refusal !== null) throw new ExpectedError(refusal);
 }
@@ -304,14 +311,11 @@ export async function checkTerms(
   const resolved = await resolveWants(
     input.options.flatMap((option) => option.wants),
   );
-  const options = input.options.map((option, index) => {
-    const start = input.options
-      .slice(0, index)
-      .reduce((total, each) => total + each.wants.length, 0);
-    return {
-      wants: resolved.slice(start, start + option.wants.length),
-      payment: option.payment,
-    };
+  let start = 0;
+  const options = input.options.map((option) => {
+    const wants = resolved.slice(start, start + option.wants.length);
+    start += option.wants.length;
+    return { wants, payment: option.payment };
   });
   const holdings = await readTokenStates(address, tokenIds, editedListing);
 
@@ -346,29 +350,26 @@ export function unitColumns(
 }
 
 /**
- * Refuses an edit of a locked listing whose units its trades rule out
- * (editUnitsRefusal()): a change of kind while it has a live or completed
- * trade, or a buy listing's most units below what its trades hold.
+ * Refuses an edit of a locked listing whose units its trades rule out (editUnitsRefusal()): a change of kind while it has a live or completed trade, or a buy listing's most units below what its trades hold. A pool listing staying a pool listing can't be refused, so its trades go unread. They are read in a statement of their own after the lock, which sees every trade committed while the edit waited for it, where a subquery in the locking statement would read the snapshot taken before.
  */
 export async function refuseUnitsChange(
   tx: WebTx,
-  listingId: string,
+  listing: Pick<TradeOffer, "id" | "unitSize" | "maxUnits">,
   units: ListingUnits,
 ) {
-  const [held] = await tx
+  const held = listingUnits(listing);
+  if (held.kind === "pool" && units.kind === "pool") return;
+  const [trades] = await tx
     .select({
-      id: tradeOffers.id,
-      unitSize: tradeOffers.unitSize,
-      maxUnits: tradeOffers.maxUnits,
       live: listingPoolState.live,
       completed: listingPoolState.completed,
       taken: listingTakenUnits(tradeOffers),
       completedUnits: listingPoolState.completedUnits,
     })
     .from(tradeOffers)
-    .where(eq(tradeOffers.id, listingId));
-  if (held === undefined) return;
-  switch (editUnitsRefusal(units, { ...held, units: listingUnits(held) })) {
+    .where(eq(tradeOffers.id, listing.id));
+  if (trades === undefined) return;
+  switch (editUnitsRefusal(units, { ...trades, units: held })) {
     case "kind_fixed":
       throw new ExpectedError("listing_kind_fixed");
     case "units_taken":
@@ -478,10 +479,7 @@ function paymentRows(
 }
 
 /**
- * Inserts the listing's own items, never live and with no `listing_id`
- * (none on a buy listing), then every option's objekt wants in one statement, in option order, so
- * id order is the posted order, then its payment rows, then the
- * collections of its choice rows and the ranges of its range rows.
+ * Inserts the listing's own items, never live and with no `listing_id` (none on a buy listing), then every option's objekt wants in one statement, in option order, so id order is the posted order, then its payment rows, then the collections of its choice rows and the ranges of its range rows.
  */
 export async function insertTerms(
   tx: WebTx,

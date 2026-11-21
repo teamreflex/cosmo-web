@@ -30,10 +30,7 @@ import {
   openDisputeInputSchema,
   tradeIdInputSchema,
 } from "@/lib/universal/schema/trades";
-import {
-  storedObjektItemSchema,
-  storedPaymentItemSchema,
-} from "@/lib/universal/trade-listings";
+import { storedObjektItemSchema } from "@/lib/universal/trade-listings";
 import {
   type MyTradeSide,
   type MyTradesPage,
@@ -55,11 +52,15 @@ import {
   type TradeSide,
 } from "@apollo/database/web/types";
 import {
-  needsYou,
+  nextStep,
+  otherSide,
   partyAction,
   tradeListingId,
+  type TradePart,
+  tradeParts,
   tradeState,
 } from "@apollo/trades/lifecycle";
+import { parsePaymentItem } from "@apollo/trades/payment";
 import { itemStatus } from "@apollo/trades/transfers";
 import { createServerFn } from "@tanstack/react-start";
 import {
@@ -292,13 +293,7 @@ export const $fetchMyTrades = createServerFn({ method: "GET" })
         row,
         items,
         side,
-        payment: payment && {
-          sender: payment.sender,
-          terms: {
-            ...storedPaymentItemSchema.parse(payment),
-            markedPaid: payment.markedPaidAt !== null,
-          },
-        },
+        payment: payment && parsePaymentItem(payment),
         send: objekts.filter(({ item }) => item.sender === side),
         get: objekts.filter(({ item }) => item.sender !== side),
       };
@@ -311,15 +306,24 @@ export const $fetchMyTrades = createServerFn({ method: "GET" })
       objekts.map(({ tokenId }) => tokenId),
     );
 
-    // one side of a row: its objekts as feed items, how many have arrived, and its payment
+    /**
+     * One side of a row: its objekts as feed items, how many have arrived,
+     * and its part with its payment. tradeParts() gives a side a part that
+     * pays only when it sends the payment item.
+     */
     const summary = (
       items: typeof objekts,
+      part: TradePart,
       payment: MyTradeSide["payment"],
-    ): MyTradeSide => ({
-      items: items.map((item) => feedItem(item, indexed)),
-      sent: items.filter(({ item }) => item.transferredAt !== null).length,
-      payment,
-    });
+    ): MyTradeSide => {
+      const shown = {
+        items: items.map((item) => feedItem(item, indexed)),
+        sent: items.filter(({ item }) => item.transferredAt !== null).length,
+      };
+      if (part === "send") return { ...shown, part, payment: null };
+      if (payment === null) throw new Error("a paying side without a payment");
+      return { ...shown, part, payment };
+    };
 
     // each trade as a My trades row from the caller's side
     const mapped = trades.map(({ row, items, side, payment, send, get }) => {
@@ -330,6 +334,7 @@ export const $fetchMyTrades = createServerFn({ method: "GET" })
         throw new Error("trade without a deadline or an expiry");
       }
       const state = tradeState(trade, items);
+      const parts = tradeParts(items);
       return {
         id: trade.id,
         state,
@@ -343,14 +348,17 @@ export const $fetchMyTrades = createServerFn({ method: "GET" })
           row.counterparty,
           row.cosmo,
         ),
-        send: summary(send, payment?.sender === side ? payment.terms : null),
+        send: summary(
+          send,
+          parts[side],
+          payment?.sender === side ? payment : null,
+        ),
         get: summary(
           get,
-          payment !== undefined && payment.sender !== side
-            ? payment.terms
-            : null,
+          parts[otherSide(side)],
+          payment !== undefined && payment.sender !== side ? payment : null,
         ),
-        needsYou: needsYou(state, side, {
+        nextStep: nextStep(state, side, {
           deadlinePassed: deadlinePassed(state, dueAt, row.watermark),
         }),
       };
@@ -552,13 +560,7 @@ export const $markPaid = createServerFn({ method: "POST" })
   });
 
 /**
- * The recipient of a trade's payment says it arrived, and by which of the
- * methods the trade took from its listing when claimed. Only the recipient can, never its sender, and only
- * before the deadline passes the drain's watermark, as a cancel; a
- * disputed trade's clock is stopped, so staff see a confirmation that came
- * late. When it settles the trade, the trade completes here, as the drain
- * completes one when the last token arrives, and both parties hear of it.
- * A confirmation that leaves something owed notifies no one.
+ * The recipient of a trade's payment says it arrived, and by which of the methods the trade took from its listing when claimed. Only the recipient can, never its sender, and only before the deadline passes the drain's watermark, as a cancel; a disputed trade's clock is stopped, so staff see a confirmation that came late. When it settles the trade, the trade completes here, as the drain completes one when the last token arrives, and both parties hear of it. A confirmation that leaves something owed notifies no one.
  */
 export const $confirmPayment = createServerFn({ method: "POST" })
   .validator(confirmPaymentInputSchema)

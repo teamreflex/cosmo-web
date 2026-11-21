@@ -23,7 +23,7 @@ import { ObjektSidebar } from "../objekt/common";
 import ExpandableObjekt from "../objekt/objekt-expandable";
 import SelectableCard, { OfferPill } from "./selectable-card";
 import SideHeading from "./side-heading";
-import { PaymentLabel } from "./want-label";
+import { PaymentBox } from "./want-label";
 
 export type OfferedHeading = "you_get" | "offering" | "you_offer";
 
@@ -146,11 +146,7 @@ function PosterPayment({
 }) {
   const payment = listing.options[0]?.payment;
   return (
-    payment?.side === "from" && (
-      <div className="rounded-lg border border-border bg-card px-4 py-3 text-sm">
-        <PaymentLabel payment={payment} units={units} />
-      </div>
-    )
+    payment?.side === "from" && <PaymentBox payment={payment} units={units} />
   );
 }
 
@@ -189,13 +185,11 @@ function BuyingSide({
         }
       />
       {payment?.side === "from" && (
-        <div className="rounded-lg border border-border bg-card px-4 py-3 text-sm">
-          <PaymentLabel
-            payment={payment}
-            units={heading === "you_get" ? picked : 1}
-            perUnit
-          />
-        </div>
+        <PaymentBox
+          payment={payment}
+          units={heading === "you_get" ? picked : 1}
+          perUnit
+        />
       )}
     </section>
   );
@@ -253,7 +247,7 @@ function PoolPicker({
         })}
       </ul>
       <PosterPayment listing={listing} units={picks.units} />
-      {picks.takesOffers && (
+      {picks.acceptance !== "claim" && (
         <p className="text-xs leading-relaxed text-muted-foreground">
           {m.listing_detail_pool_offers_help({ poster: posterName(listing) })}
         </p>

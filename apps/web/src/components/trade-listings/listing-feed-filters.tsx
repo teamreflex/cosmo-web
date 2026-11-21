@@ -8,6 +8,7 @@ import {
   wantKeys,
 } from "@/hooks/use-listing-feed-filters";
 import { m } from "@/i18n/messages";
+import { listingTypeLabels } from "@/lib/client/trade-listings";
 import { cn } from "@/lib/utils";
 import { listingTypes } from "@apollo/trades/listing";
 import { IconAdjustmentsHorizontal } from "@tabler/icons-react";
@@ -106,12 +107,6 @@ function FilterGroups() {
     </>
   );
 }
-
-const listingTypeLabels = {
-  trade: m.market_listings_trade,
-  sell: m.market_listings_sell,
-  buy: m.market_listings_buy,
-} satisfies Record<(typeof listingTypes)[number], () => string>;
 
 function FilterGroup({
   label,

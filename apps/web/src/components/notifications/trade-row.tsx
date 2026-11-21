@@ -6,6 +6,7 @@ import type {
   NotificationListItem,
   NotificationToken,
 } from "@/lib/universal/notifications";
+import type { TradePart } from "@apollo/trades/lifecycle";
 import { accountName, formatSerial } from "@apollo/util";
 import { ParaglideMessage } from "@inlang/paraglide-js-react";
 import { IconTagOff } from "@tabler/icons-react";
@@ -310,8 +311,8 @@ function describeTrade(notification: TradeItem, username: string) {
  * a buy listing.
  */
 function describeClaimed(notification: TradeItem, username: string) {
-  const { objekts, payment } = notification;
-  if (payment?.side === "from" && objekts.length === 0) {
+  const { objekts, payment, yourPart } = notification;
+  if (payment !== null && yourPart === "pay") {
     return (
       <ParaglideMessage
         message={m.notification_listing_claimed_buying}
@@ -328,7 +329,7 @@ function describeClaimed(notification: TradeItem, username: string) {
       ? tokenName(objekts[0])
       : m.notification_objekts_count({ count: objekts.length });
   // a poster who pays on top of their objekts hears what to pay too
-  return payment?.side === "from" ? (
+  return payment !== null && yourPart === "send_pay" ? (
     <ParaglideMessage
       message={m.notification_listing_claimed_pay}
       inputs={{
@@ -378,11 +379,11 @@ function describeOfferReceived(notification: TradeItem, username: string) {
         username,
         offered: offerSideText(
           notification.objekts.length,
-          notification.payment.side === "to" ? notification.payment : null,
+          notification.payment.sender === "to" ? notification.payment : null,
         ),
         asked: offerSideText(
           notification.asked,
-          notification.payment.side === "from" ? notification.payment : null,
+          notification.payment.sender === "from" ? notification.payment : null,
         ),
       }}
       markup={bold}
@@ -390,24 +391,27 @@ function describeOfferReceived(notification: TradeItem, username: string) {
   );
 }
 
+// what an accepted offer's proposer hears they pay, alone or beside their objekts
+const acceptedPayments = {
+  pay: m.notification_offer_accepted_listing_pay,
+  send_pay: m.notification_offer_accepted_listing_send_pay,
+} satisfies Record<
+  Exclude<TradePart, "send">,
+  (inputs: { username: string; amount: string }) => string
+>;
+
 /**
  * The recipient's offer accepted: a claimer who owes the payment hears
  * what to pay, beside any objekts they send.
  */
 function describeOfferAccepted(notification: TradeItem, username: string) {
-  return notification.payment?.side === "to" ? (
+  const { payment, yourPart } = notification;
+  return payment !== null && yourPart !== null && yourPart !== "send" ? (
     <ParaglideMessage
-      message={
-        notification.yourObjekts === 0
-          ? m.notification_offer_accepted_listing_pay
-          : m.notification_offer_accepted_listing_send_pay
-      }
+      message={acceptedPayments[yourPart]}
       inputs={{
         username,
-        amount: formatAmount(
-          notification.payment.amount,
-          notification.payment.currency,
-        ),
+        amount: formatAmount(payment.amount, payment.currency),
       }}
       markup={bold}
     />

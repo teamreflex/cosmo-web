@@ -72,7 +72,7 @@ import {
   tradeOffers,
 } from "@apollo/database/web/schema";
 import { bumpUpdatedAt, listingTakenUnits } from "@apollo/database/web/sql";
-import { MAX_WANT_ROWS } from "@apollo/trades/caps";
+import { MAX_LISTING_OPTIONS, MAX_WANT_ROWS } from "@apollo/trades/caps";
 import { tokenRefusals } from "@apollo/trades/holdings";
 import { listingTransition } from "@apollo/trades/lifecycle";
 import {
@@ -185,7 +185,7 @@ export const $editListing = createServerFn({ method: "POST" })
           data.listingId,
         ).for("update");
         refuseEdit(listing);
-        await refuseUnitsChange(tx, data.listingId, data.units);
+        await refuseUnitsChange(tx, listing, data.units);
         const locked = new Set(offers.map((offer) => offer.id));
         const now = await listingOffers(tx, actor.userId, data.listingId);
         if (now.some((offer) => !locked.has(offer.id))) {
@@ -356,13 +356,15 @@ export const $claimListing = createServerFn({ method: "POST" })
   });
 
 /**
- * How many collections each range row matches, in total and per range, in
- * the rows' order, for the composer's preview and the listing page, in one
- * indexer statement. POST although it only reads, because a listing's rows can
- * hold more values than fit in a URL.
+ * How many collections each range row matches, in total and per range, in the rows' order, for the composer's preview and the listing page (every option's rows), in one indexer statement. POST although it only reads, because a listing's rows can hold more values than fit in a URL.
  */
 export const $fetchRangeMatchCounts = createServerFn({ method: "POST" })
-  .validator(z.array(rangesSchema).min(1).max(MAX_WANT_ROWS))
+  .validator(
+    z
+      .array(rangesSchema)
+      .min(1)
+      .max(MAX_WANT_ROWS * MAX_LISTING_OPTIONS),
+  )
   .handler(({ data }) => countRangeMatches(data));
 
 /**

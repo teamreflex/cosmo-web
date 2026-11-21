@@ -9,6 +9,8 @@ import {
   type TradeDispute,
 } from "@/lib/universal/trades";
 import { cn } from "@/lib/utils";
+import type { NextStep, TradePart } from "@apollo/trades/lifecycle";
+import type { PaymentStage } from "@apollo/trades/payment";
 import { ParaglideMessage } from "@inlang/paraglide-js-react";
 import { IconArrowsExchange, IconArrowsRightLeft } from "@tabler/icons-react";
 import { useSuspenseInfiniteQuery } from "@tanstack/react-query";
@@ -227,35 +229,39 @@ function TradeRow({ row }: { row: MyTradeRow }) {
 
 // a side's objekts, or its payment's tile when it sends only a payment
 function SideThumbs({ side }: { side: MyTradeSide }) {
-  return side.items.length === 0 && side.payment !== null ? (
+  return side.part === "pay" ? (
     <PaymentTile payment={side.payment} />
   ) : (
     <Thumbs items={side.items} />
   );
 }
 
+// how a side's payment reads, alone or beside its objekts
+const paymentCaptions = {
+  pay: {
+    confirmed: m.my_trades_payment_only_received,
+    marked: m.my_trades_payment_only_paid,
+    unpaid: m.my_trades_payment_only,
+  },
+  send_pay: {
+    confirmed: m.my_trades_payment_received,
+    marked: m.my_trades_payment_paid,
+    unpaid: m.my_trades_payment,
+  },
+} satisfies Record<
+  Exclude<TradePart, "send">,
+  Record<PaymentStage, (inputs: { amount: string }) => string>
+>;
+
 // the payment a side sends, in its own currency, and whether it was confirmed received or marked paid
 function PaymentCaption({ side }: { side: MyTradeSide }) {
+  if (side.part === "send") return null;
   const { payment } = side;
-  if (payment === null) return null;
-  const amount = formatAmount(payment.amount, payment.currency);
-  const captions =
-    side.items.length === 0
-      ? {
-          received: m.my_trades_payment_only_received,
-          paid: m.my_trades_payment_only_paid,
-          unpaid: m.my_trades_payment_only,
-        }
-      : {
-          received: m.my_trades_payment_received,
-          paid: m.my_trades_payment_paid,
-          unpaid: m.my_trades_payment,
-        };
   return (
     <SlipDetail className="font-medium text-foreground">
-      {captions[
-        payment.confirmed ? "received" : payment.markedPaid ? "paid" : "unpaid"
-      ]({ amount })}
+      {paymentCaptions[side.part][payment.progress.stage]({
+        amount: formatAmount(payment.amount, payment.currency),
+      })}
     </SlipDetail>
   );
 }
@@ -267,23 +273,14 @@ function PaymentCaption({ side }: { side: MyTradeSide }) {
 function Status({ row }: { row: MyTradeRow }) {
   switch (row.state.status) {
     case "pending":
-      return row.needsYou ? (
+      return row.nextStep !== null ? (
         <Badge className={tones.cosmo}>{m.my_trades_next_respond()}</Badge>
       ) : (
         <Badge className={tones.muted}>{m.my_trades_next_reply()}</Badge>
       );
     case "accepted":
       return (
-        <NextStepBadge
-          needsYou={row.needsYou}
-          toSend={row.send.items.length - row.send.sent}
-          toMarkPaid={
-            row.send.payment !== null &&
-            !row.send.payment.confirmed &&
-            !row.send.payment.markedPaid
-          }
-          name={partyName(row.counterparty)}
-        />
+        <NextStepBadge step={row.nextStep} name={partyName(row.counterparty)} />
       );
     case "disputed":
       return <DisputeBadge dispute={row.dispute} />;
@@ -332,31 +329,33 @@ function Time({ row }: { row: MyTradeRow }) {
   }
 }
 
+// what the viewer's next step reads as
+function stepLabel(step: NextStep) {
+  switch (step.kind) {
+    case "answer":
+      return m.my_trades_next_respond();
+    case "send":
+      return m.my_trades_next_send({ count: step.count });
+    case "mark_paid":
+      return m.my_trades_next_mark_paid();
+    case "confirm":
+      return m.my_trades_next_confirm();
+  }
+}
+
 /**
- * What a live trade waits on: the viewer sending what they still owe, or
- * with nothing left to send, marking their payment paid or a payment they
- * are owed received, or the other party, named.
+ * What a live trade waits on: the viewer's next step (NextStep), or the
+ * other party, named.
  */
 export function NextStepBadge({
-  needsYou,
-  toSend,
-  toMarkPaid,
+  step,
   name,
 }: {
-  needsYou: boolean;
-  toSend: number;
-  /** whether the viewer pays and hasn't marked it paid */
-  toMarkPaid: boolean;
+  step: NextStep | null;
   name: string;
 }) {
-  return needsYou ? (
-    <Badge className={tones.cosmo}>
-      {toSend > 0
-        ? m.my_trades_next_send({ count: toSend })
-        : toMarkPaid
-          ? m.my_trades_next_mark_paid()
-          : m.my_trades_next_confirm()}
-    </Badge>
+  return step !== null ? (
+    <Badge className={tones.cosmo}>{stepLabel(step)}</Badge>
   ) : (
     // a long name gives way, so the verb stays
     <Badge

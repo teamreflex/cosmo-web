@@ -1,8 +1,8 @@
 import { m } from "@/i18n/messages";
 import {
-  listingKindLabel,
-  listingRatio,
+  listingTypeLabels,
   listingTypesOfListing,
+  pillRatio,
   ratioSides,
   ratioText,
 } from "@/lib/client/trade-listings";
@@ -29,13 +29,7 @@ type Props = {
 };
 
 /**
- * Who posted the listing, as the page's heading, with its kinds (one per
- * kind its options make it), state and ratio and, under them, the poster's ratings and when they posted (on
- * their own listing, that it's theirs, when they posted and when it last
- * changed), with the viewer's status and actions at the far end. Phones
- * drop the kind beside a ratio, to leave the name room. The poster's tabs
- * run along its foot. From tablet width it sticks under the navbar, so
- * Accept and the tabs stay in reach.
+ * Who posted the listing, as the page's heading, with its kinds (one per kind its options make it), state and ratio and, under them, the poster's ratings and when they posted (on their own listing, that it's theirs, when they posted and when it last changed), with the viewer's status and actions at the far end. Phones drop the kind beside a ratio, to leave the name room. The poster's tabs run along its foot. From tablet width it sticks under the navbar, so Accept and the tabs stay in reach.
  */
 export default function ListingHeader({
   listing,
@@ -44,12 +38,7 @@ export default function ListingHeader({
   tabs,
   own = false,
 }: Props) {
-  const [first, ...others] = listing.options;
-  // several options trade at several ratios, and a payment's ratio shows no pill
-  const ratio =
-    first === undefined || others.length > 0 || first.payment !== null
-      ? null
-      : listingRatio({ ...listing, ...first }, listing.items.length);
+  const ratio = pillRatio(listing, listing.items.length);
   /**
    * An edit, or the drain dropping an objekt that left the poster, moves
    * `updated_at`. Posting sets it beside `created_at`, which keeps its
@@ -86,7 +75,7 @@ export default function ListingHeader({
                   ratio !== null && "max-md:hidden",
                 )}
               >
-                {listingKindLabel(type)}
+                {listingTypeLabels[type]()}
               </Badge>
             ))}
             <ListingStateBadge status={listing.state.status} />

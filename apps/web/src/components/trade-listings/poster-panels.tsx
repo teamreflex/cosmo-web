@@ -243,18 +243,7 @@ function OfferCard({
               name={partyName(claimer)}
               listingId={listingId}
               linkTrade
-              payment={acceptPayment(
-                "from",
-                offer.payment === null
-                  ? null
-                  : {
-                      sender: offer.payment.side,
-                      sendsObjekts:
-                        offer.payment.side === "to"
-                          ? offer.given.length > 0
-                          : true,
-                    },
-              )}
+              payment={acceptPayment(offer.parts.from, offer.parts.to)}
               open={dialog === action}
               onOpenChange={(open) => setDialog(open ? action : null)}
             />
@@ -267,14 +256,14 @@ function OfferCard({
           tone="want"
           title={m.listing_poster_offer_they_send()}
           items={offer.given}
-          payment={offer.payment?.side === "to" ? offer.payment : null}
+          payment={offer.payment?.sender === "to" ? offer.payment : null}
           dimmed={refusedToken}
         />
         <OfferSide
           tone="have"
           title={m.listing_poster_offer_you_send()}
           items={offer.picks}
-          payment={offer.payment?.side === "from" ? offer.payment : null}
+          payment={offer.payment?.sender === "from" ? offer.payment : null}
           dimmed={refusedToken}
         />
       </div>
@@ -434,12 +423,7 @@ function TradeState({
     case "accepted":
       return (
         <>
-          <NextStepBadge
-            needsYou={trade.needsYou}
-            toSend={trade.toSend}
-            toMarkPaid={trade.toMarkPaid}
-            name={name}
-          />
+          <NextStepBadge step={trade.nextStep} name={name} />
           <span className="ms-auto text-xs text-muted-foreground tabular-nums">
             <TimeLeft deadline={trade.deadlineAt} />
           </span>

@@ -83,38 +83,59 @@ export function UnitCounts({
   picks: Picks;
   className?: string;
 }) {
+  const { payment } = picks;
   // with no asking price, the payment is named in the offer, not here
-  const payment = picks.payment?.amount === null ? null : picks.payment;
-  const amount =
-    payment?.amount == null
-      ? ""
-      : formatAmount(payment.amount * picks.units, payment.currency);
+  const priced =
+    payment === null || payment.amount === null
+      ? null
+      : {
+          side: payment.side,
+          amount: formatAmount(payment.amount * picks.units, payment.currency),
+        };
   return (
     <span
       className={cn("flex gap-4 font-mono text-xs tabular-nums", className)}
     >
       <span className="text-amber-700 dark:text-amber-500">
-        {payment?.side !== "from"
-          ? m.listing_detail_units_get({ count: picks.offeredCount })
-          : picks.offeredCount === 0
-            ? m.listing_detail_units_get_amount({ amount })
-            : m.listing_detail_units_get_pay({
-                count: picks.offeredCount,
-                amount,
-              })}
+        {sideText(
+          picks.offeredCount,
+          priced?.side === "from" ? priced.amount : null,
+          {
+            count: m.listing_detail_units_get,
+            amount: m.listing_detail_units_get_amount,
+            both: m.listing_detail_units_get_pay,
+          },
+        )}
       </span>
-      {(picks.giveTotal > 0 || payment?.side === "to") && (
+      {(picks.giveTotal > 0 || priced?.side === "to") && (
         <span className="text-teal-700 dark:text-teal-500">
-          {payment?.side !== "to"
-            ? m.listing_detail_units_give({ count: picks.giveTotal })
-            : picks.giveTotal === 0
-              ? m.listing_detail_units_pay({ amount })
-              : m.listing_detail_units_give_pay({
-                  count: picks.giveTotal,
-                  amount,
-                })}
+          {sideText(
+            picks.giveTotal,
+            priced?.side === "to" ? priced.amount : null,
+            {
+              count: m.listing_detail_units_give,
+              amount: m.listing_detail_units_pay,
+              both: m.listing_detail_units_give_pay,
+            },
+          )}
         </span>
       )}
     </span>
   );
+}
+
+/**
+ * One side's count in the side's own words: its objekts, its payment alone (`amount`, null when the side sends none), or both.
+ */
+function sideText(
+  count: number,
+  amount: string | null,
+  text: {
+    count: (inputs: { count: number }) => string;
+    amount: (inputs: { amount: string }) => string;
+    both: (inputs: { count: number; amount: string }) => string;
+  },
+) {
+  if (amount === null) return text.count({ count });
+  return count === 0 ? text.amount({ amount }) : text.both({ count, amount });
 }

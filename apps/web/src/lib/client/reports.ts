@@ -4,12 +4,11 @@ import type {
   AdminReportRowTarget,
   BanLength,
 } from "@/lib/universal/reports";
-import type { DeadlineOwed } from "@/lib/universal/trades";
 import type {
   ReportStatus,
   StoredReportReason,
 } from "@apollo/database/web/types";
-import { owedAtDeadline } from "./trade-listings";
+import { type DeadlineOwed, owedAtDeadline } from "@apollo/trades/lifecycle";
 
 const reasonLabels = {
   scam: m.report_reason_scam,
@@ -38,7 +37,7 @@ export function reportReasonLabel(reason: StoredReportReason): string {
 // what a report's trade still owes, as its detail reads the trade, or null for any other report
 export function reportOwed(report: AdminReportDetail) {
   return report.target.type === "trade" && report.target.trade !== null
-    ? owedAtDeadline(report.target.trade.view)
+    ? owedAtDeadline(report.target.trade.view.state.items)
     : null;
 }
 

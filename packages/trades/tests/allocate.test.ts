@@ -361,7 +361,7 @@ describe("payment-only offers", () => {
     picks,
     units: null,
     given: [],
-    payment: { side: "to", amount, currency: "USD" } satisfies TradePayment,
+    payment: { sender: "to", amount, currency: "USD" } satisfies TradePayment,
   });
 
   test.each([
@@ -415,7 +415,7 @@ describe("payment-only offers", () => {
     };
     expect(paymentFits(null, payment, 1)).toBe(false);
     expect(
-      paymentFits({ side: "to", amount: 250, currency: "USD" }, null, 1),
+      paymentFits({ sender: "to", amount: 250, currency: "USD" }, null, 1),
     ).toBe(false);
     expect(paymentFits(null, null, 1)).toBe(true);
   });
@@ -429,10 +429,10 @@ describe("payment-only offers", () => {
       amount: 300,
     };
     expect(
-      paymentFits({ side: "from", amount: 250, currency: "USD" }, payment, 1),
+      paymentFits({ sender: "from", amount: 250, currency: "USD" }, payment, 1),
     ).toBe(false);
     expect(
-      paymentFits({ side: "to", amount: 250, currency: "KRW" }, payment, 1),
+      paymentFits({ sender: "to", amount: 250, currency: "KRW" }, payment, 1),
     ).toBe(false);
   });
 });
@@ -458,7 +458,7 @@ describe("offers on a buy listing", () => {
     } satisfies ListingPayment,
   };
   const payment = (amount: number): TradePayment => ({
-    side: "from",
+    sender: "from",
     amount,
     currency: "USD",
   });

@@ -427,23 +427,16 @@ describe("itemStatus", () => {
 });
 
 describe("paymentStatus", () => {
-  const at = new Date("2026-11-20T00:00:00Z");
-
   test.each([
-    [null, null, "pending", "not_started"],
-    [null, null, "accepted", "waiting"],
-    [null, null, "disputed", "waiting"],
-    [null, null, "completed", "not_confirmed"],
-    [at, null, "accepted", "paid"],
-    [at, null, "cancelled", "paid"],
-    [at, at, "accepted", "confirmed"],
-    [null, at, "cancelled", "confirmed"],
-  ] as const)(
-    "marked paid at %p and confirmed at %p on a %s trade is %s",
-    (markedPaidAt, confirmedAt, status, expected) => {
-      expect(paymentStatus({ markedPaidAt, confirmedAt }, status)).toBe(
-        expected,
-      );
-    },
-  );
+    ["unpaid", "pending", "not_started"],
+    ["unpaid", "accepted", "waiting"],
+    ["unpaid", "disputed", "waiting"],
+    ["unpaid", "completed", "not_confirmed"],
+    ["marked", "accepted", "paid"],
+    ["marked", "cancelled", "paid"],
+    ["confirmed", "accepted", "confirmed"],
+    ["confirmed", "cancelled", "confirmed"],
+  ] as const)("a payment %s on a %s trade is %s", (stage, status, expected) => {
+    expect(paymentStatus(stage, status)).toBe(expected);
+  });
 });

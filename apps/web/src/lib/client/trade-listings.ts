@@ -16,12 +16,7 @@ import {
   type TradeRatio,
   type WantMatch,
 } from "@/lib/universal/trade-listings";
-import type {
-  DeadlineOwed,
-  TradeItemView,
-  TradePartyName,
-  TradePaymentView,
-} from "@/lib/universal/trades";
+import type { TradePartyName } from "@/lib/universal/trades";
 import {
   toUiArtist,
   type ValidArtist,
@@ -60,13 +55,6 @@ export function posterName(
  */
 export function partyName(party: TradePartyName) {
   return posterName({ poster: party.user, cosmoUsername: party.cosmoUsername });
-}
-
-/**
- * How many objekts the listing asks for.
- */
-export function wantedObjektCount(wants: readonly ListingFeedWant[]) {
-  return totalWanted(wants);
 }
 
 /**
@@ -319,7 +307,12 @@ export function optionTitle(option: OptionShown) {
 
 function withPriceBeside(rows: string, payment: ListingPayment | null) {
   const price = priceBeside(payment);
-  return price === null ? rows : `${rows} + ${price}`;
+  return price === null ? rows : withPayment(rows, price);
+}
+
+// a side's objekts with its payment added, "1 objekt + $3.00"
+export function withPayment(text: string, price: string) {
+  return `${text} + ${price}`;
 }
 
 /**
@@ -356,7 +349,7 @@ export function askingTitle(wants: readonly ListingFeedWant[]) {
   if (only !== undefined && wants.length === 1) {
     return wantLabel(only);
   }
-  return m.market_listings_objekts({ count: wantedObjektCount(wants) });
+  return m.market_listings_objekts({ count: totalWanted(wants) });
 }
 
 /**
@@ -538,9 +531,32 @@ export function listingRatio(
   if (units.kind === "pool" && !hasRatio(units.unitSize, posted)) return null;
   return {
     give: units.kind === "pool" ? units.unitSize : 0,
-    get: wantedObjektCount(listing.wants),
-    payment: listing.payment,
+    get: totalWanted(listing.wants),
+    payment: listing.payment && {
+      sender: listing.payment.side,
+      amount: listing.payment.amount,
+      currency: listing.payment.currency,
+    },
   };
+}
+
+/**
+ * The ratio a listing's pill shows (listingRatio()): only for one option without a payment, since several options trade at several ratios and a payment's ratio doesn't fit the pill.
+ */
+export function pillRatio(
+  listing: {
+    units: ListingUnits;
+    options: readonly {
+      wants: readonly ListingFeedWant[];
+      payment: ListingPayment | null;
+    }[];
+  },
+  posted: number,
+) {
+  const [first, ...others] = listing.options;
+  return first === undefined || others.length > 0 || first.payment !== null
+    ? null
+    : listingRatio({ units: listing.units, ...first }, posted);
 }
 
 /**
@@ -562,12 +578,12 @@ export function buyingText(units: Extract<ListingSize, { kind: "buy" }>) {
  */
 export function ratioSides({ give, get, payment }: TradeRatio) {
   const side = (count: number, sender: TradeSide) => {
-    if (payment === null || payment.side !== sender) return String(count);
+    if (payment === null || payment.sender !== sender) return String(count);
     const price =
       payment.amount === null
         ? m.listing_payment_offer()
         : formatAmount(payment.amount, payment.currency);
-    return count === 0 ? price : `${count} + ${price}`;
+    return count === 0 ? price : withPayment(String(count), price);
   };
   return { give: side(give, "from"), get: side(get, "to") };
 }
@@ -592,32 +608,12 @@ export function listingTypesOfListing(listing: {
   });
 }
 
-// what kind of listing it is, as its header names it
-export function listingKindLabel(type: ListingType) {
-  switch (type) {
-    case "trade":
-      return m.listing_detail_kind_trade();
-    case "sell":
-      return m.market_listings_sell();
-    case "buy":
-      return m.market_listings_buy();
-  }
-}
-
-/**
- * What a trade still owes, as a deadline dispute words it: objekts, an
- * unconfirmed payment, or both.
- */
-export function owedAtDeadline(trade: {
-  items: readonly Pick<TradeItemView, "status">[];
-  payment: Pick<TradePaymentView, "status"> | null;
-}): DeadlineOwed {
-  const objekts = trade.items.some((item) => item.status !== "sent");
-  const payment =
-    trade.payment !== null && trade.payment.status !== "confirmed";
-  if (objekts && payment) return "both";
-  return payment ? "payment" : "objekts";
-}
+// what kind of listing it is, as its badges and the feed's Type filter name it
+export const listingTypeLabels = {
+  trade: m.market_listings_trade,
+  sell: m.market_listings_sell,
+  buy: m.market_listings_buy,
+} satisfies Record<ListingType, () => string>;
 
 // a ratio as one line, "1 for $3.00"
 export function ratioText(ratio: TradeRatio) {
@@ -666,9 +662,7 @@ function rangesColumn<TValue extends string>(
  * row's column open when any of its ranges leaves it open. What the picker
  * lists comes from wantMatch().
  */
-export function wantScope(
-  want: Exclude<ListingFeedWant, { kind: "payment" }>,
-): PickerScope {
+export function wantScope(want: ListingFeedWant): PickerScope {
   if (want.kind === "range") {
     const values = <TValue extends string>(
       pick: (filter: RangeFilter) => readonly TValue[],
@@ -714,9 +708,7 @@ export function wantScope(
  * The collections a want row takes, as fitsWant() matches them: a range
  * row's ranges, or an exact or "any of" row's collections by slug.
  */
-export function wantMatch(
-  want: Exclude<ListingFeedWant, { kind: "payment" }>,
-): WantMatch {
+export function wantMatch(want: ListingFeedWant): WantMatch {
   switch (want.kind) {
     case "range":
       return { ranges: want.ranges, slugs: [] };

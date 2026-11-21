@@ -9,14 +9,10 @@ type Props = {
   /** whether it takes the whole pool however the pool changes */
   bundle: boolean;
   offered: number;
-  /** what the want rows and the claimer's payment ask for in total, "2 + $3.00" */
-  wanted: string;
   /**
-   * the want side: objekts or a price beside them, a price alone (a
-   * sale), or `offers`: no asking price, or several options, which shows
-   * no want side
+   * the want side: objekts or a price beside them, or a price alone (a sale), with what the want rows and the claimer's payment ask for in total, "2 + $3.00"; or `offers`: no asking price, or several options, which shows no want side
    */
-  wants: "objekts" | "price" | "offers";
+  want: { kind: "offers" } | { kind: "objekts" | "price"; text: string };
   onChange: (unitSize: number) => void;
 };
 
@@ -36,8 +32,7 @@ export default function ComposerRatio({
   unitSize,
   bundle,
   offered,
-  wanted,
-  wants,
+  want,
   onChange,
 }: Props) {
   const titleId = useId();
@@ -68,7 +63,7 @@ export default function ComposerRatio({
             valueClassName="text-teal-700 dark:text-teal-500"
             onStep={(delta) => onChange(unitSize + delta)}
           />
-          {wants !== "offers" && (
+          {want.kind !== "offers" && (
             <>
               <span
                 aria-hidden
@@ -77,7 +72,7 @@ export default function ComposerRatio({
                 :
               </span>
               <span className="min-w-9 text-center font-mono text-2xl font-bold text-amber-700 tabular-nums dark:text-amber-500">
-                {wanted}
+                {want.text}
               </span>
             </>
           )}
@@ -85,7 +80,7 @@ export default function ComposerRatio({
       </div>
       <div className="flex min-w-0 flex-[1_1_20rem] flex-col gap-1 text-sm leading-relaxed">
         <p>
-          {wants === "offers" ? (
+          {want.kind === "offers" ? (
             <ParaglideMessage
               message={m.listing_composer_ratio_each_offer}
               inputs={{ give: unitSize }}
@@ -94,11 +89,11 @@ export default function ComposerRatio({
           ) : (
             <ParaglideMessage
               message={
-                wants === "price"
+                want.kind === "price"
                   ? m.listing_composer_ratio_each_price
                   : m.listing_composer_ratio_each
               }
-              inputs={{ give: unitSize, get: wanted }}
+              inputs={{ give: unitSize, get: want.text }}
               markup={{ b: Bold }}
             />
           )}
@@ -113,7 +108,7 @@ export default function ComposerRatio({
               ? m.listing_composer_ratio_bundle({ offered })
               : unitSize === offered
                 ? m.listing_composer_ratio_held({ offered })
-                : wants === "offers"
+                : want.kind === "offers"
                   ? m.listing_composer_ratio_times_offer({
                       count: Math.floor(offered / unitSize),
                       offered,
@@ -121,7 +116,7 @@ export default function ComposerRatio({
                   : m.listing_composer_ratio_times({
                       count: Math.floor(offered / unitSize),
                       offered,
-                      wanted,
+                      wanted: want.text,
                     })}
           </p>
         )}

@@ -1,7 +1,7 @@
 import { m } from "@/i18n/messages";
 import type { TradeItemView, TradeView } from "@/lib/universal/trades";
 import type { TradeSide } from "@apollo/database/web/types";
-import { otherSide } from "@apollo/trades/lifecycle";
+import { otherSide, type TradePart } from "@apollo/trades/lifecycle";
 import { formatSerial } from "@apollo/util";
 import { formatError } from "./errors";
 import {
@@ -120,16 +120,19 @@ export function formatOfferError(
  */
 export type AcceptPayment = "paid_only" | "paid" | "paying";
 
+const acceptPayments = {
+  send: null,
+  pay: "paid_only",
+  send_pay: "paid",
+} as const satisfies Record<TradePart, AcceptPayment | null>;
+
 /**
- * How accepting the offer splits its payment, from the viewer's side, the
- * payment's sender and whether that sender also gives objekts. Null
- * without a payment.
+ * How accepting the offer splits its payment, from the viewer's part and
+ * the other side's (TradePart). Null without a payment.
  */
 export function acceptPayment(
-  side: TradeSide,
-  payment: { sender: TradeSide; sendsObjekts: boolean } | null,
+  you: TradePart,
+  them: TradePart,
 ): AcceptPayment | null {
-  if (payment === null) return null;
-  if (payment.sender === side) return "paying";
-  return payment.sendsObjekts ? "paid" : "paid_only";
+  return you === "send" ? acceptPayments[them] : "paying";
 }

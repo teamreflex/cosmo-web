@@ -761,7 +761,6 @@
   "trade_page_event_accepted_staff": "{#b}{claimer}{/b} accepted {#b}{poster}{/b}'s listing.",
   "trade_page_event_extended_staff": "{appName} staff gave both parties until {#time}{when}{/time}.",
   "listing_detail_title": "Trade",
-  "listing_detail_kind_trade": "Trade",
   "listing_detail_posted": "posted {#time}{when}{/time}",
   "listing_detail_error": "Couldn't load this listing.",
   "listing_detail_you_get": "You get · {count}",

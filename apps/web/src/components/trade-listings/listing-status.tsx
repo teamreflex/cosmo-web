@@ -194,7 +194,7 @@ export function ClaimerCard({
  */
 function claimerNext(size: TradeRatio, poster: string) {
   const appName = env.VITE_APP_NAME;
-  const paid = size.payment?.side === "to" ? size.payment : null;
+  const paid = size.payment?.sender === "to" ? size.payment : null;
   if (paid === null) {
     return m.listing_detail_claimer_body({ count: size.get, poster, appName });
   }

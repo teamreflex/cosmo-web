@@ -72,15 +72,15 @@ export const Route = createFileRoute("/market/listing/$id")({
         )
         .catch(noop);
     }
-    // one batch per option, each within the request's MAX_WANT_ROWS
-    for (const option of listing.options) {
-      for (const query of rangeMatchCountQueries(
+    // every option's range rows in one request
+    for (const query of rangeMatchCountQueries(
+      listing.options.flatMap((option) =>
         option.wants.flatMap((want) =>
           want.kind === "range" ? [want.ranges] : [],
         ),
-      )) {
-        void context.queryClient.query(query).catch(noop);
-      }
+      ),
+    )) {
+      void context.queryClient.query(query).catch(noop);
     }
 
     return { id };

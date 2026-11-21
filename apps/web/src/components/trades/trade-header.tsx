@@ -10,7 +10,7 @@ import { cn } from "@/lib/utils";
 import type { OpenTradeStatus, TradeSide } from "@apollo/database/web/types";
 import {
   isOpenTrade,
-  needsYou,
+  nextStep,
   otherSide,
   type TradeState,
 } from "@apollo/trades/lifecycle";
@@ -79,7 +79,8 @@ export default function TradeHeader({ trade, side }: Props) {
           <span className="ml-auto flex shrink-0 items-center gap-2 text-sm text-muted-foreground">
             {side !== null &&
               trade.stage === "offer" &&
-              needsYou(trade.state, side, { deadlinePassed: false }) && (
+              nextStep(trade.state, side, { deadlinePassed: false }) !==
+                null && (
                 <span className="font-medium text-amber-700 dark:text-amber-400">
                   {m.trade_page_offer_waiting_for_you()}
                 </span>

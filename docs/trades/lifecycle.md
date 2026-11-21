@@ -111,8 +111,9 @@ Staff act through `lib/functions/staff-trades.ts` and `actOnTrade()` in `lib/ser
 - Both run `closeOpenOffers()` inside the ban's or the deletion's transaction, after the users are locked.
 - How a ban works, and when it is refused `ban_trade_party`, is in [docs/auth.md](../auth.md#ban). How deletion works is in [docs/accounts.md](../accounts.md#account-deletion).
 
-## Item status and "needs you"
+## Item status and next steps
 
 - `itemStatus()` in `transfers.ts` is what the trade page shows per objekt: `sent` (the drain recorded it), `arrived` (at its receiver before the drain saw it), `waiting`, `not_started` (pending offer), `moved`, `untransferable`, or `not_sent` on an ended trade.
 - `paymentStatus()` is the same for a payment: `confirmed`, `paid` (marked by its sender), `waiting`, `not_started` or `not_confirmed`, since Apollo never sees the money move.
-- `needsYou()` decides what My trades marks as waiting on you: answering a pending offer you didn't propose, or on an accepted trade before its deadline passes the watermark, sending a token you still owe, marking paid a payment you send, or confirming a payment you are owed.
+- `nextStep()` decides what My trades marks as waiting on you, and which step it names: answering a pending offer you didn't propose, or on an accepted trade before its deadline passes the watermark, sending the tokens you still owe, then marking paid a payment you send, or confirming a payment you are owed.
+- The trade page offers Mark paid and Confirm received where `partyAction()` allows them, as it does Cancel and Open dispute.

@@ -5,6 +5,7 @@ import { formatCount } from "@/lib/client/trade-listings";
 import { env } from "@/lib/env/client";
 import { formatPercentPositive } from "@/lib/universal/feedback";
 import { cn } from "@/lib/utils";
+import type { ListingType } from "@apollo/trades/listing";
 import { CLAIM_WINDOW } from "@apollo/trades/timers";
 import { ParaglideMessage } from "@inlang/paraglide-js-react";
 import {
@@ -245,8 +246,6 @@ export function WantExampleArt({ kind }: { kind: WantKind }) {
   );
 }
 
-export type ListingKind = "trade" | "sell" | "buy";
-
 // the example price, the same in every locale
 const PRICE = "$3";
 
@@ -276,7 +275,7 @@ const LISTING_EXAMPLES = {
     caption: () => m.market_notice_listing_buy_example({ price: PRICE }),
   },
 } satisfies Record<
-  ListingKind,
+  ListingType,
   {
     ratio: string;
     offer:
@@ -288,7 +287,7 @@ const LISTING_EXAMPLES = {
 >;
 
 // what a trade, a sale and a purchase each swap, with a caption
-export function ListingKindArt({ kind }: { kind: ListingKind }) {
+export function ListingKindArt({ kind }: { kind: ListingType }) {
   const example = LISTING_EXAMPLES[kind];
 
   return (

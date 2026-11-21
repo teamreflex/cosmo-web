@@ -97,7 +97,7 @@ describe("feedbackScored", () => {
         cancelledBy: "staff",
         items: [
           objekt("from"),
-          { kind: "payment", sender: "to", markedPaid: false, confirmed: true },
+          { kind: "payment", sender: "to", stage: "confirmed" },
         ],
       }),
     ).toBe(true);
@@ -162,7 +162,7 @@ describe("feedback roles", () => {
   test("a sale: the side sending only the payment is the buyer", () => {
     const items: TradeItemState[] = [
       objekt("from"),
-      { kind: "payment", sender: "to", markedPaid: false, confirmed: false },
+      { kind: "payment", sender: "to", stage: "unpaid" },
     ];
     expect(feedbackRole(items, "from")).toBe("seller");
     expect(feedbackRole(items, "to")).toBe("buyer");
@@ -172,7 +172,7 @@ describe("feedback roles", () => {
     const items: TradeItemState[] = [
       objekt("to"),
       objekt("to"),
-      { kind: "payment", sender: "from", markedPaid: false, confirmed: false },
+      { kind: "payment", sender: "from", stage: "unpaid" },
     ];
     expect(feedbackRole(items, "from")).toBe("buyer");
     expect(feedbackRole(items, "to")).toBe("seller");
@@ -185,7 +185,7 @@ describe("feedback roles", () => {
     const items: TradeItemState[] = [
       objekt("from"),
       objekt("to"),
-      { kind: "payment", sender, markedPaid: false, confirmed: false },
+      { kind: "payment", sender, stage: "unpaid" },
     ];
     expect(feedbackRole(items, "from")).toBe("trader");
     expect(feedbackRole(items, "to")).toBe("trader");

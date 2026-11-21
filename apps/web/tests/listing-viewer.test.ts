@@ -27,7 +27,6 @@ import {
   shownPosterTab,
   takenPick,
   toggleOffered,
-  tradeListingOption,
 } from "../src/lib/universal/trade-listings";
 import type { TradeParty } from "../src/lib/universal/trades";
 
@@ -195,7 +194,7 @@ describe("whether the poster can accept an offer", () => {
     const offer = {
       picks: [],
       units: 1,
-      payment: { side: "from", amount: 300, currency: "USD" },
+      payment: { sender: "from", amount: 300, currency: "USD" },
     } satisfies Partial<Parameters<typeof offerRefusal>[0]>;
     const listing = (taken: number) =>
       ({
@@ -218,7 +217,7 @@ describe("whether the poster can accept an offer", () => {
             ...offer,
             units: 2,
             given: [10, 11],
-            payment: { side: "from", amount: 600, currency: "USD" },
+            payment: { sender: "from", amount: 600, currency: "USD" },
           },
           tokens: {
             states: new Map([
@@ -311,7 +310,7 @@ describe("whether the poster can accept an offer", () => {
   const offered = (amount: number, currency = "USD") =>
     ({
       given: [],
-      payment: { side: "to", amount, currency },
+      payment: { sender: "to", amount, currency },
     }) satisfies Partial<Parameters<typeof offerRefusal>[0]>;
 
   test("a sale's offer gives no objekts and is judged on its amount", () => {
@@ -568,9 +567,7 @@ const trade = (
         ...base,
         status,
         deadlineAt: new Date(0),
-        toSend: tokenIds.length,
-        toMarkPaid: false,
-        needsYou: true,
+        nextStep: { kind: "send", count: tokenIds.length },
       };
     case "disputed":
       return {
@@ -686,6 +683,7 @@ describe("the poster's tabs", () => {
       picks: [],
       given: [],
       payment: null,
+      parts: { from: "send", to: "send" },
       expiresAt: new Date(0),
       refusal: null,
     })),
@@ -825,9 +823,4 @@ describe("a listing's options", () => {
       listingOptions({ ...paid, offers: "offer_only" }, [pay(0)]),
     ).toThrow();
   });
-});
-
-test("a trade from a listing with no option recorded gave option 0", () => {
-  expect(tradeListingOption({ listingOption: null })).toBe(0);
-  expect(tradeListingOption({ listingOption: 2 })).toBe(2);
 });

@@ -4,26 +4,22 @@ import {
   type OpenTradeStatus,
   openTradeStatuses,
   type TradeCanceller,
+  type TradeItemKind,
   type TradeOffer,
   type TradeOfferItem,
   type TradeSide,
   type TradeStatus,
   type TradeWantKind,
 } from "@apollo/database/web/types";
-import type { ListingPayment, TradePayment } from "./payment";
+import type { ListingPayment, PaymentStage, TradePayment } from "./payment";
 
 export type TradeItemState =
   | { kind: "objekt"; sender: TradeSide; transferred: boolean }
   /**
-   * `markedPaid` is the sender's word that they paid, which settles nothing:
-   * only the recipient's confirmation does.
+   * A payment marked paid has only its sender's word that they paid, which
+   * settles nothing: only the recipient's confirmation does.
    */
-  | {
-      kind: "payment";
-      sender: TradeSide;
-      markedPaid: boolean;
-      confirmed: boolean;
-    };
+  | { kind: "payment"; sender: TradeSide; stage: PaymentStage };
 
 /**
  * A trade's status and what each of its items has done, which is all a
@@ -133,14 +129,7 @@ export function transition(
 export type PartyActionRefusal = TransitionRefusal | "deadline_passed";
 
 /**
- * A party cancelling, disputing, marking a payment it sent paid or
- * confirming one it received, judged
- * with what the trade's row doesn't hold: whether its deadline has passed
- * the drain's watermark, and whether a token has reached its receiver
- * before the drain recorded it. A trade that moved on is refused first,
- * then one past its deadline, then a cancel once anything has started. A
- * disputed trade's clock is stopped, so its caller passes the deadline as
- * not passed.
+ * A party cancelling, disputing, marking a payment it sent paid or confirming one it received, judged with what the trade's row doesn't hold: whether its deadline has passed the drain's watermark, and whether a token has reached its receiver before the drain recorded it. A trade that moved on is refused first, then one past its deadline, then a cancel once anything has started. A disputed trade's clock is stopped, so its caller passes the deadline as not passed.
  */
 export function partyAction(
   trade: TradeState,
@@ -214,21 +203,21 @@ function updateItem(
     case "mark_paid":
       if (item?.kind !== "payment") return refuse("no_such_item");
       if (event.by !== item.sender) return refuse("wrong_party");
-      if (item.markedPaid || item.confirmed) return refuse("already_done");
+      if (item.stage !== "unpaid") return refuse("already_done");
       return {
         ok: true,
         trade: {
           status,
-          items: items.with(event.item, { ...item, markedPaid: true }),
+          items: items.with(event.item, { ...item, stage: "marked" }),
         },
       };
     case "confirm_payment":
       if (item?.kind !== "payment") return refuse("no_such_item");
       if (event.by === item.sender) return refuse("wrong_party");
-      if (item.confirmed) return refuse("already_done");
+      if (item.stage === "confirmed") return refuse("already_done");
       return settle(
         status,
-        items.with(event.item, { ...item, confirmed: true }),
+        items.with(event.item, { ...item, stage: "confirmed" }),
       );
   }
 }
@@ -257,7 +246,7 @@ function endEarly(
           (item) =>
             item.kind === "payment" &&
             item.sender !== event.by &&
-            !item.confirmed,
+            item.stage !== "confirmed",
         )
       ) {
         return refuse("payment_due");
@@ -333,7 +322,7 @@ function settle(
  * also what counts as started: a payment is owed until it is confirmed.
  */
 export function isDone(item: TradeItemState) {
-  return item.kind === "objekt" ? item.transferred : item.confirmed;
+  return item.kind === "objekt" ? item.transferred : item.stage === "confirmed";
 }
 
 /**
@@ -342,7 +331,24 @@ export function isDone(item: TradeItemState) {
  * deadline counts the mark; completing and cancelling go by isDone().
  */
 function isDelivered(item: TradeItemState) {
-  return isDone(item) || (item.kind === "payment" && item.markedPaid);
+  return item.kind === "payment" ? item.stage !== "unpaid" : isDone(item);
+}
+
+/**
+ * What a trade still owes, as a deadline dispute words it: objekts that
+ * haven't arrived, a payment its recipient hasn't confirmed (a paid mark
+ * owes it still), or both. A trade without a payment reads as owing
+ * objekts.
+ */
+export type DeadlineOwed = "objekts" | "payment" | "both";
+
+export function owedAtDeadline(items: readonly TradeItemState[]): DeadlineOwed {
+  const owes = (kind: TradeItemKind) =>
+    items.some((item) => item.kind === kind && !isDone(item));
+  const objekts = owes("objekt");
+  const payment = owes("payment");
+  if (objekts && payment) return "both";
+  return payment ? "payment" : "objekts";
 }
 
 /**
@@ -386,6 +392,51 @@ export function proposerId(
     throw new Error(`offer ${row.id} has no proposed_by`);
   }
   return row.proposedBy === "from" ? row.fromUserId : row.toUserId;
+}
+
+/**
+ * What one side of a trade does: sends objekts (`send`), pays and sends
+ * nothing else (`pay`), or sends objekts and pays beside them (`send_pay`).
+ * A side without a payment sends objekts.
+ */
+export type TradePart = "send" | "pay" | "send_pay";
+
+// what each side of a trade does
+export type TradeParts = Record<TradeSide, TradePart>;
+
+function tradePart(sends: boolean, pays: boolean): TradePart {
+  if (!pays) return "send";
+  return sends ? "send_pay" : "pay";
+}
+
+// each side's part (TradePart) in a trade, from its items
+export function tradeParts(
+  items: readonly { kind: TradeItemKind; sender: TradeSide }[],
+) {
+  const part = (side: TradeSide) =>
+    tradePart(
+      items.some((item) => item.kind === "objekt" && item.sender === side),
+      items.some((item) => item.kind === "payment" && item.sender === side),
+    );
+  return { from: part("from"), to: part("to") } satisfies TradeParts;
+}
+
+/**
+ * Each side's part (TradePart) in the trade one of a listing's options
+ * would start, before it exists: the poster sends from a pool listing's
+ * pool, and pays when the payment is theirs, alone on a buy listing; the
+ * claimer sends the option's objekt rows, and pays when the option asks
+ * for the claimer's payment.
+ */
+export function listingParts(option: {
+  units: ListingUnits["kind"];
+  paymentSide: TradeSide | null;
+  objektWants: number;
+}) {
+  return {
+    from: tradePart(option.units === "pool", option.paymentSide === "from"),
+    to: tradePart(option.objektWants > 0, option.paymentSide === "to"),
+  } satisfies TradeParts;
 }
 
 /**
@@ -442,31 +493,44 @@ export function editUnitsRefusal(
 }
 
 /**
- * Whether the side has to act: the side that didn't propose a pending offer
- * answers it, and on an accepted trade a side sends a token it still owes,
- * marks paid a payment it sends, or confirms a payment it is owed. Once an
- * accepted trade's deadline has passed the drain's watermark none of it
- * counts, so nothing more is asked. Nothing else needs anyone.
+ * What a side has to do next on a trade: answer a pending offer it didn't
+ * propose, or on an accepted trade send the tokens it still owes (`count`
+ * of them), then mark paid a payment it sends, or confirm a payment it is
+ * owed.
  */
-export function needsYou(
+export type NextStep =
+  | { kind: "answer" }
+  | { kind: "send"; count: number }
+  | { kind: "mark_paid" }
+  | { kind: "confirm" };
+
+/**
+ * The side's next step (NextStep), or null when nothing is asked of it.
+ * Once an accepted trade's deadline has passed the drain's watermark none
+ * of it counts, so nothing more is asked. Nothing else needs anyone.
+ */
+export function nextStep(
   state: TradeState,
   side: TradeSide,
   facts: { deadlinePassed: boolean },
-) {
+): NextStep | null {
   switch (state.status) {
     case "pending":
-      return side !== state.proposedBy;
-    case "accepted":
-      return (
-        !facts.deadlinePassed &&
-        state.items.some((item) =>
-          item.kind === "objekt"
-            ? item.sender === side && !item.transferred
-            : !item.confirmed && (item.sender !== side || !item.markedPaid),
-        )
-      );
+      return side === state.proposedBy ? null : { kind: "answer" };
+    case "accepted": {
+      if (facts.deadlinePassed) return null;
+      const count = state.items.filter(
+        (item) =>
+          item.kind === "objekt" && item.sender === side && !item.transferred,
+      ).length;
+      if (count > 0) return { kind: "send", count };
+      const payment = state.items.find((item) => item.kind === "payment");
+      if (payment === undefined || payment.stage === "confirmed") return null;
+      if (payment.sender !== side) return { kind: "confirm" };
+      return payment.stage === "marked" ? null : { kind: "mark_paid" };
+    }
     default:
-      return false;
+      return null;
   }
 }
 
@@ -623,7 +687,7 @@ export function claimTerms(
     return proposed === undefined ? { kind, payment: null } : null;
   }
   const at = (amount: number): TradePayment => ({
-    side: payment.side,
+    sender: payment.side,
     currency: payment.currency,
     amount,
   });
@@ -682,6 +746,32 @@ export function tradeListingId(
   return items.find((item) => item.listingId !== null)?.listingId ?? null;
 }
 
+// a stored item as transitions take it (TradeItemState)
+export function tradeItemState(
+  item: Pick<
+    TradeOfferItem,
+    "kind" | "sender" | "transferredAt" | "markedPaidAt" | "confirmedAt"
+  >,
+): TradeItemState {
+  if (item.kind === "objekt") {
+    return {
+      kind: "objekt",
+      sender: item.sender,
+      transferred: item.transferredAt !== null,
+    };
+  }
+  return {
+    kind: "payment",
+    sender: item.sender,
+    stage:
+      item.confirmedAt !== null
+        ? "confirmed"
+        : item.markedPaidAt === null
+          ? "unpaid"
+          : "marked",
+  };
+}
+
 /**
  * Read a trade and its items, in id order, into the state transitions take.
  * A pending offer offers on a listing when any of its items came from one.
@@ -701,20 +791,7 @@ export function tradeState(
     | "confirmedAt"
   >[],
 ): TradeState {
-  const items = rows.map((item): TradeItemState =>
-    item.kind === "objekt"
-      ? {
-          kind: "objekt",
-          sender: item.sender,
-          transferred: item.transferredAt !== null,
-        }
-      : {
-          kind: "payment",
-          sender: item.sender,
-          markedPaid: item.markedPaidAt !== null,
-          confirmed: item.confirmedAt !== null,
-        },
-  );
+  const items = rows.map(tradeItemState);
 
   switch (row.status) {
     case "cancelled":

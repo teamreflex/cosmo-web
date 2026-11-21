@@ -601,6 +601,30 @@ describe("payments in the composer", () => {
     expect(two([[exact], [{ kind: "payment", amount: "3.001" }]])).toBe(
       "payment_amount",
     );
+    // slugs compare as the schema reads them, and an "any of" row in any order
+    expect(two([[exact], [{ ...exact, slug: " A " }]])).toBe("option_repeated");
+    const choice = { kind: "choice" as const, slugs: ["a", "b"], count: 1 };
+    expect(two([[choice], [{ ...choice, slugs: ["b", "a"] }]])).toBe(
+      "option_repeated",
+    );
+    expect(two([[choice], [{ ...choice, count: 2 }]])).toBeNull();
+    // two rows with no asking price ask for the same offer
+    expect(
+      block({
+        offered: offered(1),
+        unitSize: undefined,
+        options: [
+          [{ kind: "payment", amount: undefined }],
+          [{ kind: "payment", amount: undefined }],
+        ],
+        offeredPayment: undefined,
+        payment: {
+          ...payment,
+          methods: [...payment.methods],
+          mode: "offer_only",
+        },
+      }),
+    ).toBe("option_repeated");
   });
 
   test.each([

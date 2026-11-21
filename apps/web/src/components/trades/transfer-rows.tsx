@@ -15,7 +15,7 @@ import type {
 } from "@/lib/universal/trades";
 import { cn } from "@/lib/utils";
 import type { TradeSide } from "@apollo/database/web/types";
-import { otherSide } from "@apollo/trades/lifecycle";
+import { otherSide, partyAction } from "@apollo/trades/lifecycle";
 import type { PaymentStatus, TradeItemStatus } from "@apollo/trades/transfers";
 import { formatSerial } from "@apollo/util";
 import { IconCash, IconExternalLink, IconLock } from "@tabler/icons-react";
@@ -99,17 +99,7 @@ export default function TransferRows({ trade, side, children }: Props) {
                 />
               ))}
               {payment !== null && (
-                <PaymentRow
-                  trade={trade}
-                  payment={payment}
-                  role={
-                    side === sender
-                      ? "payer"
-                      : side === otherSide(sender)
-                        ? "recipient"
-                        : null
-                  }
-                />
+                <PaymentRow trade={trade} payment={payment} side={side} />
               )}
             </ul>
           </div>
@@ -123,56 +113,63 @@ export default function TransferRows({ trade, side, children }: Props) {
 /**
  * The trade's payment: its amount for every unit, when its recipient marked
  * it received and by which method, or when its sender marked it paid, and
- * while the trade still counts it, Mark paid for the sender until they do
- * and Confirm received for the recipient until they do.
+ * Mark paid for the sender and Confirm received for the recipient wherever
+ * the server would allow them, the same judgement it makes, so a refused
+ * action refetches into a row that no longer offers it.
  */
 function PaymentRow({
   trade,
   payment,
-  role,
+  side,
 }: {
   trade: TradeView;
   payment: TradePaymentView;
-  /** the viewer's part in the payment, or null for staff */
-  role: "payer" | "recipient" | null;
+  /** the viewer's side, or null for staff */
+  side: TradeSide | null;
 }) {
   const [open, setOpen] = useState(false);
-  const live =
-    trade.stage === "trade" &&
-    !trade.deadlinePassed &&
-    (trade.state.status === "accepted" || trade.state.status === "disputed");
+  const offered = (type: "mark_paid" | "confirm_payment") =>
+    side !== null &&
+    partyAction(
+      trade.state,
+      {
+        type,
+        item: trade.state.items.findIndex((item) => item.kind === "payment"),
+        by: side,
+      },
+      {
+        deadlinePassed: trade.stage === "trade" && trade.deadlinePassed,
+        arrived: trade.items.some((item) => item.status === "arrived"),
+      },
+    ).ok;
+  const { progress } = payment;
   const when =
-    payment.status === "confirmed" ? (
-      <Timestamp date={payment.confirmedAt} format={tradeTimeFormat} />
-    ) : payment.status === "paid" ? (
-      <Timestamp date={payment.markedPaidAt} format={tradeTimeFormat} />
-    ) : null;
+    progress.stage === "unpaid" ? null : (
+      <Timestamp date={progress.at} format={tradeTimeFormat} />
+    );
 
-  const action =
-    role === "payer" && live && payment.status === "waiting" ? (
-      <MarkPaidDialog
+  const action = offered("mark_paid") ? (
+    <MarkPaidDialog
+      tradeId={trade.id}
+      listingId={trade.listingId}
+      payment={payment}
+    />
+  ) : offered("confirm_payment") ? (
+    <>
+      <Button size="sm" onClick={() => setOpen(true)}>
+        {m.trade_page_payment_mark_received()}
+      </Button>
+      <ConfirmPaymentDialog
         tradeId={trade.id}
         listingId={trade.listingId}
         payment={payment}
+        methods={trade.paymentMethods}
+        name={partyName(trade.parties[payment.sender])}
+        open={open}
+        onOpenChange={setOpen}
       />
-    ) : role === "recipient" &&
-      live &&
-      (payment.status === "waiting" || payment.status === "paid") ? (
-      <>
-        <Button size="sm" onClick={() => setOpen(true)}>
-          {m.trade_page_payment_mark_received()}
-        </Button>
-        <ConfirmPaymentDialog
-          tradeId={trade.id}
-          listingId={trade.listingId}
-          payment={payment}
-          methods={trade.paymentMethods}
-          name={partyName(trade.parties[payment.sender])}
-          open={open}
-          onOpenChange={setOpen}
-        />
-      </>
-    ) : null;
+    </>
+  ) : null;
 
   return (
     <li className="flex items-center gap-3 border-t border-border/60 px-4 py-2.5">
@@ -185,10 +182,10 @@ function PaymentRow({
           <span className="font-mono font-semibold tabular-nums">
             {formatAmount(payment.amount, payment.currency)}
           </span>
-          {payment.status === "confirmed" && (
+          {progress.stage === "confirmed" && (
             <span className="text-xs text-muted-foreground">
               {m.trade_page_payment_via({
-                method: paymentMethodLabel(payment.method),
+                method: paymentMethodLabel(progress.method),
               })}
             </span>
           )}
@@ -207,7 +204,7 @@ function PaymentRow({
       <span className="w-32 shrink-0 text-right text-xs text-muted-foreground tabular-nums @max-lg:hidden">
         {when}
       </span>
-      <PaymentBadge status={payment.status} />
+      <ItemBadge {...paymentBadges[payment.status]} />
       {/* the objekt rows' transfer link column, so the badges line up */}
       <span className="size-8 shrink-0 @max-lg:hidden" />
     </li>
@@ -217,8 +214,7 @@ function PaymentRow({
 const paymentBadges = {
   confirmed: {
     label: m.trade_page_payment_received,
-    className:
-      "border-transparent bg-teal-500/10 text-teal-700 dark:text-teal-500",
+    className: tones.teal,
   },
   // the sender's word, which settles nothing until the recipient confirms
   paid: {
@@ -227,7 +223,7 @@ const paymentBadges = {
   },
   waiting: {
     label: m.trade_page_payment_not_paid,
-    className: "border-amber-500/40 text-amber-700 dark:text-amber-400",
+    className: tones.waiting,
   },
   not_started: {
     label: m.trade_page_item_not_started,
@@ -238,15 +234,6 @@ const paymentBadges = {
     className: tones.muted,
   },
 } satisfies Record<PaymentStatus, { label: () => string; className: string }>;
-
-function PaymentBadge({ status }: { status: PaymentStatus }) {
-  const { label, className } = paymentBadges[status];
-  return (
-    <Badge variant="outline" className={cn("shrink-0", className)}>
-      {label()}
-    </Badge>
-  );
-}
 
 /**
  * One objekt's transfer. A narrow list, on phones or beside the admin
@@ -314,7 +301,7 @@ function TransferRow({
       <span className="w-32 shrink-0 text-right text-xs text-muted-foreground tabular-nums @max-lg:hidden">
         {when}
       </span>
-      <StatusBadge status={status} />
+      <ItemBadge {...statusBadges[status]} />
       {item.txHash === null ? (
         <span className="size-8 shrink-0 @max-lg:hidden" />
       ) : (
@@ -363,8 +350,7 @@ function Thumbnail({ collection }: { collection: Objekt.Collection | null }) {
 const statusBadges = {
   sent: {
     label: m.trade_page_item_sent,
-    className:
-      "border-transparent bg-teal-500/10 text-teal-700 dark:text-teal-500",
+    className: tones.teal,
   },
   arrived: {
     label: m.trade_page_item_arrived,
@@ -372,7 +358,7 @@ const statusBadges = {
   },
   waiting: {
     label: m.trade_page_item_waiting,
-    className: "border-amber-500/40 text-amber-700 dark:text-amber-400",
+    className: tones.waiting,
   },
   moved: {
     label: m.trade_page_item_moved,
@@ -393,8 +379,14 @@ const statusBadges = {
   },
 } satisfies Record<TradeItemStatus, { label: () => string; className: string }>;
 
-function StatusBadge({ status }: { status: TradeItemStatus }) {
-  const { label, className } = statusBadges[status];
+// a payment's or an objekt's status at the end of its row
+function ItemBadge({
+  label,
+  className,
+}: {
+  label: () => string;
+  className: string;
+}) {
   return (
     <Badge variant="outline" className={cn("shrink-0", className)}>
       {label()}

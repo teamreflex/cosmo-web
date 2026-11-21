@@ -7,7 +7,6 @@ import {
   optionTitle,
   optionTitles,
   paymentMethodsText,
-  wantedObjektCount,
   wantKindsSummary,
   wantLabel,
 } from "@/lib/client/trade-listings";
@@ -17,9 +16,11 @@ import type {
   ListingOption,
   WantsHeading,
 } from "@/lib/universal/trade-listings";
+import { cn } from "@/lib/utils";
+import { totalWanted } from "@apollo/trades/composer";
 import type { ListingPayment } from "@apollo/trades/payment";
 import type { ObjektAttributes } from "@apollo/trades/range";
-import { Fragment, type ReactNode } from "react";
+import { type ComponentProps, Fragment, type ReactNode } from "react";
 import { ObjektCount, ObjektSidebar } from "../objekt/common";
 import ExpandableObjekt from "../objekt/objekt-expandable";
 import { Badge } from "../ui/badge";
@@ -105,6 +106,23 @@ export function PaymentLabel({
   );
 }
 
+// a listing's payment (PaymentLabel()) in its own box among the want and offer groups
+export function PaymentBox({
+  className,
+  ...label
+}: ComponentProps<typeof PaymentLabel> & { className?: string }) {
+  return (
+    <div
+      className={cn(
+        "rounded-lg border border-border bg-card px-4 py-3 text-sm",
+        className,
+      )}
+    >
+      <PaymentLabel {...label} />
+    </div>
+  );
+}
+
 function WantCount({ count }: { count: number }) {
   return (
     <span className="me-2 font-mono font-bold text-amber-700 tabular-nums dark:text-amber-500">
@@ -149,7 +167,7 @@ export function WantList({
             count:
               only.wants.length === 0 && paid !== null
                 ? askingPriceText(paid)
-                : wantedObjektCount(only.wants),
+                : totalWanted(only.wants),
           })}
           summary={summary ?? wantKindsSummary(only.wants, only.payment)}
         />
@@ -278,11 +296,7 @@ function WantRows({
         </div>
       ))}
       {/* the payment comes last, as the composer keeps it */}
-      {payment !== null && (
-        <div className="rounded-lg border border-border bg-card px-4 py-3 text-sm">
-          <PaymentLabel payment={payment} />
-        </div>
-      )}
+      {payment !== null && <PaymentBox payment={payment} />}
     </>
   );
 }

@@ -284,7 +284,7 @@ export function paymentFits(
 ) {
   if (offer === null || listing === null) return offer === listing;
   return (
-    offer.side === listing.side &&
+    offer.sender === listing.side &&
     offer.currency === listing.currency &&
     (listing.mode !== "price_only" || offer.amount === listing.amount * units)
   );

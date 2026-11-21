@@ -17,12 +17,17 @@ import { tradesKey } from "@/lib/queries/trades";
 import type { Objekt } from "@/lib/universal/objekt-conversion";
 import {
   type ListingAt,
+  optionParts,
   poolItems,
   type TokenRefusalReason,
 } from "@/lib/universal/trade-listings";
 import { cn } from "@/lib/utils";
 import type { TradeSide } from "@apollo/database/web/types";
-import { claimTerms } from "@apollo/trades/lifecycle";
+import {
+  claimTerms,
+  type TradePart,
+  type TradeParts,
+} from "@apollo/trades/lifecycle";
 import {
   amountSchema,
   type ListingPayment,
@@ -51,14 +56,14 @@ import {
   DialogDescription,
   DialogTitle,
 } from "../ui/dialog";
-import { Input } from "../ui/input";
 import { Label } from "../ui/label";
 import { Spinner } from "../ui/spinner";
 import { Timestamp } from "../ui/timestamp";
+import { AmountField } from "./composer-payment";
 import type { Notice } from "./listing-status";
 import { ExactBadges, RangeBadges } from "./range-want";
 import { Eyebrow } from "./side-heading";
-import { PaymentLabel } from "./want-label";
+import { PaymentBox } from "./want-label";
 
 type Props = {
   listing: ListingAt;
@@ -108,6 +113,7 @@ export default function ConfirmTradeDialog({
   const [failure, setFailure] = useState<ClaimFailure | null>(null);
   const confirming = useRef(false);
   const poster = posterName(listing);
+  const parts = optionParts(listing);
   const { amount, setAmount, proposing, invalid, sent, ready, offers, endsAt } =
     useOfferTerms(listing, snapshot, capped);
 
@@ -125,7 +131,7 @@ export default function ConfirmTradeDialog({
         },
       }),
     onSuccess: async ({ tradeId, pending }) => {
-      toast.success(claimedToast(pending, rows.length === 0, poster));
+      toast.success(claimedToast(pending, parts.to, poster));
       void queryClient.invalidateQueries({ queryKey: tradesKey });
       // the next step is on the trade or the offer, and Back finds the listing as it is now
       await navigate({ to: "/trade/$id", params: { id: tradeId } });
@@ -236,7 +242,7 @@ export default function ConfirmTradeDialog({
 
               <section className="flex flex-col gap-2">
                 <Eyebrow tone="have">
-                  {giveHeading(rows.length, giveCount)}
+                  {giveHeadings[parts.to](giveCount)}
                 </Eyebrow>
                 {rows.map((row, index) => (
                   <Group
@@ -282,9 +288,7 @@ export default function ConfirmTradeDialog({
                 <WhatHappens
                   offers={offers}
                   poster={poster}
-                  pays={rows.length === 0}
-                  buying={listing.units.kind === "buy"}
-                  payment={listing.payment}
+                  parts={parts}
                   endsAt={endsAt}
                 />
               )}
@@ -443,88 +447,70 @@ function amountRefusal(amount: {
 
 /**
  * What the claim's toast says: the offer was sent, or the trade started,
- * with what the claimer does next, paying for a sale.
+ * with what the claimer (`part`) does next, paying for a sale.
  */
-function claimedToast(pending: boolean, pays: boolean, poster: string) {
+function claimedToast(pending: boolean, part: TradePart, poster: string) {
   if (pending) return m.listing_detail_offer_sent({ poster });
-  return pays
+  return part === "pay"
     ? m.listing_detail_accepted_pay({ poster, appName: env.VITE_APP_NAME })
     : m.listing_detail_accepted();
 }
 
+// what the claimer's side is headed: the objekts they give, or "You pay" for a sale
+const giveHeadings = {
+  send: (count: number) => m.listing_detail_you_give_total({ count }),
+  send_pay: (count: number) => m.listing_detail_you_give_total({ count }),
+  pay: () => m.listing_detail_you_pay(),
+} satisfies Record<TradePart, (count: number) => string>;
+
 /**
- * What confirming starts: the offer's steps, or the claim's deadline. On a
- * buy listing (`buying`) only the claimer sends, and the poster pays.
+ * What each side does in the trade a claim or an offer starts, from the
+ * claimer's view: both send (`send`), the claimer pays alone (`pay`) or
+ * beside their objekts (`send_pay`), or the poster pays alone, on a buy
+ * listing (`paid`), or beside their objekts (`send_paid`).
+ */
+type ClaimSplit = TradePart | "paid" | "send_paid";
+
+// the split when the poster pays, by the poster's part
+const posterPays = {
+  pay: "paid",
+  send_pay: "send_paid",
+} as const satisfies Record<Exclude<TradePart, "send">, ClaimSplit>;
+
+/**
+ * What confirming starts: the offer's steps, or the claim's deadline, each
+ * saying what both sides (`parts`) then do.
  */
 function WhatHappens({
   offers,
   poster,
-  pays,
-  buying,
-  payment,
+  parts,
   endsAt,
 }: {
   offers: boolean;
   poster: string;
-  pays: boolean;
-  buying: boolean;
-  payment: Pick<ListingPayment, "side"> | null;
+  parts: TradeParts;
   endsAt: Date;
 }) {
+  const split = parts.from === "send" ? parts.to : posterPays[parts.from];
   return offers ? (
-    <OfferSteps
-      poster={poster}
-      expiresAt={endsAt}
-      window={offerWindow(payment, pays, buying)}
-    />
+    <OfferSteps poster={poster} expiresAt={endsAt} split={split} />
   ) : (
-    <ClaimDeadline
-      poster={poster}
-      sends={
-        buying
-          ? "paid"
-          : pays
-            ? "pay"
-            : payment === null
-              ? "send"
-              : payment.side === "to"
-                ? "send_pay"
-                : "send_paid"
-      }
-      endsAt={endsAt}
-    />
+    <ClaimDeadline poster={poster} split={split} endsAt={endsAt} />
   );
 }
 
 /**
- * What each side does once an offer is accepted: both send, the poster
- * sends and the claimer only pays, both send and the claimer also pays,
- * the poster also pays, or the claimer sends and the poster only pays.
- */
-function offerWindow(
-  payment: Pick<ListingPayment, "side"> | null,
-  pays: boolean,
-  buying: boolean,
-) {
-  if (buying) return "buying";
-  if (payment === null) return "send";
-  if (payment.side === "from") return "paid";
-  return pays ? "pay" : "with_payment";
-}
-
-/**
- * What claiming starts: both sides' 48 hours, and what each does in them:
- * both send, with the claimer also paying (`send_pay`) or the poster also
- * paying (`send_paid`), a sale's claimer only pays outside Apollo, or a
- * buy listing's poster only pays.
+ * What claiming starts: both sides' 48 hours, and what each does in them
+ * (`split`).
  */
 function ClaimDeadline({
   poster,
-  sends,
+  split,
   endsAt,
 }: {
   poster: string;
-  sends: "send" | "send_pay" | "send_paid" | "pay" | "paid";
+  split: ClaimSplit;
   endsAt: Date;
 }) {
   const markup = {
@@ -540,7 +526,7 @@ function ClaimDeadline({
     <p className="grid grid-cols-[1rem_minmax(0,1fr)] gap-2.5 rounded-lg bg-muted/50 px-3 py-2.5 text-sm leading-relaxed max-sm:hidden">
       <IconClock className="mt-0.5 size-4 text-muted-foreground" />
       <span>
-        {sends === "send" ? (
+        {split === "send" ? (
           <ParaglideMessage
             message={m.listing_confirm_deadline}
             inputs={{ date: "", poster }}
@@ -554,7 +540,7 @@ function ClaimDeadline({
                 send_paid: m.listing_confirm_deadline_send_paid,
                 pay: m.listing_confirm_deadline_pay,
                 paid: m.listing_confirm_deadline_paid,
-              }[sends]
+              }[split]
             }
             inputs={{ date: "", poster, appName: env.VITE_APP_NAME }}
             markup={markup}
@@ -568,17 +554,17 @@ function ClaimDeadline({
 /**
  * What sending the offer starts: the poster answers it, it expires if they
  * don't by then, and accepting it gives both sides the trade's window, in
- * which each sends in the COSMO app or pays (`window`). An offer of a
+ * which each sends in the COSMO app or pays (`split`). An offer of a
  * payment alone shows the poster no serials.
  */
 function OfferSteps({
   poster,
   expiresAt,
-  window,
+  split,
 }: {
   poster: string;
   expiresAt: Date;
-  window: "send" | "pay" | "with_payment" | "paid" | "buying";
+  split: ClaimSplit;
 }) {
   const hours = CLAIM_WINDOW / 3_600_000;
   const steps = [
@@ -590,7 +576,7 @@ function OfferSteps({
     >
       <ParaglideMessage
         message={
-          window === "pay"
+          split === "pay"
             ? m.listing_offer_step_answer_amount
             : m.listing_offer_step_answer
         }
@@ -611,10 +597,10 @@ function OfferSteps({
     {
       send: () => m.listing_offer_step_window({ hours }),
       pay: () => m.listing_offer_step_window_pay({ hours, poster }),
-      with_payment: () => m.listing_offer_step_window_with_payment({ hours }),
-      paid: () => m.listing_offer_step_window_paid({ hours, poster }),
-      buying: () => m.listing_offer_step_window_buying({ hours, poster }),
-    }[window](),
+      send_pay: () => m.listing_offer_step_window_with_payment({ hours }),
+      send_paid: () => m.listing_offer_step_window_paid({ hours, poster }),
+      paid: () => m.listing_offer_step_window_buying({ hours, poster }),
+    }[split](),
   ];
   return (
     <ol className="flex flex-col gap-2.5 rounded-lg bg-muted/50 px-3 py-3 text-sm leading-relaxed">
@@ -648,13 +634,6 @@ function groupHead({ want }: PickerRow, count: number) {
   }
 }
 
-// what the claimer's side is headed: the objekts they give, or "You pay" for a sale
-function giveHeading(rows: number, giveCount: number) {
-  return rows === 0
-    ? m.listing_detail_you_pay()
-    : m.listing_detail_you_give_total({ count: giveCount });
-}
-
 /**
  * The payment the trade records for the units claimed, in its own
  * currency, under the side that sends it: `to` the claimer, `from` the
@@ -671,13 +650,12 @@ function PaymentGroup({
 }) {
   return (
     listing.payment?.side === sender && (
-      <div className="rounded-lg border border-border bg-card px-3 py-2.5 text-sm">
-        <PaymentLabel
-          payment={listing.payment}
-          units={units}
-          perUnit={listing.units.kind === "buy"}
-        />
-      </div>
+      <PaymentBox
+        payment={listing.payment}
+        units={units}
+        perUnit={listing.units.kind === "buy"}
+        className="px-3 py-2.5"
+      />
     )
   );
 }
@@ -739,26 +717,20 @@ function OfferAmount({
     <div className="flex flex-col gap-2 rounded-lg border border-border bg-card px-3 py-2.5 text-sm">
       <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
         <Label htmlFor={id}>{m.listing_offer_amount()}</Label>
-        <span className="flex items-center gap-2">
-          <span className="font-mono text-sm text-muted-foreground">
-            {payment.currency}
-          </span>
-          <Input
-            id={id}
-            inputMode="decimal"
-            autoComplete="off"
-            placeholder={
-              payment.amount === null
-                ? m.listing_composer_payment_amount()
-                : toNumeric(payment.amount)
-            }
-            value={amount}
-            aria-invalid={invalid !== null}
-            aria-describedby={invalid === null ? undefined : reasonId}
-            onChange={(event) => onChange(event.target.value)}
-            className="h-9 w-28 font-mono font-bold tabular-nums"
-          />
-        </span>
+        <AmountField
+          id={id}
+          currency={payment.currency}
+          amount={amount}
+          placeholder={
+            payment.amount === null
+              ? m.listing_composer_payment_amount()
+              : toNumeric(payment.amount)
+          }
+          aria-invalid={invalid !== null}
+          aria-describedby={invalid === null ? undefined : reasonId}
+          onChange={onChange}
+          className="w-28"
+        />
         {units > 1 && (
           <span className="text-muted-foreground">
             {parsed.success

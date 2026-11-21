@@ -12,7 +12,7 @@ import {
   MAX_WANT_ROWS,
 } from "./caps";
 import { totalWanted } from "./composer";
-import type { ListingUnits } from "./lifecycle";
+import { listingParts, type ListingUnits } from "./lifecycle";
 import {
   amountSchema,
   currencySchema,
@@ -32,20 +32,17 @@ export const listingTypes = ["trade", "sell", "buy"] as const;
 export type ListingType = (typeof listingTypes)[number];
 
 /**
- * The type (ListingType) of one of a listing's options, from its units'
- * kind, who sends the listing's payment and how many objekt rows the option
- * asks for. A buy listing (`units: "buy"`) is a buy whichever option is
- * given; how many pool objekts are left never decides it, since a pool
- * listing whose picks are all on their way still offers them.
+ * The type (ListingType) of one of a listing's options, from each side's
+ * part in its trade (listingParts()): a buy when the poster only pays, a
+ * sale when the claimer only pays, else a trade. A buy listing is a buy
+ * whichever option is given; how many pool objekts are left never decides
+ * it, since a pool listing whose picks are all on their way still offers
+ * them.
  */
-export function listingType(listing: {
-  units: ListingUnits["kind"];
-  paymentSide: TradeSide | null;
-  objektWants: number;
-}): ListingType {
-  if (listing.units === "buy") return "buy";
-  if (listing.paymentSide === "to" && listing.objektWants === 0) return "sell";
-  return "trade";
+function listingType(listing: Parameters<typeof listingParts>[0]): ListingType {
+  const parts = listingParts(listing);
+  if (parts.from === "pay") return "buy";
+  return parts.to === "pay" ? "sell" : "trade";
 }
 
 /**
@@ -157,7 +154,8 @@ const optionSchema = z
     { message: "An option can ask for one payment" },
   );
 
-type OptionWant = z.output<typeof wantSchema>;
+// one want row of an option, as the schema parses it
+export type OptionWant = z.output<typeof wantSchema>;
 
 const sorted = (values: readonly string[]) =>
   values.toSorted((a, b) => (a < b ? -1 : Number(a > b)));
@@ -166,7 +164,7 @@ const sorted = (values: readonly string[]) =>
  * What an option asks for as one string, the same for the same rows in any
  * order, so two options asking for the same thing compare equal.
  */
-function optionKey(wants: readonly OptionWant[]) {
+export function optionKey(wants: readonly OptionWant[]) {
   return JSON.stringify(
     sorted(
       wants.map((want) => {
@@ -245,11 +243,7 @@ const listingFields = {
  */
 export function rangesDistinct(rows: readonly (readonly RangeFilter[])[]) {
   return isDistinct(
-    rows.map((ranges) =>
-      JSON.stringify(
-        ranges.map(rangeKey).toSorted((a, b) => (a < b ? -1 : Number(a > b))),
-      ),
-    ),
+    rows.map((ranges) => JSON.stringify(sorted(ranges.map(rangeKey)))),
   );
 }
 
@@ -257,11 +251,7 @@ export function rangesDistinct(rows: readonly (readonly RangeFilter[])[]) {
  * Whether no two "any of" rows name the same collections, in any order.
  */
 export function choicesDistinct(slugSets: readonly (readonly string[])[]) {
-  return isDistinct(
-    slugSets.map((slugs) =>
-      slugs.toSorted((a, b) => (a < b ? -1 : Number(a > b))).join(" "),
-    ),
-  );
+  return isDistinct(slugSets.map((slugs) => sorted(slugs).join(" ")));
 }
 
 type ListingTerms = {

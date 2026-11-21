@@ -59,8 +59,8 @@ export const sampleItems = {
     id: "1",
     party: "Kairu",
     url: "https://apollo.cafe/trade/1",
-    youGet: { objekts: [kaede, jiyeon], payments: [] },
-    youSend: { objekts: [chaeyeon], payments: [] },
+    youGet: { part: "send", objekts: [kaede, jiyeon], payments: [] },
+    youSend: { part: "send", objekts: [chaeyeon], payments: [] },
     expiresAt: new Date("2026-11-08T09:30:00Z"),
   },
   offer_countered: {
@@ -69,10 +69,11 @@ export const sampleItems = {
     party: "Nites",
     url: "https://apollo.cafe/trade/2",
     youGet: {
+      part: "send_pay",
       objekts: [soomin],
       payments: [{ amount: "5.00", currency: "USD" }],
     },
-    youSend: { objekts: [kaede], payments: [] },
+    youSend: { part: "send", objekts: [kaede], payments: [] },
     expiresAt: new Date("2026-11-08T09:30:00Z"),
   },
   offer_accepted: {
@@ -80,8 +81,8 @@ export const sampleItems = {
     id: "3",
     party: "Kairu",
     url: "https://apollo.cafe/trade/3",
-    youGet: { objekts: [chaeyeon], payments: [] },
-    youSend: { objekts: [kaede, jiyeon, soomin], payments: [] },
+    youGet: { part: "send", objekts: [chaeyeon], payments: [] },
+    youSend: { part: "send", objekts: [kaede, jiyeon, soomin], payments: [] },
     deadlineAt: deadline,
   },
   listing_claimed: {
@@ -89,8 +90,12 @@ export const sampleItems = {
     id: "4",
     party: "Nites",
     url: "https://apollo.cafe/trade/4",
-    youGet: { objekts: [], payments: [{ amount: "12.50", currency: "USD" }] },
-    youSend: { objekts: [soomin], payments: [] },
+    youGet: {
+      part: "pay",
+      objekts: [],
+      payments: [{ amount: "12.50", currency: "USD" }],
+    },
+    youSend: { part: "send", objekts: [soomin], payments: [] },
     deadlineAt: deadline,
   },
   trade_cancelled: {
@@ -98,8 +103,8 @@ export const sampleItems = {
     id: "5",
     party: "Kairu",
     url: "https://apollo.cafe/trade/5",
-    youGet: { objekts: [jiyeon], payments: [] },
-    youSend: { objekts: [chaeyeon], payments: [] },
+    youGet: { part: "send", objekts: [jiyeon], payments: [] },
+    youSend: { part: "send", objekts: [chaeyeon], payments: [] },
     byStaff: false,
   },
   trade_disputed: {
@@ -107,8 +112,8 @@ export const sampleItems = {
     id: "6",
     party: "Nites",
     url: "https://apollo.cafe/trade/6",
-    youGet: { objekts: [kaede, soomin], payments: [] },
-    youSend: { objekts: [chaeyeon, jiyeon], payments: [] },
+    youGet: { part: "send", objekts: [kaede, soomin], payments: [] },
+    youSend: { part: "send", objekts: [chaeyeon, jiyeon], payments: [] },
     byStaff: false,
   },
   trade_dispute_resolved: {
@@ -116,8 +121,8 @@ export const sampleItems = {
     id: "7",
     party: "Nites",
     url: "https://apollo.cafe/trade/7",
-    youGet: { objekts: [kaede, soomin], payments: [] },
-    youSend: { objekts: [chaeyeon, jiyeon], payments: [] },
+    youGet: { part: "send", objekts: [kaede, soomin], payments: [] },
+    youSend: { part: "send", objekts: [chaeyeon, jiyeon], payments: [] },
     outcome: "completed",
   },
   trade_deadline_extended: {
@@ -125,8 +130,8 @@ export const sampleItems = {
     id: "8",
     party: "Nites",
     url: "https://apollo.cafe/trade/8",
-    youGet: { objekts: [kaede, soomin], payments: [] },
-    youSend: { objekts: [chaeyeon, jiyeon], payments: [] },
+    youGet: { part: "send", objekts: [kaede, soomin], payments: [] },
+    youSend: { part: "send", objekts: [chaeyeon, jiyeon], payments: [] },
     deadlineAt: deadline,
   },
 } satisfies {

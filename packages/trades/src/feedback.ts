@@ -3,7 +3,13 @@ import type {
   FeedbackRole,
   TradeSide,
 } from "@apollo/database/web/types";
-import { isDone, type TradeItemState, type TradeState } from "./lifecycle";
+import {
+  isDone,
+  otherSide,
+  type TradeItemState,
+  tradeParts,
+  type TradeState,
+} from "./lifecycle";
 import { FEEDBACK_WINDOW_DAYS } from "./timers";
 
 const DAY = 24 * 60 * 60 * 1000;
@@ -91,24 +97,17 @@ export function feedbackDaysLeft(closesAt: Date, now: Date) {
 }
 
 /**
- * The rater's role: when one side sends nothing but a payment, it is the
- * buyer and the other side the seller. A swap, a payment beside objekts on
- * both sides included, has two traders.
+ * The rater's role: when one side sends nothing but a payment (its part is
+ * `pay`), it is the buyer and the other side the seller. A swap, a payment
+ * beside objekts on both sides included, has two traders.
  */
 export function feedbackRole(
   items: readonly TradeItemState[],
   side: TradeSide,
 ): FeedbackRole {
-  const payment = items.find((item) => item.kind === "payment");
-  if (
-    payment === undefined ||
-    items.some(
-      (item) => item.kind === "objekt" && item.sender === payment.sender,
-    )
-  ) {
-    return "trader";
-  }
-  return payment.sender === side ? "buyer" : "seller";
+  const parts = tradeParts(items);
+  if (parts[side] === "pay") return "buyer";
+  return parts[otherSide(side)] === "pay" ? "seller" : "trader";
 }
 
 const ratedRoles = {

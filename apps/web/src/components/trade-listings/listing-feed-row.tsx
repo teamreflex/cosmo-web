@@ -5,7 +5,7 @@ import {
   askingTitle,
   buyingText,
   joinOptions,
-  listingRatio,
+  listingTypeLabels,
   listingTypesOfListing,
   objektName,
   offeredMembers,
@@ -13,10 +13,12 @@ import {
   optionTitle,
   optionTitles,
   paymentMethodsText,
+  pillRatio,
   posterName,
   wantLabel,
   wantsCaption,
   wantsSummary,
+  withPayment,
 } from "@/lib/client/trade-listings";
 import type { Objekt } from "@/lib/universal/objekt-conversion";
 import {
@@ -54,11 +56,7 @@ type Props = {
  */
 export default function ListingFeedRow({ row }: Props) {
   const [first] = row.options;
-  // several options trade at several ratios, and a payment's ratio doesn't fit the pill, so their row keeps the arrow
-  const ratio =
-    first === undefined || row.options.length > 1 || first.payment !== null
-      ? null
-      : listingRatio({ ...row, ...first }, row.posted);
+  const ratio = pillRatio(row, row.posted);
   return (
     <li className="transition-colors md:border-t md:border-border/60 md:first:border-t-0 md:hover:bg-secondary/50">
       <Link
@@ -154,27 +152,18 @@ export default function ListingFeedRow({ row }: Props) {
  * A row whose options make it several shows a badge for each.
  */
 function ListingTypeBadge({ type }: { type: ListingType }) {
-  switch (type) {
-    case "trade":
-      return (
-        <Badge className="bg-teal-500/15 text-teal-700 max-md:hidden dark:bg-teal-500/18 dark:text-teal-500">
-          {m.market_listings_trade()}
-        </Badge>
-      );
-    case "sell":
-      return (
-        <Badge className="bg-amber-500/15 text-amber-700 max-md:hidden dark:bg-amber-500/18 dark:text-amber-500">
-          {m.market_listings_sell()}
-        </Badge>
-      );
-    case "buy":
-      return (
-        <Badge className="bg-sky-500/15 text-sky-700 max-md:hidden dark:bg-sky-500/18 dark:text-sky-500">
-          {m.market_listings_buy()}
-        </Badge>
-      );
-  }
+  return (
+    <Badge className={cn(listingTypeTones[type], "max-md:hidden")}>
+      {listingTypeLabels[type]()}
+    </Badge>
+  );
 }
+
+const listingTypeTones = {
+  trade: "bg-teal-500/15 text-teal-700 dark:bg-teal-500/18 dark:text-teal-500",
+  sell: "bg-amber-500/15 text-amber-700 dark:bg-amber-500/18 dark:text-amber-500",
+  buy: "bg-sky-500/15 text-sky-700 dark:bg-sky-500/18 dark:text-sky-500",
+} satisfies Record<ListingType, string>;
 
 /**
  * What the listing offers: its objekts, with the poster's payment on top,
@@ -206,7 +195,7 @@ function OfferingHalf({
         <SlipTitle>
           {m.listing_payment_per_unit({ amount: askingPriceText(payment) })}
         </SlipTitle>
-        <SlipDetail className="">
+        <SlipDetail>
           {`${buyingText(row.units)} · ${paymentMethodsText(payment.methods)}`}
         </SlipDetail>
       </Half>
@@ -331,14 +320,14 @@ function AskingCaption({
     return payment === null ? null : (
       <>
         <SlipTitle>{price}</SlipTitle>
-        <SlipDetail className="">
-          {paymentMethodsText(payment.methods)}
-        </SlipDetail>
+        <SlipDetail>{paymentMethodsText(payment.methods)}</SlipDetail>
       </>
     );
   }
   const title =
-    price === null ? askingTitle(wants) : `${askingTitle(wants)} + ${price}`;
+    price === null
+      ? askingTitle(wants)
+      : withPayment(askingTitle(wants), price);
 
   const summary = (
     <SlipDetail className="max-md:hidden">{wantsSummary(wants)}</SlipDetail>
@@ -358,7 +347,7 @@ function AskingCaption({
     <>
       <SlipTitle clamp>{title}</SlipTitle>
       {only.kind === "range" ? (
-        <SlipDetail className="">
+        <SlipDetail>
           {m.market_listings_range_matches({ count: only.count })}
         </SlipDetail>
       ) : (
@@ -416,7 +405,7 @@ export function SlipDetail({
   className,
   children,
 }: {
-  className: string;
+  className?: string;
   children: string;
 }) {
   return (

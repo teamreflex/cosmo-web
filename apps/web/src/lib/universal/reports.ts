@@ -1,5 +1,5 @@
 import type { StaffUser } from "@/lib/universal/staff-users";
-import type { DeadlineOwed, TradeView } from "@/lib/universal/trades";
+import type { TradeView } from "@/lib/universal/trades";
 import type { Role } from "@apollo/auth";
 import type {
   FeedbackRating,
@@ -9,6 +9,7 @@ import type {
   StoredReportReason,
   TradeSide,
 } from "@apollo/database/web/types";
+import type { DeadlineOwed } from "@apollo/trades/lifecycle";
 
 /**
  * Escalated reports still wait on staff, so they count as open for the

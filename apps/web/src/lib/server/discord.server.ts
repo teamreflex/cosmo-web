@@ -44,6 +44,7 @@ async function postDispute(webhookUrl: string, alert: DisputeAlert) {
       .where(inArray(user.id, userIds)),
     db
       .select({
+        id: tradeOfferItems.id,
         sender: tradeOfferItems.sender,
         kind: tradeOfferItems.kind,
         tokenId: tradeOfferItems.tokenId,
@@ -53,6 +54,7 @@ async function postDispute(webhookUrl: string, alert: DisputeAlert) {
         currency: tradeOfferItems.currency,
         method: tradeOfferItems.method,
         markedPaidAt: tradeOfferItems.markedPaidAt,
+        confirmedAt: tradeOfferItems.confirmedAt,
       })
       .from(tradeOfferItems)
       .where(eq(tradeOfferItems.offerId, alert.tradeId))

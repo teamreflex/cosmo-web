@@ -8,19 +8,27 @@ import { describe, expect, test } from "bun:test";
 import {
   type ClaimTerms,
   claimTerms,
+  type DeadlineOwed,
   editUnitsRefusal,
   type ListingAcceptance,
   listingAcceptance,
   listingClosing,
+  listingParts,
   listingUnits,
-  needsYou,
+  type NextStep,
+  nextStep,
   type OfferEvent,
+  otherSide,
+  owedAtDeadline,
   partyAction,
   proposerId,
   type TradeEvent,
   type TradeItemState,
+  tradeItemState,
   tradeListingId,
   tradeListings,
+  type TradeParts,
+  tradeParts,
   type TradeState,
   tradeState,
   transition,
@@ -39,7 +47,11 @@ function payment(
   confirmed = false,
   markedPaid = false,
 ): TradeItemState {
-  return { kind: "payment", sender, markedPaid, confirmed };
+  return {
+    kind: "payment",
+    sender,
+    stage: confirmed ? "confirmed" : markedPaid ? "marked" : "unpaid",
+  };
 }
 
 // a sale: the poster sends one objekt, the claimer pays for it
@@ -626,57 +638,297 @@ describe("tradeListingId", () => {
   });
 });
 
-describe("needsYou (UNIT-05)", () => {
+describe("nextStep (UNIT-05)", () => {
   const partial = [objekt("from", true), objekt("from"), objekt("to", true)];
   const running = { deadlinePassed: false };
 
-  test("an accepted trade needs the sides still owing", () => {
-    expect(needsYou(trade("accepted", partial), "from", running)).toBe(true);
-    expect(needsYou(trade("accepted", partial), "to", running)).toBe(false);
+  test("an accepted trade asks the sides still owing to send", () => {
+    expect(nextStep(trade("accepted", partial), "from", running)).toEqual({
+      kind: "send",
+      count: 1,
+    });
+    expect(nextStep(trade("accepted", partial), "to", running)).toBeNull();
   });
 
-  test("an accepted trade past its deadline needs no one", () => {
+  test("an accepted trade past its deadline asks no one", () => {
     expect(
-      needsYou(trade("accepted", sixObjekts()), "from", {
+      nextStep(trade("accepted", sixObjekts()), "from", {
         deadlinePassed: true,
       }),
-    ).toBe(false);
+    ).toBeNull();
   });
 
-  test("a pending offer needs only the side that didn't propose it (UNIT-06)", () => {
+  test("a pending offer asks only the side that didn't propose it to answer (UNIT-06)", () => {
     const direct = directOffer(sixObjekts());
-    expect(needsYou(direct, "to", running)).toBe(true);
-    expect(needsYou(direct, "from", running)).toBe(false);
+    expect(nextStep(direct, "to", running)).toEqual({ kind: "answer" });
+    expect(nextStep(direct, "from", running)).toBeNull();
     const onListing = listingOffer(sixObjekts());
-    expect(needsYou(onListing, "from", running)).toBe(true);
-    expect(needsYou(onListing, "to", running)).toBe(false);
+    expect(nextStep(onListing, "from", running)).toEqual({ kind: "answer" });
+    expect(nextStep(onListing, "to", running)).toBeNull();
   });
 
-  // the objekt arrived, so only the payment is left
-  test.each([
-    ["unpaid", sale(true), true, true],
-    ["marked paid", sale(true, false, true), false, true],
-    ["confirmed", sale(true, true, true), false, false],
-  ] satisfies [string, TradeItemState[], boolean, boolean][])(
-    "a payment %s needs its payer %p and its recipient %p",
-    (_, items, payer, recipient) => {
-      expect(needsYou(trade("accepted", items), "to", running)).toBe(payer);
-      expect(needsYou(trade("accepted", items), "from", running)).toBe(
-        recipient,
-      );
+  // the payer and the recipient, by who sends the payment and the objekts
+  const payingTrades = [
+    ["a sale", [objekt("from")], "to"],
+    ["a buy listing's trade", [objekt("to")], "from"],
+    ["objekts and the claimer's payment", [objekt("from"), objekt("to")], "to"],
+    ["the poster paying on top", [objekt("from"), objekt("to")], "from"],
+  ] satisfies [string, TradeItemState[], TradeSide][];
+
+  // every objekt arrived, so only the payment is left
+  test.each(
+    payingTrades.flatMap(([name, objekts, payer]) =>
+      (
+        [
+          ["unpaid", false, false, { kind: "mark_paid" }, { kind: "confirm" }],
+          ["marked paid", false, true, null, { kind: "confirm" }],
+          ["confirmed", true, true, null, null],
+        ] satisfies [
+          string,
+          boolean,
+          boolean,
+          NextStep | null,
+          NextStep | null,
+        ][]
+      ).map(
+        ([stage, confirmed, markedPaid, payerStep, recipientStep]) =>
+          [
+            `${name}, ${stage}`,
+            [
+              ...objekts.map((item) => ({ ...item, transferred: true })),
+              payment(payer, confirmed, markedPaid),
+            ],
+            payer,
+            payerStep,
+            recipientStep,
+          ] as const,
+      ),
+    ),
+  )(
+    "%s: the payer's step and the recipient's",
+    (_, items, payer, payerStep, recipientStep) => {
+      const state = trade("accepted", items);
+      expect(nextStep(state, payer, running)).toEqual(payerStep);
+      expect(nextStep(state, otherSide(payer), running)).toEqual(recipientStep);
     },
   );
 
-  test("a payment's recipient still owing an objekt is needed", () => {
-    expect(
-      needsYou(trade("accepted", sale(false, true)), "from", running),
-    ).toBe(true);
+  test.each(payingTrades)(
+    "%s: a side still owing an objekt sends it before its payment step",
+    (_, objekts, payer) => {
+      const state = trade("accepted", [...objekts, payment(payer)]);
+      for (const side of ["from", "to"] as const) {
+        const count = objekts.filter((item) => item.sender === side).length;
+        expect(nextStep(state, side, running)).toEqual(
+          count > 0
+            ? { kind: "send", count }
+            : side === payer
+              ? { kind: "mark_paid" }
+              : { kind: "confirm" },
+        );
+      }
+    },
+  );
+
+  test("a regular trade with every objekt arrived asks no one", () => {
+    const state = trade("accepted", [objekt("from", true), objekt("to", true)]);
+    expect(nextStep(state, "from", running)).toBeNull();
+    expect(nextStep(state, "to", running)).toBeNull();
   });
 
-  test("a disputed trade never needs anyone (UNIT-06)", () => {
-    expect(needsYou(trade("disputed", sixObjekts()), "from", running)).toBe(
-      false,
-    );
+  test("a payment's recipient still owing an objekt is asked to send it", () => {
+    expect(
+      nextStep(trade("accepted", sale(false, true)), "from", running),
+    ).toEqual({ kind: "send", count: 1 });
+  });
+
+  test("a disputed trade never asks anyone (UNIT-06)", () => {
+    expect(
+      nextStep(trade("disputed", sixObjekts()), "from", running),
+    ).toBeNull();
+  });
+});
+
+/**
+ * A deadline dispute's wording follows what is owed; a trade without a
+ * payment always reads as objekts owed, main's wording.
+ */
+describe("owedAtDeadline", () => {
+  test.each([
+    [
+      "a swap with one side unsent",
+      [objekt("from", true), objekt("to")],
+      "objekts",
+    ],
+    [
+      "a swap with everything arrived",
+      [objekt("from", true), objekt("to", true)],
+      "objekts",
+    ],
+    ["a sale with the objekt sent", sale(true), "payment"],
+    ["a sale with the payment marked paid", sale(true, false, true), "payment"],
+    ["a sale with the payment confirmed", sale(false, true), "objekts"],
+    ["a sale with both still owed", sale(), "both"],
+    [
+      "a buy listing's trade with the objekt sent",
+      [objekt("to", true), payment("from")],
+      "payment",
+    ],
+    [
+      "objekts and the claimer's payment, all unsent",
+      [objekt("from"), objekt("to"), payment("to")],
+      "both",
+    ],
+    [
+      "the poster paying on top, the payment confirmed",
+      [objekt("from", true), objekt("to"), payment("from", true)],
+      "objekts",
+    ],
+  ] satisfies [string, TradeItemState[], DeadlineOwed][])(
+    "%s",
+    (_, items, expected) => {
+      expect(owedAtDeadline(items)).toBe(expected);
+    },
+  );
+});
+
+describe("tradeItemState", () => {
+  const at = new Date("2026-11-21T00:00:00Z");
+  const row = {
+    sender: "to",
+    transferredAt: null,
+    markedPaidAt: null,
+    confirmedAt: null,
+  } as const;
+
+  test.each([
+    ["an objekt not yet arrived", { kind: "objekt" }, objekt("to")],
+    [
+      "an objekt arrived",
+      { kind: "objekt", transferredAt: at },
+      objekt("to", true),
+    ],
+    ["an unpaid payment", { kind: "payment" }, payment("to")],
+    [
+      "a payment marked paid",
+      { kind: "payment", markedPaidAt: at },
+      payment("to", false, true),
+    ],
+    [
+      "a payment confirmed after a mark",
+      { kind: "payment", markedPaidAt: at, confirmedAt: at },
+      payment("to", true),
+    ],
+  ] satisfies [
+    string,
+    Pick<Parameters<typeof tradeItemState>[0], "kind"> &
+      Partial<Parameters<typeof tradeItemState>[0]>,
+    TradeItemState,
+  ][])("%s", (_, stored, expected) => {
+    expect(tradeItemState({ ...row, ...stored })).toEqual(expected);
+  });
+});
+
+describe("tradeParts", () => {
+  const progress = [
+    ["unpaid", false, false],
+    ["marked paid", false, true],
+    ["confirmed", true, false],
+  ] as const;
+
+  test("a swap: both send", () => {
+    expect(tradeParts([objekt("from"), objekt("to"), objekt("to")])).toEqual({
+      from: "send",
+      to: "send",
+    });
+  });
+
+  test.each(
+    (
+      [
+        ["a sale", [objekt("from")], "to", { from: "send", to: "pay" }],
+        [
+          "a buy listing's trade",
+          [objekt("to")],
+          "from",
+          {
+            from: "pay",
+            to: "send",
+          },
+        ],
+        [
+          "objekts and the claimer's payment",
+          [objekt("from"), objekt("to")],
+          "to",
+          {
+            from: "send",
+            to: "send_pay",
+          },
+        ],
+        [
+          "the poster paying on top",
+          [objekt("from"), objekt("to")],
+          "from",
+          {
+            from: "send_pay",
+            to: "send",
+          },
+        ],
+      ] satisfies [string, TradeItemState[], TradeSide, TradeParts][]
+    ).flatMap(([name, objekts, sender, parts]) =>
+      progress.map(
+        ([stage, confirmed, markedPaid]) =>
+          [
+            `${name}, ${stage}`,
+            [...objekts, payment(sender, confirmed, markedPaid)],
+            parts,
+          ] as const,
+      ),
+    ),
+  )("%s", (_, items, parts) => {
+    expect(tradeParts(items)).toEqual(parts);
+  });
+});
+
+describe("listingParts", () => {
+  test.each([
+    [
+      "a pool listing for objekts",
+      "pool",
+      null,
+      1,
+      { from: "send", to: "send" },
+    ],
+    ["a sale", "pool", "to", 0, { from: "send", to: "pay" }],
+    [
+      "objekts and the claimer's payment",
+      "pool",
+      "to",
+      2,
+      {
+        from: "send",
+        to: "send_pay",
+      },
+    ],
+    [
+      "the poster paying on top",
+      "pool",
+      "from",
+      1,
+      {
+        from: "send_pay",
+        to: "send",
+      },
+    ],
+    ["a buy listing", "buy", "from", 1, { from: "pay", to: "send" }],
+  ] satisfies [
+    string,
+    ListingUnits["kind"],
+    TradeSide | null,
+    number,
+    TradeParts,
+  ][])("%s", (_, units, paymentSide, objektWants, parts) => {
+    expect(listingParts({ units, paymentSide, objektWants })).toEqual(parts);
   });
 });
 
@@ -940,16 +1192,14 @@ describe("claimTerms", () => {
     { kind: ClaimTerms["kind"]; amount: number | null } | null,
   ][])("%s", (_, kinds, price, proposed, expected) => {
     // a sale's payment, which the claimer sends in USD
-    const terms = {
-      side: "to",
-      currency: "USD",
-    } satisfies Partial<TradePayment>;
     expect(
       claimTerms(
         {
           wants: kinds.map((kind) => ({ kind })),
           payment:
-            price === null ? null : { ...terms, methods: ["wise"], ...price },
+            price === null
+              ? null
+              : { side: "to", currency: "USD", methods: ["wise"], ...price },
         },
         proposed,
       ),
@@ -961,7 +1211,11 @@ describe("claimTerms", () => {
             payment:
               expected.amount === null
                 ? null
-                : { ...terms, amount: expected.amount },
+                : ({
+                    sender: "to",
+                    currency: "USD",
+                    amount: expected.amount,
+                  } satisfies TradePayment),
           },
     );
   });

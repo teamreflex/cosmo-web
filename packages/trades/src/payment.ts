@@ -15,7 +15,9 @@ import * as z from "zod";
  */
 export const MAX_PAYMENT_AMOUNT = 9_999_999_999;
 
-// the largest value `numeric(14,2)` holds, in minor units
+/**
+ * The largest value `numeric(14,2)` holds, in minor units.
+ */
 export const MAX_NUMERIC_AMOUNT = 99_999_999_999_999;
 
 /**
@@ -57,10 +59,72 @@ export type PaymentTerms = {
  * units, its currency and the side that sends it.
  */
 export type TradePayment = {
-  side: TradeSide;
+  sender: TradeSide;
   amount: number;
   currency: string;
 };
+
+/**
+ * Where a trade's payment stands: unpaid, marked paid by its sender
+ * (`marked`, which settles nothing), or confirmed received by its
+ * recipient, by one of the trade's methods, whether or not it was marked
+ * first.
+ */
+export type PaymentProgress =
+  | { stage: "unpaid" }
+  | { stage: "marked"; at: Date }
+  | { stage: "confirmed"; at: Date; method: PaymentMethod };
+
+export type PaymentStage = PaymentProgress["stage"];
+
+// a trade's payment item as stored, parsed (parsePaymentItem())
+export type PaymentItem = TradePayment & {
+  id: number;
+  progress: PaymentProgress;
+};
+
+/**
+ * A stored payment item (PaymentItem), its amount parsed from the
+ * `numeric(14,2)` column into minor units. Throws on what the write paths
+ * never produce: a payment without its amount or currency, which
+ * `trade_offer_items_objekt_chk` forbids, or a confirmation without its
+ * method, since `$confirmPayment` stamps the two together.
+ */
+export function parsePaymentItem(row: {
+  id: number;
+  sender: TradeSide;
+  amount: string | null;
+  currency: string | null;
+  markedPaidAt: Date | null;
+  confirmedAt: Date | null;
+  method: PaymentMethod | null;
+}): PaymentItem {
+  if (row.amount === null || row.currency === null) {
+    throw new Error(`payment item ${row.id} has no amount`);
+  }
+  const item = {
+    id: row.id,
+    sender: row.sender,
+    amount: fromNumeric(row.amount),
+    currency: row.currency,
+  };
+  if (row.confirmedAt !== null) {
+    if (row.method === null) {
+      throw new Error(`payment item ${row.id} is confirmed without a method`);
+    }
+    return {
+      ...item,
+      progress: { stage: "confirmed", at: row.confirmedAt, method: row.method },
+    };
+  }
+  return {
+    ...item,
+    progress:
+      row.markedPaidAt === null
+        ? { stage: "unpaid" }
+        : { stage: "marked", at: row.markedPaidAt },
+  };
+}
 
 const decimalAmount = /^(\d+)(?:\.(\d{1,2}))?$/;
 
@@ -112,6 +176,14 @@ export function fromNumeric(value: string) {
   if (match === null) throw new Error(`not a numeric(14,2) amount: ${value}`);
   const [, whole = "0", fraction = "0"] = match;
   return Number(whole) * 100 + Number(fraction);
+}
+
+/**
+ * An amount as plain text where there is no viewer's locale, in emails and
+ * staff's Discord: its currency's code and two decimals, "USD 12.50".
+ */
+export function formatPaymentText(amount: number, currency: string) {
+  return formatPayment(amount, currency, "en-US", "code");
 }
 
 /**

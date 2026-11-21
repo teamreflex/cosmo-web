@@ -13,6 +13,7 @@ import {
   formatAmount,
   joinOptions,
   listingComposerDisplay,
+  withPayment,
 } from "@/lib/client/trade-listings";
 import { $editListing, $postListing } from "@/lib/functions/trade-listings";
 import { dismissedNoticesQuery } from "@/lib/queries/market";
@@ -29,6 +30,7 @@ import {
   claimerPaymentTerms,
   composerBlock,
   type ComposerMode,
+  dirtyOptions,
   emptyListingForm,
   followMaxUnits,
   followUnitSize,
@@ -41,11 +43,13 @@ import {
   parsedRanges,
   stepUnitSize,
 } from "@/lib/universal/trade-listing-form";
-import type { TokenRefusalReason } from "@/lib/universal/trade-listings";
+import {
+  acceptanceOf,
+  type TokenRefusalReason,
+} from "@/lib/universal/trade-listings";
 import type { ListingOfferMode } from "@apollo/database/web/types";
 import { MAX_NOTE_LENGTH, MAX_OFFERED } from "@apollo/trades/caps";
 import { totalWanted } from "@apollo/trades/composer";
-import { listingAcceptance } from "@apollo/trades/lifecycle";
 import { type ListingInput, listingInputSchema } from "@apollo/trades/listing";
 import { amountSchema } from "@apollo/trades/payment";
 import { MAX_RANGE_VALUES } from "@apollo/trades/range";
@@ -153,12 +157,9 @@ export default function ListingComposer({
   });
   const { artistList } = useArtists();
   const { currency: displayCurrency } = useDisplayCurrency();
-  const [paymentTerms, offeredPayment] = useWatch({
-    control: form.control,
-    name: ["payment", "offeredPayment"],
-  });
-  const currency = paymentTerms?.currency ?? displayCurrency;
-  const openToOffers = (paymentTerms?.mode ?? "price_only") !== "price_only";
+  const currency =
+    useWatch({ control: form.control, name: "payment.currency" }) ??
+    displayCurrency;
   // each artist's members, keyed as ranges store artists
   const rosters = new Map(
     artistList.map((artist) => [
@@ -258,16 +259,12 @@ export default function ListingComposer({
    * one; with no objekts left, the poster's payment buys.
    */
   function setOffered(offered: ListingFormValues["offered"]) {
-    const options = {
-      shouldDirty: true,
-      shouldValidate: form.formState.isSubmitted,
-    };
     form.setValue(
       "unitSize",
       followUnitSize(form.getValues("unitSize"), offered.length),
-      options,
+      dirtyOptions(form),
     );
-    form.setValue("offered", offered, options);
+    form.setValue("offered", offered, dirtyOptions(form));
     syncMaxUnits();
   }
 
@@ -276,7 +273,7 @@ export default function ListingComposer({
     form.setValue(
       "maxUnits",
       followMaxUnits(form.getValues("maxUnits"), form.getValues()),
-      setOptions(),
+      dirtyOptions(form),
     );
   }
 
@@ -300,10 +297,10 @@ export default function ListingComposer({
     setOffered([...offered, { tokenId }]);
   }
 
-  const setOptions = () => ({
-    shouldDirty: true,
-    shouldValidate: form.formState.isSubmitted,
-  });
+  // whether the claimer's payment takes offers, read as a handler runs so typing an amount doesn't re-render the form
+  function openToOffers() {
+    return (form.getValues("payment")?.mode ?? "price_only") !== "price_only";
+  }
 
   // a payment on either side needs the listing's currency and methods
   function addPaymentTerms() {
@@ -311,7 +308,7 @@ export default function ListingComposer({
       form.setValue(
         "payment",
         { currency: displayCurrency, methods: [] },
-        setOptions(),
+        dirtyOptions(form),
       );
     }
   }
@@ -347,16 +344,16 @@ export default function ListingComposer({
       form.setValue(
         `options.${row.option}.${row.index}`,
         { kind: "payment", amount: terms.amounts[position] },
-        setOptions(),
+        dirtyOptions(form),
       );
     });
-    form.setValue("payment.mode", terms.mode, setOptions());
+    form.setValue("payment.mode", terms.mode, dirtyOptions(form));
   }
 
   // with no payment left on either side, the terms go too
   function dropUnusedPaymentTerms() {
     if (!hasFormPayment(form.getValues())) {
-      form.setValue("payment", undefined, setOptions());
+      form.setValue("payment", undefined, dirtyOptions(form));
     }
   }
 
@@ -378,9 +375,7 @@ export default function ListingComposer({
       setHeld({
         submission,
         mixed: values.options.some(
-          (option) =>
-            listingAcceptance(option.wants, option.payment?.mode ?? null) !==
-            "offer",
+          (option) => acceptanceOf(option) !== "offer",
         ),
       });
     } else {
@@ -426,7 +421,7 @@ export default function ListingComposer({
                   onAdd={() => setView("picker")}
                   onChange={setOffered}
                   onAddPayment={() => {
-                    form.setValue("offeredPayment", "", setOptions());
+                    form.setValue("offeredPayment", "", dirtyOptions(form));
                     addPaymentTerms();
                     syncMaxUnits();
                   }}
@@ -435,7 +430,11 @@ export default function ListingComposer({
                   form={form}
                   currency={currency}
                   onRemove={() => {
-                    form.setValue("offeredPayment", undefined, setOptions());
+                    form.setValue(
+                      "offeredPayment",
+                      undefined,
+                      dirtyOptions(form),
+                    );
                     dropUnusedPaymentTerms();
                     syncMaxUnits();
                   }}
@@ -450,19 +449,18 @@ export default function ListingComposer({
                   if (form.getValues("payment") === undefined) {
                     addPaymentTerms();
                   } else {
-                    setClaimerPayment(openToOffers);
+                    setClaimerPayment(openToOffers());
                   }
                 }}
                 onPaymentRemoved={() => {
                   dropUnusedPaymentTerms();
                   if (form.getValues("payment") !== undefined) {
-                    setClaimerPayment(openToOffers);
+                    setClaimerPayment(openToOffers());
                   }
                 }}
                 onPaymentAmount={(option, amount) =>
-                  setClaimerPayment(openToOffers, { option, amount })
+                  setClaimerPayment(openToOffers(), { option, amount })
                 }
-                openToOffers={openToOffers}
                 onCollection={(collection) =>
                   setDisplay((current) => ({
                     ...current,
@@ -474,27 +472,10 @@ export default function ListingComposer({
                 }
               />
             </div>
-            {paymentTerms !== undefined && (
-              <ComposerPaymentStrip
-                currency={paymentTerms.currency}
-                methods={paymentTerms.methods}
-                paying={offeredPayment !== undefined}
-                offers={
-                  offeredPayment === undefined
-                    ? {
-                        open: openToOffers,
-                        onChange: (open) => setClaimerPayment(open),
-                      }
-                    : null
-                }
-                onCurrency={(next) =>
-                  form.setValue("payment.currency", next, setOptions())
-                }
-                onMethods={(next) =>
-                  form.setValue("payment.methods", next, setOptions())
-                }
-              />
-            )}
+            <PaymentStrip
+              form={form}
+              onOffers={(open) => setClaimerPayment(open)}
+            />
             <RatioStrip form={form} currency={currency} />
             <BuyStrip form={form} />
             <NoteStrip form={form} />
@@ -666,12 +647,8 @@ function OfferedPayment({
           paying={maxUnits !== undefined}
           currency={currency}
           amount={offeredPayment}
-          label={m.listing_composer_payment_amount_yours()}
           onChange={(amount) =>
-            form.setValue("offeredPayment", amount, {
-              shouldDirty: true,
-              shouldValidate: form.formState.isSubmitted,
-            })
+            form.setValue("offeredPayment", amount, dirtyOptions(form))
           }
           onRemove={onRemove}
         />
@@ -681,22 +658,67 @@ function OfferedPayment({
 }
 
 /**
- * What one trade asks for, as the ratio shows it: for each option, the
- * objekts its rows count, plus the claimer's payment in the listing's
- * currency once its amount reads, "2 + $3.00", or the payment alone, the
- * options joined by "or". An option asking for nothing but an offer adds
- * nothing, and null means every option is that.
+ * The listing's payment terms (ComposerPaymentStrip), once either side has a payment. The poster's own payment is a fixed price, so the offers control shows only while they don't pay.
+ */
+function PaymentStrip({
+  form,
+  onOffers,
+}: FormProps & { onOffers: (open: boolean) => void }) {
+  const [terms, offeredPayment] = useWatch({
+    control: form.control,
+    name: ["payment", "offeredPayment"],
+  });
+
+  return (
+    terms !== undefined && (
+      <ComposerPaymentStrip
+        currency={terms.currency}
+        methods={terms.methods}
+        paying={offeredPayment !== undefined}
+        offers={
+          offeredPayment === undefined
+            ? {
+                open: (terms.mode ?? "price_only") !== "price_only",
+                onChange: onOffers,
+              }
+            : null
+        }
+        onCurrency={(next) =>
+          form.setValue("payment.currency", next, dirtyOptions(form))
+        }
+        onMethods={(next) =>
+          form.setValue("payment.methods", next, dirtyOptions(form))
+        }
+      />
+    )
+  );
+}
+
+/**
+ * What one trade asks for, as the ratio shows it: each option's phrase (optionPhrases()) with its objekts as a bare count, the options joined by "or". Null means every option asks for nothing but an offer.
  */
 function wantedText(options: ListingFormValues["options"], currency: string) {
-  const phrases = options.flatMap((wants) => {
+  const phrases = optionPhrases(options, currency, (count) => String(count));
+  return phrases.length === 0 ? null : joinOptions(phrases);
+}
+
+/**
+ * Each option as a phrase: its objekts as countText words them, plus the claimer's payment in the listing's currency once its amount reads, "2 + $3.00", or the payment alone. An option asking for nothing but an offer has no phrase.
+ */
+function optionPhrases(
+  options: ListingFormValues["options"],
+  currency: string,
+  countText: (count: number) => string,
+) {
+  return options.flatMap((wants) => {
     const wanted = totalWanted(wants);
     const row = wants.find((want) => want.kind === "payment");
-    if (row === undefined) return [String(wanted)];
-    if (row.amount === undefined) return wanted === 0 ? [] : [String(wanted)];
+    if (row === undefined) return [countText(wanted)];
+    if (row.amount === undefined)
+      return wanted === 0 ? [] : [countText(wanted)];
     const price = priceText(row.amount, currency);
-    return [wanted === 0 ? price : `${wanted} + ${price}`];
+    return [wanted === 0 ? price : withPayment(countText(wanted), price)];
   });
-  return phrases.length === 0 ? null : joinOptions(phrases);
 }
 
 /**
@@ -719,22 +741,25 @@ function RatioStrip({ form, currency }: FormProps & { currency: string }) {
       unitSize={formUnitSize({ offered, unitSize })}
       bundle={unitSize === undefined}
       offered={offered.length}
-      wanted={wanted ?? ""}
-      wants={
+      want={
         // several options trade at several ratios, so only the poster's side shows
         wanted === null || options.length > 1
-          ? "offers"
-          : options.every((wants) =>
+          ? { kind: "offers" }
+          : {
+              kind: options.every((wants) =>
                 wants.every((want) => want.kind === "payment"),
               )
-            ? "price"
-            : "objekts"
+                ? "price"
+                : "objekts",
+              text: wanted,
+            }
       }
       onChange={(next) =>
-        form.setValue("unitSize", stepUnitSize(next, offered.length), {
-          shouldDirty: true,
-          shouldValidate: form.formState.isSubmitted,
-        })
+        form.setValue(
+          "unitSize",
+          stepUnitSize(next, offered.length),
+          dirtyOptions(form),
+        )
       }
     />
   );
@@ -751,12 +776,7 @@ function BuyStrip({ form }: FormProps) {
     maxUnits !== undefined && (
       <ComposerBuyUnits
         maxUnits={maxUnits}
-        onChange={(next) =>
-          form.setValue("maxUnits", next, {
-            shouldDirty: true,
-            shouldValidate: form.formState.isSubmitted,
-          })
-        }
+        onChange={(next) => form.setValue("maxUnits", next, dirtyOptions(form))}
       />
     )
   );
@@ -1002,7 +1022,7 @@ function priceText(amount: string, currency: string) {
 function withPrice(text: string, amount: string | undefined, currency: string) {
   return amount === undefined
     ? text
-    : `${text} + ${priceText(amount, currency)}`;
+    : withPayment(text, priceText(amount, currency));
 }
 
 /**
@@ -1017,16 +1037,9 @@ function footerSummary(
   mode: ListingOfferMode | undefined,
   currency: string,
 ) {
-  const phrases = options.flatMap((wants) => {
-    const row = wants.find((want) => want.kind === "payment");
-    const objekts = m.listing_composer_footer_wanted({
-      count: totalWanted(wants),
-    });
-    if (row === undefined) return [objekts];
-    if (row.amount === undefined) return wants.length === 1 ? [] : [objekts];
-    const price = priceText(row.amount, currency);
-    return [wants.length === 1 ? price : `${objekts} + ${price}`];
-  });
+  const phrases = optionPhrases(options, currency, (count) =>
+    m.listing_composer_footer_wanted({ count }),
+  );
   if (phrases.length === 0) {
     return m.listing_composer_footer_offers({ offered });
   }

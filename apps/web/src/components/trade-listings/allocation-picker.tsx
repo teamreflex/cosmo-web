@@ -12,7 +12,7 @@ import type {
   ListingPick,
 } from "@/lib/universal/trade-listings";
 import { cn } from "@/lib/utils";
-import type { ListingAcceptance } from "@apollo/trades/lifecycle";
+import type { ListingAcceptance, TradeParts } from "@apollo/trades/lifecycle";
 import type { ListingPayment } from "@apollo/trades/payment";
 import { IconCircleCheck, IconPlus, IconX } from "@tabler/icons-react";
 import { Fragment, type ReactNode, useState } from "react";
@@ -22,7 +22,7 @@ import { RemovableTile, TileCaption } from "./composer-offered";
 import { RangeBadges } from "./range-want";
 import RowPicker from "./row-picker";
 import SideHeading from "./side-heading";
-import WantLabel, { PaymentLabel } from "./want-label";
+import WantLabel, { PaymentBox } from "./want-label";
 
 type Props = {
   /** what the viewer holds for the option they give */
@@ -61,7 +61,7 @@ export default function AllocationPicker({
 
   return (
     <section className="flex min-w-0 flex-col gap-3.5">
-      {rows.length === 0 && payment !== null ? (
+      {picks.parts.to === "pay" && payment !== null ? (
         <SideHeading
           tone="have"
           title={m.listing_detail_you_pay()}
@@ -124,23 +124,17 @@ export default function AllocationPicker({
       })}
 
       {payment !== null && (
-        <div className="rounded-lg border border-teal-500/30 px-4 py-3 text-sm">
-          <PaymentLabel payment={payment} units={picks.units} />
-        </div>
+        <PaymentBox
+          payment={payment}
+          units={picks.units}
+          className="border-teal-500/30 bg-transparent"
+        />
       )}
 
       <PickerFooter
         acceptance={picks.acceptance}
         poster={poster}
-        payment={
-          picks.buying !== null
-            ? "paid"
-            : picks.payment === null
-              ? "none"
-              : rows.length === 0
-                ? "only"
-                : "beside"
-        }
+        parts={picks.parts}
       />
     </section>
   );
@@ -156,17 +150,17 @@ export default function AllocationPicker({
 function PickerFooter({
   acceptance,
   poster,
-  payment,
+  parts,
 }: {
   acceptance: ListingAcceptance;
   poster: string;
-  payment: "none" | "only" | "beside" | "paid";
+  parts: TradeParts;
 }) {
-  if (payment === "only" || payment === "paid") return null;
+  if (parts.from === "pay" || parts.to === "pay") return null;
   return (
     <p className="text-xs leading-relaxed text-muted-foreground">
       {acceptance === "offer"
-        ? payment === "none"
+        ? parts.from === "send" && parts.to === "send"
           ? m.listing_detail_offer_footer({ poster })
           : m.listing_detail_offer_footer_with_payment({ poster })
         : m.listing_detail_accept_footer()}

@@ -11,6 +11,7 @@ import {
   type TradeState,
   transition,
 } from "./lifecycle";
+import type { PaymentStage } from "./payment";
 
 /**
  * One outbox row as the drain reads it, with the token id parsed to the
@@ -402,11 +403,11 @@ export type PaymentStatus =
   "confirmed" | "paid" | "waiting" | "not_started" | "not_confirmed";
 
 export function paymentStatus(
-  item: { markedPaidAt: Date | null; confirmedAt: Date | null },
+  stage: PaymentStage,
   status: TradeStatus,
 ): PaymentStatus {
-  if (item.confirmedAt !== null) return "confirmed";
-  if (item.markedPaidAt !== null) return "paid";
+  if (stage === "confirmed") return "confirmed";
+  if (stage === "marked") return "paid";
   if (!isOpenTrade(status)) return "not_confirmed";
   return status === "pending" ? "not_started" : "waiting";
 }

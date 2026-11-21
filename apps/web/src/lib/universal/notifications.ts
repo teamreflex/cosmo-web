@@ -7,6 +7,7 @@ import {
   tradeNotificationTypes,
   type TradeOfferStatus,
 } from "@apollo/database/web/types";
+import type { TradePart } from "@apollo/trades/lifecycle";
 import type { TradePayment } from "@apollo/trades/payment";
 
 export function isListMatchNotification(
@@ -59,8 +60,9 @@ export type TradeActor =
  * a listing_claimed or the proposer of an offer_received sends, and `asked`
  * how many objekts that offer asks for in return. `payment` is the trade's
  * payment on a listing_claimed, offer_received, offer_accepted or
- * offer_stale, whose items are read, and `yourObjekts` how
- * many objekts the recipient of an offer_accepted sends. `tokenYours` says the
+ * offer_stale, whose items are read, and `yourPart` what the recipient
+ * does in the trade (TradePart) on a listing_claimed, where they are its
+ * poster, or an offer_accepted, where they proposed it. `tokenYours` says the
  * objekt `token` on offer_stale is the recipient's own. `fromListing` says
  * an offer was on a listing, and `closer` what closed a declined one when
  * a party didn't: a ban, or the listing closing.
@@ -79,7 +81,7 @@ type TradeNotificationFields = {
   objekts: NotificationToken[];
   asked: number;
   payment: TradePayment | null;
-  yourObjekts: number;
+  yourPart: TradePart | null;
 };
 
 /**

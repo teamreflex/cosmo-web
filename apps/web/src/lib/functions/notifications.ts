@@ -32,6 +32,7 @@ import type {
   TradeEvent,
   TradeSide,
 } from "@apollo/database/web/types";
+import { tradeParts } from "@apollo/trades/lifecycle";
 import { createServerFn } from "@tanstack/react-start";
 import {
   and,
@@ -197,13 +198,16 @@ export const $listNotifications = createServerFn({ method: "GET" })
         ? []
         : await db
             .select({
+              id: tradeOfferItems.id,
               offerId: tradeOfferItems.offerId,
               kind: tradeOfferItems.kind,
               sender: tradeOfferItems.sender,
               tokenId: tradeOfferItems.tokenId,
               amount: tradeOfferItems.amount,
               currency: tradeOfferItems.currency,
+              markedPaidAt: tradeOfferItems.markedPaidAt,
               confirmedAt: tradeOfferItems.confirmedAt,
+              method: tradeOfferItems.method,
             })
             .from(tradeOfferItems)
             .where(inArray(tradeOfferItems.offerId, itemOfferIds))
@@ -298,7 +302,9 @@ export const $listNotifications = createServerFn({ method: "GET" })
         const all = itemsByOffer.get(row.offerId) ?? [];
         const items = all.filter((i) => i.kind === "objekt");
         const shown = sendsShown.get(row.offerId);
-        const proposer = accepted.get(row.offerId);
+        // the poster hears of a claim, and an offer's proposer of its acceptance
+        const recipient =
+          row.type === "listing_claimed" ? shown : accepted.get(row.offerId);
         return [
           {
             kind: "trade",
@@ -336,10 +342,8 @@ export const $listNotifications = createServerFn({ method: "GET" })
                 ? items.filter((i) => i.sender !== shown).length
                 : 0,
             payment: tradePayment(all),
-            yourObjekts:
-              proposer === undefined
-                ? 0
-                : items.filter((i) => i.sender === proposer).length,
+            yourPart:
+              recipient === undefined ? null : tradeParts(all)[recipient],
           },
         ];
       }),

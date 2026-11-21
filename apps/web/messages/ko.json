@@ -748,7 +748,6 @@
   "trade_page_event_accepted_staff": "{#b}{claimer}{/b}님이 {#b}{poster}{/b}님의 등록글을 수락했습니다.",
   "trade_page_event_extended_staff": "{appName} 스태프가 두 사람의 기한을 {#time}{when}{/time}까지 연장했습니다.",
   "listing_detail_title": "교환 글",
-  "listing_detail_kind_trade": "교환",
   "listing_detail_posted": "{#time}{when}{/time} 게시",
   "listing_detail_error": "이 교환 글을 불러올 수 없습니다.",
   "listing_detail_you_get": "받는 것 · {count}",

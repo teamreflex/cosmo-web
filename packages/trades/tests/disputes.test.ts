@@ -7,6 +7,7 @@ const at = new Date("2026-11-21T00:00:00Z");
 function buyerSends(payment: {
   method: "wise" | null;
   markedPaidAt: Date | null;
+  confirmedAt: Date | null;
 }) {
   const { body } = disputeWebhookRequest(
     "https://discord.invalid/hook",
@@ -27,6 +28,7 @@ function buyerSends(payment: {
       },
       items: [
         {
+          id: 1,
           sender: "to",
           kind: "payment",
           tokenId: null,
@@ -47,13 +49,14 @@ function buyerSends(payment: {
 // Intl puts a no-break space between the currency code and the amount
 describe("disputeWebhookRequest", () => {
   test.each([
-    [null, null, "- USD\u00a03.00, not confirmed"],
-    [null, at, "- USD\u00a03.00, marked paid, not confirmed"],
-    ["wise", at, "- USD\u00a03.00, confirmed via wise"],
+    [null, null, null, "- USD\u00a03.00, not confirmed"],
+    [null, at, null, "- USD\u00a03.00, marked paid, not confirmed"],
+    ["wise", at, at, "- USD\u00a03.00, confirmed via wise"],
+    ["wise", null, at, "- USD\u00a03.00, confirmed via wise"],
   ] as const)(
-    "a payment confirmed by %p and marked paid at %p reads %p",
-    (method, markedPaidAt, expected) => {
-      expect(buyerSends({ method, markedPaidAt })).toBe(expected);
+    "a payment confirmed by %p, marked paid at %p and confirmed at %p reads %p",
+    (method, markedPaidAt, confirmedAt, expected) => {
+      expect(buyerSends({ method, markedPaidAt, confirmedAt })).toBe(expected);
     },
   );
 });

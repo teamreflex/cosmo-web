@@ -11,9 +11,16 @@ import {
   type editListingInputSchema,
   type ListingInput,
   type listingInputSchema,
+  optionKey,
+  type OptionWant,
   rangesDistinct,
 } from "@apollo/trades/listing";
-import { amountSchema, toNumeric } from "@apollo/trades/payment";
+import {
+  amountSchema,
+  type ListingPayment,
+  type PaymentTerms,
+  toNumeric,
+} from "@apollo/trades/payment";
 import {
   collapseWholeGroup,
   MAX_RANGE_VALUES,
@@ -74,21 +81,17 @@ export const emptyListingForm: ListingFormValues = {
   note: "",
 };
 
+// how the composer sets a field: it dirties the form, and checks it again once a post was tried
+export function dirtyOptions(form: { formState: { isSubmitted: boolean } }) {
+  return { shouldDirty: true, shouldValidate: form.formState.isSubmitted };
+}
+
 /**
- * A listing's current terms as the composer's starting values: its pool, not
- * the objekts that left it, its options' rows, and its unit size if it has
- * a ratio (hasRatio(), against everything it has offered), else none, so a
- * bundle stays a bundle, or a buy listing's most units. The unit size isn't held to the pool: tokens sent
- * in a live trade leave the pool while that trade keeps the listing open,
- * which can leave fewer than a trade takes, and Save waits for the poster
- * to lower the ratio or add objekts (composerBlock()). The claimer's
- * payment comes back as the last want row of each option that asks for
- * it, and the poster's as `offeredPayment`.
+ * A listing's current terms as the composer's starting values: its pool, not the objekts that left it, its options' rows, and its unit size if it has a ratio (hasRatio(), against everything it has offered), else none, so a bundle stays a bundle, or a buy listing's most units. The unit size isn't held to the pool: tokens sent in a live trade leave the pool while that trade keeps the listing open, which can leave fewer than a trade takes, and Save waits for the poster to lower the ratio or add objekts (composerBlock()). The claimer's payment comes back as the last want row of each option that asks for it, and the poster's as `offeredPayment`.
  */
 export function listingToFormValues(
   listing: Pick<TradeListing, "items" | "options" | "note" | "units">,
 ): ListingFormValues {
-  const terms = listingPaymentTerms(listing.options);
   const { units } = listing;
   return {
     offered: poolItems(listing).map(({ tokenId }) => ({ tokenId })),
@@ -97,33 +100,52 @@ export function listingToFormValues(
         ? units.unitSize
         : undefined,
     maxUnits: units.kind === "buy" ? units.maxUnits : undefined,
-    options: listing.options.map(({ wants, payment }) =>
-      wants
-        .flatMap((want): ListingFormWant[] => {
+    ...paymentFormFields(
+      listing.options,
+      listingPaymentTerms(listing.options),
+      ({ wants }) =>
+        wants.map((want): ListingFormWant => {
           switch (want.kind) {
             case "exact":
-              return [
-                { kind: "exact", slug: want.objekt.slug, count: want.count },
-              ];
+              return {
+                kind: "exact",
+                slug: want.objekt.slug,
+                count: want.count,
+              };
             case "range":
-              return [
-                { kind: "range", ranges: want.ranges, count: want.count },
-              ];
+              return { kind: "range", ranges: want.ranges, count: want.count };
             case "choice":
-              return [
-                {
-                  kind: "choice",
-                  slugs: want.options.map((option) => option.slug),
-                  count: want.count,
-                },
-              ];
+              return {
+                kind: "choice",
+                slugs: want.options.map((option) => option.slug),
+                count: want.count,
+              };
           }
-        })
-        .concat(payment?.side === "to" ? [paymentWant(payment.amount)] : []),
+        }),
     ),
+    note: listing.note ?? "",
+  };
+}
+
+/**
+ * The options and payment as the form holds them: each option's objekt rows as `objektRows` turns them, then the claimer's payment row when the option asks for it, the poster's amount as `offeredPayment` from the first option, which carries it on every option, and the terms the payment strip edits.
+ */
+function paymentFormFields<TOption extends { payment: ListingPayment | null }>(
+  options: readonly TOption[],
+  terms: Pick<PaymentTerms, "currency" | "methods" | "mode"> | null,
+  objektRows: (option: TOption) => ListingFormWant[],
+) {
+  const onTop = options[0]?.payment;
+  return {
+    options: options.map((option) => [
+      ...objektRows(option),
+      ...(option.payment?.side === "to"
+        ? [paymentWant(option.payment.amount)]
+        : []),
+    ]),
     offeredPayment:
-      terms?.side === "from" && terms.amount !== null
-        ? toNumeric(terms.amount)
+      onTop?.side === "from" && onTop.amount !== null
+        ? toNumeric(onTop.amount)
         : undefined,
     payment:
       terms === null
@@ -133,7 +155,6 @@ export function listingToFormValues(
             methods: terms.methods,
             mode: terms.mode,
           },
-    note: listing.note ?? "",
   };
 }
 
@@ -256,37 +277,18 @@ export function formValuesToInput(
   mode: ComposerMode,
   rosters: ReadonlyMap<string, readonly string[]>,
 ): ListingSubmission {
-  const onTop = options[0]?.payment;
   const terms = {
     ...values,
     ...(units.kind === "pool"
       ? { unitSize: units.unitSize }
       : { maxUnits: units.maxUnits }),
-    options: options.map((option) => [
-      ...option.wants.map((want) =>
+    ...paymentFormFields(options, payment, (option) =>
+      option.wants.map((want) =>
         want.kind === "range"
-          ? {
-              ...want,
-              ranges: collapseRanges(want.ranges, rosters),
-            }
+          ? { ...want, ranges: collapseRanges(want.ranges, rosters) }
           : want,
       ),
-      ...(option.payment?.side === "to"
-        ? [paymentWant(option.payment.amount)]
-        : []),
-    ]),
-    offeredPayment:
-      onTop?.side === "from" && onTop.amount !== null
-        ? toNumeric(onTop.amount)
-        : undefined,
-    payment:
-      payment === null
-        ? undefined
-        : {
-            currency: payment.currency,
-            methods: payment.methods,
-            mode: payment.mode,
-          },
+    ),
   };
   return mode.kind === "create"
     ? { kind: "create", data: terms }
@@ -407,41 +409,6 @@ function paymentBlock(
   return (values.payment?.methods.length ?? 0) === 0 ? "payment_methods" : null;
 }
 
-/**
- * What an option asks for as one string, the same for the same rows in
- * any order, its ranges as they'll be sent, so the footer can hold back
- * two options asking for the same thing as the schema refuses them.
- */
-function optionKey(
-  wants: readonly ListingFormWant[],
-  rosters: ReadonlyMap<string, readonly string[]>,
-) {
-  return JSON.stringify(
-    wants
-      .map((want) => {
-        switch (want.kind) {
-          case "exact":
-            return `exact ${want.count} ${want.slug.trim().toLowerCase()}`;
-          case "choice":
-            return `choice ${want.count} ${want.slugs
-              .map((slug) => slug.trim().toLowerCase())
-              .toSorted()
-              .join(" ")}`;
-          case "range":
-            return `range ${want.count} ${JSON.stringify(
-              sentRanges(want.ranges, rosters).map(rangeKey).toSorted(),
-            )}`;
-          case "payment": {
-            // amounts compare as the schema reads them, so "3" and "3.00" match
-            const parsed = amountSchema.safeParse(want.amount ?? "");
-            return `payment ${parsed.success ? parsed.data : (want.amount ?? "")}`;
-          }
-        }
-      })
-      .toSorted(),
-  );
-}
-
 // a row's ranges as they'll be sent, leaving out any the schema refuses
 function sentRanges(
   ranges: readonly RangeFormFilter[],
@@ -531,7 +498,37 @@ export function composerBlock({
   );
   if (choices.flat().some((slugs) => slugs.length < 2)) return "choice";
   if (!choices.every(choicesDistinct)) return "choice_repeated";
-  if (!isDistinct(options.map((wants) => optionKey(wants, rosters)))) {
+  /**
+   * Two options asking for the same thing, compared as the schema compares
+   * them (optionKey()): slugs and amounts as it reads them, ranges as
+   * they'll be sent. Every amount here reads, or paymentBlock() held it back.
+   */
+  if (
+    !isDistinct(
+      options.map((wants) =>
+        optionKey(
+          wants.map((want): OptionWant => {
+            switch (want.kind) {
+              case "exact":
+                return { ...want, slug: want.slug.trim().toLowerCase() };
+              case "choice":
+                return {
+                  ...want,
+                  slugs: want.slugs.map((slug) => slug.trim().toLowerCase()),
+                };
+              case "range":
+                return { ...want, ranges: sentRanges(want.ranges, rosters) };
+              case "payment":
+                return {
+                  kind: want.kind,
+                  amount: amountSchema.safeParse(want.amount).data,
+                };
+            }
+          }),
+        ),
+      ),
+    )
+  ) {
     return "option_repeated";
   }
   if (unitSize !== undefined && unitSize > offered) return "ratio";

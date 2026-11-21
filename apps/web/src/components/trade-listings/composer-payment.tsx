@@ -3,7 +3,7 @@ import { paymentMethodLabel } from "@/lib/client/trade-listings";
 import { cn } from "@/lib/utils";
 import { type PaymentMethod, paymentMethods } from "@apollo/database/web/types";
 import { IconPlus, IconX } from "@tabler/icons-react";
-import { useId } from "react";
+import { type ComponentProps, useId } from "react";
 import CurrencySelect from "../misc/currency-select";
 import { Button } from "../ui/button";
 import { Checkbox } from "../ui/checkbox";
@@ -13,8 +13,6 @@ import { Input } from "../ui/input";
 type AmountProps = {
   currency: string;
   amount: string;
-  /** names the amount field */
-  label: string;
   /** shown while the field is empty */
   placeholder?: string;
   onChange: (amount: string) => void;
@@ -25,29 +23,35 @@ type AmountProps = {
  * The amount field of a payment as typed, in the listing's currency, with
  * at most two decimals in every currency.
  */
-function AmountField({
+export function AmountField({
   currency,
   amount,
-  label,
   placeholder = "0.00",
   onChange,
-}: Pick<
-  AmountProps,
-  "currency" | "amount" | "label" | "placeholder" | "onChange"
->) {
+  className,
+  ...input
+}: Omit<AmountProps, "onRemove"> & {
+  className?: string;
+} & Pick<
+    ComponentProps<typeof Input>,
+    "id" | "aria-label" | "aria-invalid" | "aria-describedby"
+  >) {
   return (
     <span className="flex shrink-0 items-center gap-2">
       <span className="font-mono text-sm text-muted-foreground">
         {currency}
       </span>
       <Input
-        aria-label={label}
+        {...input}
         inputMode="decimal"
         autoComplete="off"
         placeholder={placeholder}
         value={amount}
         onChange={(event) => onChange(event.target.value)}
-        className="h-9 w-24 font-mono font-bold tabular-nums md:w-28"
+        className={cn(
+          "h-9 w-24 font-mono font-bold tabular-nums md:w-28",
+          className,
+        )}
       />
     </span>
   );
@@ -84,7 +88,10 @@ export function ComposerPaymentRow(props: AmountProps) {
       <span className="shrink-0 text-xxs font-semibold tracking-widest text-amber-700 uppercase md:w-16 dark:text-amber-400">
         {m.listing_detail_kind_payment()}
       </span>
-      <AmountField {...props} />
+      <AmountField
+        {...props}
+        aria-label={m.listing_composer_payment_amount()}
+      />
       <span className="min-w-0 truncate text-sm text-muted-foreground">
         {m.listing_detail_payment_each()}
       </span>
@@ -139,7 +146,10 @@ export function ComposerOfferedPayment({
           ? m.listing_composer_payment_paying()
           : m.listing_composer_payment_and()}
       </span>
-      <AmountField {...payment} />
+      <AmountField
+        {...payment}
+        aria-label={m.listing_composer_payment_amount_yours()}
+      />
       <span className="min-w-0 truncate text-sm text-muted-foreground">
         {paying
           ? m.listing_payment_each_unit()
