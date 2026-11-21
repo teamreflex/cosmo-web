@@ -57,6 +57,11 @@ The shell and every route file's loader ship to every page ([tanstack.md](tansta
 - Server-rendered content never starts hidden behind a JS animation such as motion's `initial={{ opacity: 0 }}`, which keeps it invisible until hydration. Use a CSS entrance (`animate-in fade-in-0`) instead (`components/events/event-header.tsx`).
 - The client build puts every module the entry statically imports into two chunks (`codeSplitting` in `vite.config.mts`), except the browser Sentry SDK ([tooling.md](tooling.md#sentry)). Libraries go in `vendor`, which keeps its hash across deploys unless a dependency changes, app code starts or stops using a library export, or a module in `vendor` imports from `app` (why TanStack Start's client packages stay in `app`).
 
+## Browser support
+
+- Vite lowers syntax to its default build target but adds no missing built-ins, and iPhones stuck on iOS 15 still visit, so a built-in newer than Safari 15 needs a polyfill.
+- Polyfills live in `lib/client/polyfills.ts`, which `src/client.tsx` imports before anything else so they exist before any module runs.
+
 ## Client state
 
 - Filters and other shareable view state live in URL search params ([tanstack.md](tanstack.md#routes)).
