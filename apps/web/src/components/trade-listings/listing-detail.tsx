@@ -26,24 +26,45 @@ export default function ListingDetail({ id }: Props) {
     queries: [tradeListingQuery(id), currentAccountQuery],
   });
   const [notice, setNotice] = useState<Notice | null>(null);
+  const [picked, setOption] = useState<number | null>(null);
   if (page === null) throw notFound();
 
   const { listing, viewer } = page;
   const role = listingRole(listing, viewer);
+  const option = shownOption(listing, viewer, picked);
   return (
     <ListingView
-      // new terms or a different most units start the picks over
+      // new terms, another option or a different most units start the picks over
       key={
         role.role === "picker"
-          ? `${listing.updatedAt.toISOString()}:${role.viewer.units}`
+          ? `${listing.updatedAt.toISOString()}:${option}:${role.viewer.options[option]?.units}`
           : role.role
       }
       listing={listing}
       role={role}
+      option={option}
+      onOption={setOption}
       address={account?.cosmo?.address}
       notice={notice}
       onNotice={setNotice}
     />
+  );
+}
+
+/**
+ * The option a picking viewer gives: the one they picked while the listing
+ * still has it, else the first they can fill, else the first.
+ */
+function shownOption(
+  listing: TradeListing,
+  viewer: ListingViewer,
+  picked: number | null,
+) {
+  if (picked !== null && picked < listing.options.length) return picked;
+  if (viewer.role !== "candidate") return 0;
+  return Math.max(
+    viewer.options.findIndex((option) => option.units > 0),
+    0,
   );
 }
 

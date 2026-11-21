@@ -9,6 +9,7 @@ import type {
   StoredReportReason,
   TradeSide,
 } from "@apollo/database/web/types";
+import type { DeadlineOwed } from "@apollo/trades/lifecycle";
 
 /**
  * Escalated reports still wait on staff, so they count as open for the
@@ -35,6 +36,8 @@ export type AdminReportRowTarget =
         id: string;
         from: StaffUser | null;
         to: StaffUser | null;
+        // what the trade still owes, which words a deadline dispute
+        owed: DeadlineOwed;
       } | null;
     }
   | {

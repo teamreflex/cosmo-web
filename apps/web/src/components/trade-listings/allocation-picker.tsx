@@ -1,13 +1,19 @@
 import type { PickerRow, Picks } from "@/hooks/use-listing-picks";
 import { m } from "@/i18n/messages";
-import { formatCount, pickShown } from "@/lib/client/trade-listings";
+import {
+  formatAmount,
+  formatCount,
+  pickShown,
+} from "@/lib/client/trade-listings";
 import type { Objekt } from "@/lib/universal/objekt-conversion";
 import type {
-  Candidate,
+  CandidateOption,
   CandidateRow,
   ListingPick,
 } from "@/lib/universal/trade-listings";
 import { cn } from "@/lib/utils";
+import type { ListingAcceptance, TradeParts } from "@apollo/trades/lifecycle";
+import type { ListingPayment } from "@apollo/trades/payment";
 import { IconCircleCheck, IconPlus, IconX } from "@tabler/icons-react";
 import { Fragment, type ReactNode, useState } from "react";
 import { ObjektCardFace, ObjektSidebar } from "../objekt/common";
@@ -16,10 +22,11 @@ import { RemovableTile, TileCaption } from "./composer-offered";
 import { RangeBadges } from "./range-want";
 import RowPicker from "./row-picker";
 import SideHeading from "./side-heading";
-import WantLabel from "./want-label";
+import WantLabel, { PaymentBox } from "./want-label";
 
 type Props = {
-  viewer: Candidate;
+  /** what the viewer holds for the option they give */
+  viewer: CandidateOption;
   /**
    * The viewer's linked COSMO address, whose collection the row pickers
    * list. A viewer who can pick is always linked.
@@ -27,6 +34,8 @@ type Props = {
   address: string | undefined;
   rows: PickerRow[];
   picks: Picks;
+  /** the payment the viewer sends for each unit, if any */
+  payment: ListingPayment | null;
   /** the poster as the page names them */
   poster: string;
 };
@@ -35,14 +44,16 @@ type Props = {
  * What the viewer would give, one panel of slots per want row at the
  * claim's size, which the viewer fills from their own collection. Removing a
  * pick empties its slot, and an empty slot opens the viewer's collection
- * held to that row. Accept, or Send offer, lives in the page header, which
- * says whether the picks fit.
+ * held to that row, then the payment the viewer sends for the units they
+ * take, which they pay outside Apollo. Accept, or Send offer, lives in the
+ * page header, which says whether the picks fit.
  */
 export default function AllocationPicker({
   viewer,
   address,
   rows,
   picks,
+  payment,
   poster,
 }: Props) {
   const [picking, setPicking] = useState<number | null>(null);
@@ -50,11 +61,29 @@ export default function AllocationPicker({
 
   return (
     <section className="flex min-w-0 flex-col gap-3.5">
-      <SideHeading
-        tone="have"
-        title={m.listing_detail_you_give_total({ count: picks.giveTotal })}
-        summary={m.listing_detail_you_give_summary()}
-      />
+      {picks.parts.to === "pay" && payment !== null ? (
+        <SideHeading
+          tone="have"
+          title={m.listing_detail_you_pay()}
+          // with no asking price, the payment card below says it takes an offer
+          summary={
+            payment.amount === null
+              ? undefined
+              : m.listing_detail_units_pay({
+                  amount: formatAmount(
+                    payment.amount * picks.units,
+                    payment.currency,
+                  ),
+                })
+          }
+        />
+      ) : (
+        <SideHeading
+          tone="have"
+          title={m.listing_detail_you_give_total({ count: picks.giveTotal })}
+          summary={m.listing_detail_you_give_summary()}
+        />
+      )}
 
       {rows.map((row, index) => {
         const rowPicks = picked[index] ?? [];
@@ -94,20 +123,46 @@ export default function AllocationPicker({
         );
       })}
 
-      <PickerFooter offers={picks.takesOffers} poster={poster} />
+      {payment !== null && (
+        <PaymentBox
+          payment={payment}
+          units={picks.units}
+          className="border-teal-500/30 bg-transparent"
+        />
+      )}
+
+      <PickerFooter
+        acceptance={picks.acceptance}
+        poster={poster}
+        parts={picks.parts}
+      />
     </section>
   );
 }
 
 /**
- * What accepting does, or what sending an offer does on a listing that
- * takes offers.
+ * What accepting does when both sides send objekts, with a payment beside
+ * them or not. On a listing that takes offers, what sending one does. Open
+ * to offers, the two buttons say the viewer can do either, so it reads as
+ * accepting. A listing where one side only pays has no line: the cards
+ * above already say who sends and who pays.
  */
-function PickerFooter({ offers, poster }: { offers: boolean; poster: string }) {
+function PickerFooter({
+  acceptance,
+  poster,
+  parts,
+}: {
+  acceptance: ListingAcceptance;
+  poster: string;
+  parts: TradeParts;
+}) {
+  if (parts.from === "pay" || parts.to === "pay") return null;
   return (
     <p className="text-xs leading-relaxed text-muted-foreground">
-      {offers
-        ? m.listing_detail_offer_footer({ poster })
+      {acceptance === "offer"
+        ? parts.from === "send" && parts.to === "send"
+          ? m.listing_detail_offer_footer({ poster })
+          : m.listing_detail_offer_footer_with_payment({ poster })
         : m.listing_detail_accept_footer()}
     </p>
   );

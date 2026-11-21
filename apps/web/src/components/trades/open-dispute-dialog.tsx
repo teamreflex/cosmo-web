@@ -5,6 +5,7 @@ import { reportReasonLabel } from "@/lib/client/reports";
 import { $openDispute } from "@/lib/functions/trades";
 import { openDisputeInputSchema } from "@/lib/universal/schema/trades";
 import { disputeReasons } from "@apollo/database/web/types";
+import type { TradePart } from "@apollo/trades/lifecycle";
 import { standardSchemaResolver } from "@hookform/resolvers/standard-schema";
 import { ParaglideMessage } from "@inlang/paraglide-js-react";
 import { IconLoader2 } from "@tabler/icons-react";
@@ -37,8 +38,8 @@ type Props = {
   tradeId: string;
   listingId: string | null;
   deadline: Date;
-  /** whether the trade has a payment, which makes "payment not received" a reason */
-  hasPayment: boolean;
+  /** the other party's part, which decides what the viewer can say didn't arrive */
+  owed: TradePart;
   open: boolean;
   onOpenChange: (open: boolean) => void;
 };
@@ -51,7 +52,7 @@ export default function OpenDisputeDialog({
   tradeId,
   listingId,
   deadline,
-  hasPayment,
+  owed,
   open,
   onOpenChange,
 }: Props) {
@@ -76,7 +77,11 @@ export default function OpenDisputeDialog({
   });
 
   const reasonItems = disputeReasons
-    .filter((reason) => hasPayment || reason !== "payment_not_received")
+    .filter((reason) => {
+      if (reason === "objekt_not_received") return owed !== "pay";
+      if (reason === "payment_not_received") return owed !== "send";
+      return true;
+    })
     .map((reason) => ({ value: reason, label: reportReasonLabel(reason) }));
 
   return (
@@ -129,7 +134,8 @@ export default function OpenDisputeDialog({
                   <SelectContent>
                     {reasonItems.map((item) => (
                       <SelectItem key={item.value} value={item.value}>
-                        {item.label}
+                        {/* a long reason wraps in the list, which is as wide as the trigger */}
+                        <span className="whitespace-normal">{item.label}</span>
                       </SelectItem>
                     ))}
                   </SelectContent>

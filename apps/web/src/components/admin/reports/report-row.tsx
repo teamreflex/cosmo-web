@@ -1,7 +1,7 @@
 import StatusPill from "@/components/objekt/detail/status-pill";
 import { Timestamp } from "@/components/ui/timestamp";
 import { m } from "@/i18n/messages";
-import { reportReasonLabel, reportTargetTypeLabel } from "@/lib/client/reports";
+import { reportTargetTypeLabel, reportTitle } from "@/lib/client/reports";
 import type { AdminReportRow } from "@/lib/universal/reports";
 import type { FeedbackRating } from "@apollo/database/web/types";
 import { ParaglideMessage } from "@inlang/paraglide-js-react";
@@ -30,7 +30,12 @@ export default function ReportRow({ row }: Props) {
           {reportTargetTypeLabel(row.target.type)}
         </StatusPill>
         <span className="truncate text-sm font-semibold">
-          {reportReasonLabel(row.reason)}
+          {reportTitle(
+            row.reason,
+            row.target.type === "trade"
+              ? (row.target.trade?.owed ?? null)
+              : null,
+          )}
         </span>
         <span className="ml-auto shrink-0 text-xs text-muted-foreground tabular-nums">
           <Timestamp date={row.createdAt} relative="narrow" />

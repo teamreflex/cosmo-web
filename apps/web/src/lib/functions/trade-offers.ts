@@ -203,11 +203,18 @@ export const $acceptOffer = createServerFn({ method: "POST" })
         acceptedAt: sql`now()`,
         deadlineAt: sql`now() + make_interval(secs => ${CLAIM_WINDOW / 1000})`,
       });
+      // only tokens go live; a payment item never does
       const goLive = (...where: SQL[]) =>
         tx
           .update(tradeOfferItems)
           .set({ live: true })
-          .where(and(eq(tradeOfferItems.offerId, trade.id), ...where));
+          .where(
+            and(
+              eq(tradeOfferItems.offerId, trade.id),
+              eq(tradeOfferItems.kind, "objekt"),
+              ...where,
+            ),
+          );
       if (terms === null) {
         await refuseLiveClash(goLive(), "offer_unavailable");
       } else {

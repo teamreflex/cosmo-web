@@ -2,6 +2,7 @@ import type { Picks } from "@/hooks/use-listing-picks";
 import { m } from "@/i18n/messages";
 import {
   availabilityLabel,
+  buyingText,
   objektName,
   posterName,
   standingLabel,
@@ -10,6 +11,7 @@ import {
 } from "@/lib/client/trade-listings";
 import {
   type ListingItem,
+  type ListingSize,
   type ListingTrade,
   poolItems,
   poolStanding,
@@ -21,6 +23,7 @@ import { ObjektSidebar } from "../objekt/common";
 import ExpandableObjekt from "../objekt/objekt-expandable";
 import SelectableCard, { OfferPill } from "./selectable-card";
 import SideHeading from "./side-heading";
+import { PaymentBox } from "./want-label";
 
 export type OfferedHeading = "you_get" | "offering" | "you_offer";
 
@@ -60,6 +63,16 @@ export default function YouGet({
   });
   const [single] = shown;
 
+  if (listing.units.kind === "buy") {
+    return (
+      <BuyingSide
+        listing={listing}
+        units={listing.units}
+        heading={heading}
+        picked={picks?.units ?? 1}
+      />
+    );
+  }
   if (picks !== null && picks.ratio !== null) {
     return <PoolPicker listing={listing} picks={picks} />;
   }
@@ -113,6 +126,70 @@ export default function YouGet({
             </li>
           ))}
         </ul>
+      )}
+      <PosterPayment listing={listing} units={picks?.units ?? 1} />
+    </section>
+  );
+}
+
+/**
+ * The payment the poster sends on top of their objekts, which prices every
+ * option alike, for the units the viewer takes, or nothing when the
+ * claimer pays or there's no payment.
+ */
+function PosterPayment({
+  listing,
+  units,
+}: {
+  listing: TradeListing;
+  units: number;
+}) {
+  const payment = listing.options[0]?.payment;
+  return (
+    payment?.side === "from" && <PaymentBox payment={payment} units={units} />
+  );
+}
+
+/**
+ * A buy listing's side, which is its payment alone: "You get" it for the
+ * units a picking viewer takes, "You pay" it for its poster, "Paying" for
+ * anyone else, with how many units it has left.
+ */
+function BuyingSide({
+  listing,
+  units,
+  heading,
+  picked,
+}: {
+  listing: TradeListing;
+  units: Extract<ListingSize, { kind: "buy" }>;
+  heading: OfferedHeading;
+  picked: number;
+}) {
+  const payment = listing.options[0]?.payment;
+  return (
+    <section className="flex min-w-0 flex-col gap-4">
+      <SideHeading
+        tone={heading === "you_get" ? "want" : "have"}
+        title={
+          heading === "you_get"
+            ? m.listing_detail_you_get_payment()
+            : heading === "you_offer"
+              ? m.listing_detail_you_pay()
+              : m.listing_detail_paying()
+        }
+        summary={
+          heading === "you_get"
+            ? m.listing_detail_you_get_summary({ poster: posterName(listing) })
+            : buyingText(units)
+        }
+      />
+      {payment?.side === "from" && (
+        <PaymentBox
+          payment={payment}
+          units={heading === "you_get" ? picked : 1}
+          perUnit
+        />
       )}
     </section>
   );
@@ -169,7 +246,8 @@ function PoolPicker({
           );
         })}
       </ul>
-      {picks.takesOffers && (
+      <PosterPayment listing={listing} units={picks.units} />
+      {picks.acceptance !== "claim" && (
         <p className="text-xs leading-relaxed text-muted-foreground">
           {m.listing_detail_pool_offers_help({ poster: posterName(listing) })}
         </p>

@@ -12,12 +12,13 @@ export type ComposerRange = Partial<Record<RangeColumn, readonly string[]>>;
 export type ComposerExactWant = { kind: "exact"; slug: string; count: number };
 
 /**
- * The least the composer's reducers need from a want row.
+ * The least the composer's reducers need from a want row. A payment row
+ * has no count and asks for no objekts.
  */
-type CountedWant = { kind: string; count: number };
+type CountedWant = { kind: string; count?: number };
 
 export function totalWanted(wants: readonly CountedWant[]) {
-  return wants.reduce((sum, want) => sum + want.count, 0);
+  return wants.reduce((sum, want) => sum + (want.count ?? 0), 0);
 }
 
 /**

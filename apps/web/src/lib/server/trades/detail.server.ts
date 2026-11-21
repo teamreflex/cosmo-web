@@ -1,3 +1,4 @@
+import { sum } from "@/lib/utils";
 import {
   cosmoAccounts,
   tradeOfferItems,
@@ -10,13 +11,17 @@ import {
   type TradeOfferItem,
   type TradeOfferStatus,
 } from "@apollo/database/web/types";
-import { allocateUnits, fitsWant } from "@apollo/trades/allocate";
+import {
+  allocateUnits,
+  fitsWant,
+  type UnitsRoom,
+} from "@apollo/trades/allocate";
 import {
   claimCap,
   type ClaimStats,
   MAX_TOTAL_WANTED,
 } from "@apollo/trades/caps";
-import { needsYou, tradeState } from "@apollo/trades/lifecycle";
+import { nextStep, tradeParts, tradeState } from "@apollo/trades/lifecycle";
 import { isEqual } from "@apollo/util";
 import {
   and,
@@ -32,17 +37,20 @@ import {
 } from "drizzle-orm";
 import { alias, QueryBuilder } from "drizzle-orm/pg-core";
 import {
+  type CandidateOption,
   type CandidateRow,
   type EndedOfferStatus,
   type ListingOfferSummary,
+  type ListingOption,
+  type ListingSize,
   listingStateSchema,
   type ListingTrade,
   type ListingViewer,
   offerRefusal,
   storedObjektItemSchema,
-  type StoredWant,
+  tradeOption,
+  tradePayment,
   type TradeRatio,
-  tradeWants,
 } from "../../universal/trade-listings";
 import { db, type DbOrTx } from "../db";
 import { feedbackRepColumns } from "../feedback.server";
@@ -61,8 +69,8 @@ const qb = new QueryBuilder();
 
 /**
  * The rows that are open claims: trades taken from a listing that are
- * still accepted or disputed. Only a claim's trade copies items with a
- * `listing_id`.
+ * still accepted or disputed. Only a trade from a listing has items with a
+ * `listing_id`: the poster's objekts, or their payment on a buy listing.
  */
 const openClaim = and(
   eq(tradeOffers.kind, "trade"),
@@ -261,6 +269,8 @@ function readListingTrades(listingId: string) {
       proposedBy: true,
       toUserId: true,
       toAddress: true,
+      listingOption: true,
+      units: true,
       acceptedAt: true,
       deadlineAt: true,
       expiresAt: true,
@@ -344,17 +354,24 @@ function endedOffer(status: TradeOfferStatus): EndedOfferStatus | null {
 function tradeSides(row: { items: readonly TradeOfferItem[] }) {
   const side = (sender: "from" | "to") =>
     row.items.flatMap((item) =>
-      item.sender === sender ? [storedObjektItemSchema.parse(item)] : [],
+      item.sender === sender && item.kind === "objekt"
+        ? [storedObjektItemSchema.parse(item)]
+        : [],
     );
   return { from: side("from"), to: side("to") };
 }
 
 /**
- * How many objekts each side of a trade from the listing sends.
+ * How many objekts each side of a trade from the listing sends, and its
+ * payment.
  */
 function tradeSize(row: { items: readonly TradeOfferItem[] }): TradeRatio {
   const { from, to } = tradeSides(row);
-  return { give: from.length, get: to.length };
+  return {
+    give: from.length,
+    get: to.length,
+    payment: tradePayment(row.items),
+  };
 }
 
 /**
@@ -389,8 +406,8 @@ function claimer(row: ListingTradeRow) {
 async function readPosterSide(listing: {
   id: string;
   fromAddress: string;
-  unitSize: number;
-  wants: StoredWant[];
+  units: ListingSize;
+  options: ListingOption[];
   pool: readonly number[];
   posterRefused: boolean;
 }): Promise<{ offers: ListingOfferSummary[]; trades: ListingTrade[] }> {
@@ -405,9 +422,14 @@ async function readPosterSide(listing: {
     if (row.toAddress === null) {
       throw new Error(`offer ${row.id} has no claimer address`);
     }
+    // every write of a trade from a listing records the option it gives
+    if (row.listingOption === null) {
+      throw new Error(`offer ${row.id} has no listing option`);
+    }
     return [
       {
         row,
+        option: row.listingOption,
         expiresAt: row.expiresAt,
         toAddress: row.toAddress,
         sides: tradeSides(row),
@@ -428,23 +450,27 @@ async function readPosterSide(listing: {
     ...new Set(pending.flatMap(({ row }) => row.toUserId ?? [])),
   ]);
   const pool = new Set(listing.pool);
-  const wants = tradeWants(listing.wants);
+  const options = listing.options.map(tradeOption);
   const now = new Date();
 
   return {
     offers: pending.map(
-      ({ row, expiresAt, toAddress, sides }): ListingOfferSummary => {
+      ({ row, option, expiresAt, toAddress, sides }): ListingOfferSummary => {
         const picks = sides.from.map((item) => item.tokenId);
         const given = sides.to.map((item) => item.tokenId);
+        const payment = tradePayment(row.items);
         return {
           tradeId: row.id,
           claimer: claimer(row),
+          option,
           picks: sides.from.map((item) => feedItem(item, indexed)),
           given: sides.to.map((item) => feedItem(item, indexed)),
+          payment,
+          parts: tradeParts(row.items),
           expiresAt,
           refusal: offerRefusal(
-            { expiresAt, picks, given },
-            { ...listing, pool, wants },
+            { expiresAt, option, picks, units: row.units, given, payment },
+            { ...listing, pool, options },
             {
               address: toAddress,
               linked:
@@ -478,7 +504,9 @@ async function readPosterSide(listing: {
         claimer: claimer(row),
         acceptedAt: row.acceptedAt,
         tokenIds: from.map((item) => item.tokenId),
+        units: row.units,
         givenCount: to.length,
+        payment: tradePayment(row.items),
       };
       switch (row.status) {
         case "accepted": {
@@ -492,13 +520,7 @@ async function readPosterSide(listing: {
               ...trade,
               status: row.status,
               deadlineAt: row.deadlineAt,
-              toSend: row.items.filter(
-                (item) =>
-                  item.sender === "from" &&
-                  item.kind === "objekt" &&
-                  item.transferredAt === null,
-              ).length,
-              needsYou: needsYou(state, "from", {
+              nextStep: nextStep(state, "from", {
                 deadlinePassed: deadlinePassed(
                   state,
                   row.deadlineAt,
@@ -537,28 +559,28 @@ async function readPosterSide(listing: {
 }
 
 /**
- * The candidate's side of an open listing: the most units they can take,
- * bounded by the free pool, the claim caps and what they hold
- * (allocateUnits), and per want row how many usable copies of the
- * collections it fits they own before the cap and how many it is short at
- * that size, one unit's when they can't fill one. The allocation runs here,
- * since one copy can fit two rows, but only its counts leave, so the answer
- * stays as small as the listing whatever the viewer holds. The rows are the
- * ones objekts fill (tradeWants()); a listing with a payment row never
- * reaches the picker.
+ * The candidate's side of an open listing, for each of its options: the
+ * most units they can take giving it, bounded by the free pool or a buy
+ * listing's units left, the claim caps and what they hold (allocateUnits), and per want row how many
+ * usable copies of the collections it fits they own before the cap and how
+ * many it is short at that size, one unit's when they can't fill one. One
+ * holdings read covers every option's rows. The allocation runs here,
+ * since one copy can fit two rows, but only its counts leave, so the
+ * answer stays as small as the listing whatever the viewer holds. An
+ * option of a payment alone has no rows, and its candidate can take as
+ * many units as the free pool and the caps allow.
  */
 async function readCandidateSide(
   address: string,
-  wants: StoredWant[],
-  pool: { free: number; unitSize: number },
-): Promise<{ units: number; rows: CandidateRow[] }> {
-  const claimable = tradeWants(wants);
+  options: readonly ListingOption[],
+  room: UnitsRoom,
+): Promise<CandidateOption[]> {
+  const claimable = options.map((option) => tradeOption(option).wants);
   // no claim takes more than MAX_TOTAL_WANTED copies, of one collection or all
-  const inventory = await readCandidates(address, claimable, MAX_TOTAL_WANTED);
-  const { units, allocation } = allocateUnits(
-    claimable,
-    inventory.map((copy) => ({ tokenId: copy.tokenId, ...copy.attributes })),
-    pool,
+  const inventory = await readCandidates(
+    address,
+    claimable.flat(),
+    MAX_TOTAL_WANTED,
   );
   // one entry per collection: its values and every usable copy, before the cap
   const owned = new Map(
@@ -568,16 +590,26 @@ async function readCandidateSide(
     ]),
   );
 
-  return {
-    units,
-    rows: claimable.map((want, index): CandidateRow => ({
-      owned: [...owned.values()]
-        .filter((collection) => fitsWant(want, collection))
-        .reduce((total, collection) => total + collection.owned, 0),
-      // allocate() answers every want, in order
-      missing: allocation[index]?.missing ?? want.count,
-    })),
-  };
+  return claimable.map((wants) => {
+    const { units, allocation } = allocateUnits(
+      wants,
+      inventory.map((copy) => ({ tokenId: copy.tokenId, ...copy.attributes })),
+      room,
+    );
+    return {
+      units,
+      rows: wants.map((want, index): CandidateRow => ({
+        owned: sum(
+          [...owned.values()].filter((collection) =>
+            fitsWant(want, collection),
+          ),
+          (collection) => collection.owned,
+        ),
+        // allocate() answers every want, in order
+        missing: allocation[index]?.missing ?? want.count,
+      })),
+    };
+  });
 }
 
 /**
@@ -595,8 +627,8 @@ export async function readListingViewer(
     status: TradeOfferStatus;
     fromUserId: string | null;
     fromAddress: string;
-    unitSize: number;
-    wants: StoredWant[];
+    units: ListingSize;
+    options: ListingOption[];
     /** the pool's objekts that haven't left it */
     pool: readonly number[];
     /** how many of them are free to claim */
@@ -633,6 +665,7 @@ export async function readListingViewer(
       tradeId: trade.id,
       expiresAt: trade.expiresAt,
       ...(await offerSides(trade)),
+      payment: tradePayment(trade.items),
     };
   }
   if (
@@ -652,10 +685,13 @@ export async function readListingViewer(
   // the listing's `stop` says whether the pool or the poster's account stops a claim
   return {
     role: "candidate",
-    ...(await readCandidateSide(address, listing.wants, {
-      free: listing.free,
-      unitSize: listing.unitSize,
-    })),
+    options: await readCandidateSide(
+      address,
+      listing.options,
+      listing.units.kind === "pool"
+        ? { ...listing.units, free: listing.free }
+        : listing.units,
+    ),
     claims: { active: standing.active, cap: claimCap(standing) },
     ownAddress: isEqual(address, listing.fromAddress),
     endedOffer: trade === undefined ? null : endedOffer(trade.status),

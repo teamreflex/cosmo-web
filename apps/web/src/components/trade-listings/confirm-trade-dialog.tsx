@@ -5,6 +5,7 @@ import { formatError } from "@/lib/client/errors";
 import { type ClaimFailure, claimFailure } from "@/lib/client/errors/trades";
 import { getObjektFrontImageUrl } from "@/lib/client/objekt-util";
 import {
+  formatAmount,
   objektName,
   pickShown,
   posterName,
@@ -15,12 +16,25 @@ import { $claimListing } from "@/lib/functions/trade-listings";
 import { tradesKey } from "@/lib/queries/trades";
 import type { Objekt } from "@/lib/universal/objekt-conversion";
 import {
+  type ListingAt,
+  optionParts,
   poolItems,
   type TokenRefusalReason,
-  type TradeListing,
 } from "@/lib/universal/trade-listings";
 import { cn } from "@/lib/utils";
-import { CLAIM_WINDOW } from "@apollo/trades/timers";
+import type { TradeSide } from "@apollo/database/web/types";
+import {
+  claimTerms,
+  type TradePart,
+  type TradeParts,
+} from "@apollo/trades/lifecycle";
+import {
+  amountSchema,
+  type ListingPayment,
+  MAX_PAYMENT_AMOUNT,
+  toNumeric,
+} from "@apollo/trades/payment";
+import { CLAIM_WINDOW, OFFER_WINDOW } from "@apollo/trades/timers";
 import { formatSerial } from "@apollo/util";
 import { ParaglideMessage } from "@inlang/paraglide-js-react";
 import {
@@ -31,7 +45,7 @@ import {
 } from "@tabler/icons-react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "@tanstack/react-router";
-import { type ReactNode, useRef, useState } from "react";
+import { type ReactNode, useId, useRef, useState } from "react";
 import { toast } from "sonner";
 import { Alert, AlertDescription, AlertTitle } from "../ui/alert";
 import { Button } from "../ui/button";
@@ -42,23 +56,26 @@ import {
   DialogDescription,
   DialogTitle,
 } from "../ui/dialog";
+import { Label } from "../ui/label";
 import { Spinner } from "../ui/spinner";
 import { Timestamp } from "../ui/timestamp";
+import { AmountField } from "./composer-payment";
 import type { Notice } from "./listing-status";
 import { ExactBadges, RangeBadges } from "./range-want";
 import { Eyebrow } from "./side-heading";
+import { PaymentBox } from "./want-label";
 
 type Props = {
-  listing: TradeListing;
+  listing: ListingAt;
   rows: PickerRow[];
-  /** whether it sends an offer, as on a listing with a range row */
-  offers: boolean;
   snapshot: ConfirmSnapshot | null;
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onNotice: (notice: Notice | null) => void;
   /** drops a pool pick the server said another trade took */
   onPickTaken: (tokenId: number) => void;
+  /** the viewer is at their claim cap, so only an offer can go */
+  capped: boolean;
 };
 
 /**
@@ -74,18 +91,21 @@ type Shown = {
 /**
  * Confirms a claim, or an offer on a listing that takes them, on exactly
  * the picks Accept froze, sent against the listing version they were made
- * on. A changed listing, a taken pick or an unusable serial answers here,
- * and closing after one refetches what it made stale.
+ * on. An offer on a listing whose payment takes offers names the amount
+ * the claimer offers per trade; one at an open-to-offers listing's asking
+ * price accepts it at once (claimTerms()), and the dialog says so. A
+ * changed listing, a taken pick or an unusable serial answers here, and
+ * closing after one refetches what it made stale.
  */
 export default function ConfirmTradeDialog({
   listing,
   rows,
-  offers,
   snapshot,
   open,
   onOpenChange,
   onNotice,
   onPickTaken,
+  capped,
 }: Props) {
   const invalidate = useInvalidateListing();
   const queryClient = useQueryClient();
@@ -93,6 +113,9 @@ export default function ConfirmTradeDialog({
   const [failure, setFailure] = useState<ClaimFailure | null>(null);
   const confirming = useRef(false);
   const poster = posterName(listing);
+  const parts = optionParts(listing);
+  const { amount, setAmount, proposing, invalid, sent, ready, offers, endsAt } =
+    useOfferTerms(listing, snapshot, capped);
 
   const claim = useMutation({
     mutationFn: (frozen: ConfirmSnapshot) =>
@@ -100,17 +123,15 @@ export default function ConfirmTradeDialog({
         data: {
           listingId: listing.id,
           seen: listing.updatedAt,
+          option: listing.option,
           units: frozen.units,
           picked: frozen.offered,
           rows: frozen.picked.map((picks) => picks.map((pick) => pick.tokenId)),
+          amount: sent,
         },
       }),
     onSuccess: async ({ tradeId, pending }) => {
-      toast.success(
-        pending
-          ? m.listing_detail_offer_sent({ poster })
-          : m.listing_detail_accepted(),
-      );
+      toast.success(claimedToast(pending, parts.to, poster));
       void queryClient.invalidateQueries({ queryKey: tradesKey });
       // the next step is on the trade or the offer, and Back finds the listing as it is now
       await navigate({ to: "/trade/$id", params: { id: tradeId } });
@@ -174,6 +195,7 @@ export default function ConfirmTradeDialog({
       onOpenChangeComplete={(next) => {
         if (!next) {
           setFailure(null);
+          setAmount("");
           claim.reset();
         }
       }}
@@ -220,7 +242,7 @@ export default function ConfirmTradeDialog({
 
               <section className="flex flex-col gap-2">
                 <Eyebrow tone="have">
-                  {m.listing_detail_you_give_total({ count: giveCount })}
+                  {giveHeadings[parts.to](giveCount)}
                 </Eyebrow>
                 {rows.map((row, index) => (
                   <Group
@@ -232,48 +254,54 @@ export default function ConfirmTradeDialog({
                     tokens={give[index] ?? []}
                   />
                 ))}
+                <ClaimerPayment
+                  listing={listing}
+                  units={snapshot?.units ?? 1}
+                  proposing={proposing}
+                  amount={amount}
+                  invalid={invalid}
+                  onAmount={setAmount}
+                />
               </section>
 
               <section className="flex flex-col gap-2">
-                <Eyebrow tone="want">
-                  {m.listing_detail_you_get({ count: get.length })}
-                </Eyebrow>
-                <Group tokens={get} />
+                {listing.units.kind === "buy" ? (
+                  <Eyebrow tone="want">
+                    {m.listing_detail_you_get_payment()}
+                  </Eyebrow>
+                ) : (
+                  <>
+                    <Eyebrow tone="want">
+                      {m.listing_detail_you_get({ count: get.length })}
+                    </Eyebrow>
+                    <Group tokens={get} />
+                  </>
+                )}
+                <PaymentGroup
+                  listing={listing}
+                  sender="from"
+                  units={snapshot?.units ?? 1}
+                />
               </section>
 
-              {snapshot !== null &&
-                (offers ? (
-                  <OfferSteps poster={poster} expiresAt={snapshot.endsAt} />
-                ) : (
-                  <p className="grid grid-cols-[1rem_minmax(0,1fr)] gap-2.5 rounded-lg bg-muted/50 px-3 py-2.5 text-sm leading-relaxed max-sm:hidden">
-                    <IconClock className="mt-0.5 size-4 text-muted-foreground" />
-                    <span>
-                      <ParaglideMessage
-                        message={m.listing_confirm_deadline}
-                        inputs={{ date: "", poster }}
-                        markup={{
-                          hours: ({ children }) => (
-                            <span className="font-semibold">{children}</span>
-                          ),
-                          time: () => <Deadline deadlineAt={snapshot.endsAt} />,
-                          user: ({ children }) => (
-                            <span className="font-semibold">{children}</span>
-                          ),
-                        }}
-                      />
-                    </span>
-                  </p>
-                ))}
+              {endsAt !== null && (
+                <WhatHappens
+                  offers={offers}
+                  poster={poster}
+                  parts={parts}
+                  endsAt={endsAt}
+                />
+              )}
             </div>
 
             <footer className="flex shrink-0 flex-col gap-2 border-t border-border bg-muted/30 px-5 py-3">
-              {snapshot !== null && !offers && (
+              {endsAt !== null && !offers && (
                 <p className="text-xs text-muted-foreground sm:hidden">
                   <ParaglideMessage
                     message={m.listing_confirm_deadline_short}
                     inputs={{ date: "" }}
                     markup={{
-                      time: () => <Deadline deadlineAt={snapshot.endsAt} />,
+                      time: () => <Deadline deadlineAt={endsAt} />,
                     }}
                   />
                 </p>
@@ -289,7 +317,7 @@ export default function ConfirmTradeDialog({
                 </Button>
                 <Button
                   className="relative px-4 max-sm:h-11 max-sm:flex-1"
-                  disabled={claim.isPending || snapshot === null}
+                  disabled={claim.isPending || !ready}
                   onClick={() => {
                     if (snapshot === null || confirming.current) return;
                     confirming.current = true;
@@ -332,16 +360,213 @@ export default function ConfirmTradeDialog({
 }
 
 /**
+ * What confirming sends: on an offer whose listing takes offers on its
+ * payment, the amount the claimer types (`proposing`), an empty one
+ * meaning the asking price on a listing with a range row, and from it
+ * whether this claims or sends an offer (claimTerms()), with when the
+ * trade's deadline or the offer's expiry would fall, counted from when the
+ * picks were frozen. `invalid` is why the amount can't go: it doesn't
+ * read, or it is the asking price, which claims, while the viewer is at
+ * their claim cap.
+ */
+function useOfferTerms(
+  listing: ListingAt,
+  snapshot: ConfirmSnapshot | null,
+  capped: boolean,
+) {
+  const [amount, setAmount] = useState("");
+  const proposing = snapshot?.offer === true && takesAmount(listing);
+  /**
+   * With a range row an empty field offers the asking price, as the server
+   * reads no amount; without one Accept already claims at that price, so
+   * an offer needs an amount.
+   */
+  const empty = amount.trim() === "" && offersAsking(listing);
+  const proposed = proposing && !empty ? amountSchema.safeParse(amount) : null;
+  const terms =
+    proposed?.success === false ? null : claimTerms(listing, proposed?.data);
+  const offers =
+    terms === null ? snapshot?.offer === true : terms.kind === "offer";
+  const invalid = amountRefusal({
+    typed: amount.trim() !== "",
+    reads: proposed?.success !== false,
+    claims: proposing && terms?.kind === "claim",
+    capped,
+  });
+  return {
+    amount,
+    setAmount,
+    proposing,
+    invalid,
+    // the amount sent, once it reads
+    sent: proposed?.success === true ? amount.trim() : undefined,
+    // there are picks to send, and an amount that reads when one is asked for
+    ready: snapshot !== null && terms !== null && invalid === null,
+    offers,
+    endsAt:
+      snapshot === null
+        ? null
+        : new Date(
+            snapshot.frozenAt.getTime() +
+              (offers ? OFFER_WINDOW : CLAIM_WINDOW),
+          ),
+  };
+}
+
+// whether the claimer names their own amount: the listing takes offers on the payment they send
+function takesAmount(listing: ListingAt) {
+  return (
+    listing.payment !== null &&
+    listing.payment.side === "to" &&
+    listing.payment.mode !== "price_only"
+  );
+}
+
+// whether an empty amount offers the asking price: a range row beside an asking price
+function offersAsking(listing: ListingAt) {
+  return (
+    listing.payment !== null &&
+    listing.payment.amount !== null &&
+    listing.wants.some((want) => want.kind === "range")
+  );
+}
+
+/**
+ * Why the typed amount can't go: it doesn't read, or it is the asking
+ * price, which claims, while the viewer is at their claim cap.
+ */
+function amountRefusal(amount: {
+  typed: boolean;
+  reads: boolean;
+  claims: boolean;
+  capped: boolean;
+}): "amount" | "capped" | null {
+  if (amount.typed && !amount.reads) return "amount";
+  return amount.claims && amount.capped ? "capped" : null;
+}
+
+/**
+ * What the claim's toast says: the offer was sent, or the trade started,
+ * with what the claimer (`part`) does next, paying for a sale.
+ */
+function claimedToast(pending: boolean, part: TradePart, poster: string) {
+  if (pending) return m.listing_detail_offer_sent({ poster });
+  return part === "pay"
+    ? m.listing_detail_accepted_pay({ poster, appName: env.VITE_APP_NAME })
+    : m.listing_detail_accepted();
+}
+
+// what the claimer's side is headed: the objekts they give, or "You pay" for a sale
+const giveHeadings = {
+  send: (count: number) => m.listing_detail_you_give_total({ count }),
+  send_pay: (count: number) => m.listing_detail_you_give_total({ count }),
+  pay: () => m.listing_detail_you_pay(),
+} satisfies Record<TradePart, (count: number) => string>;
+
+/**
+ * What each side does in the trade a claim or an offer starts, from the
+ * claimer's view: both send (`send`), the claimer pays alone (`pay`) or
+ * beside their objekts (`send_pay`), or the poster pays alone, on a buy
+ * listing (`paid`), or beside their objekts (`send_paid`).
+ */
+type ClaimSplit = TradePart | "paid" | "send_paid";
+
+// the split when the poster pays, by the poster's part
+const posterPays = {
+  pay: "paid",
+  send_pay: "send_paid",
+} as const satisfies Record<Exclude<TradePart, "send">, ClaimSplit>;
+
+/**
+ * What confirming starts: the offer's steps, or the claim's deadline, each
+ * saying what both sides (`parts`) then do.
+ */
+function WhatHappens({
+  offers,
+  poster,
+  parts,
+  endsAt,
+}: {
+  offers: boolean;
+  poster: string;
+  parts: TradeParts;
+  endsAt: Date;
+}) {
+  const split = parts.from === "send" ? parts.to : posterPays[parts.from];
+  return offers ? (
+    <OfferSteps poster={poster} expiresAt={endsAt} split={split} />
+  ) : (
+    <ClaimDeadline poster={poster} split={split} endsAt={endsAt} />
+  );
+}
+
+/**
+ * What claiming starts: both sides' 48 hours, and what each does in them
+ * (`split`).
+ */
+function ClaimDeadline({
+  poster,
+  split,
+  endsAt,
+}: {
+  poster: string;
+  split: ClaimSplit;
+  endsAt: Date;
+}) {
+  const markup = {
+    hours: ({ children }: { children?: ReactNode }) => (
+      <span className="font-semibold">{children}</span>
+    ),
+    time: () => <Deadline deadlineAt={endsAt} />,
+    user: ({ children }: { children?: ReactNode }) => (
+      <span className="font-semibold">{children}</span>
+    ),
+  };
+  return (
+    <p className="grid grid-cols-[1rem_minmax(0,1fr)] gap-2.5 rounded-lg bg-muted/50 px-3 py-2.5 text-sm leading-relaxed max-sm:hidden">
+      <IconClock className="mt-0.5 size-4 text-muted-foreground" />
+      <span>
+        {split === "send" ? (
+          <ParaglideMessage
+            message={m.listing_confirm_deadline}
+            inputs={{ date: "", poster }}
+            markup={markup}
+          />
+        ) : (
+          <ParaglideMessage
+            message={
+              {
+                send_pay: m.listing_confirm_deadline_send_pay,
+                send_paid: m.listing_confirm_deadline_send_paid,
+                pay: m.listing_confirm_deadline_pay,
+                paid: m.listing_confirm_deadline_paid,
+              }[split]
+            }
+            inputs={{ date: "", poster, appName: env.VITE_APP_NAME }}
+            markup={markup}
+          />
+        )}
+      </span>
+    </p>
+  );
+}
+
+/**
  * What sending the offer starts: the poster answers it, it expires if they
- * don't by then, and accepting it gives both sides the trade's window.
+ * don't by then, and accepting it gives both sides the trade's window, in
+ * which each sends in the COSMO app or pays (`split`). An offer of a
+ * payment alone shows the poster no serials.
  */
 function OfferSteps({
   poster,
   expiresAt,
+  split,
 }: {
   poster: string;
   expiresAt: Date;
+  split: ClaimSplit;
 }) {
+  const hours = CLAIM_WINDOW / 3_600_000;
   const steps = [
     // the first step says what sending does, so it describes the dialog
     <DialogDescription
@@ -350,7 +575,11 @@ function OfferSteps({
       className="text-sm text-foreground"
     >
       <ParaglideMessage
-        message={m.listing_offer_step_answer}
+        message={
+          split === "pay"
+            ? m.listing_offer_step_answer_amount
+            : m.listing_offer_step_answer
+        }
         inputs={{ poster }}
         markup={{
           user: ({ children }) => (
@@ -365,7 +594,13 @@ function OfferSteps({
       inputs={{ date: "" }}
       markup={{ time: () => <Deadline deadlineAt={expiresAt} /> }}
     />,
-    m.listing_offer_step_window({ hours: CLAIM_WINDOW / 3_600_000 }),
+    {
+      send: () => m.listing_offer_step_window({ hours }),
+      pay: () => m.listing_offer_step_window_pay({ hours, poster }),
+      send_pay: () => m.listing_offer_step_window_with_payment({ hours }),
+      send_paid: () => m.listing_offer_step_window_paid({ hours, poster }),
+      paid: () => m.listing_offer_step_window_buying({ hours, poster }),
+    }[split](),
   ];
   return (
     <ol className="flex flex-col gap-2.5 rounded-lg bg-muted/50 px-3 py-3 text-sm leading-relaxed">
@@ -397,6 +632,129 @@ function groupHead({ want }: PickerRow, count: number) {
     case "choice":
       return <ExactBadges count={count} name={wantLabel(want)} />;
   }
+}
+
+/**
+ * The payment the trade records for the units claimed, in its own
+ * currency, under the side that sends it: `to` the claimer, `from` the
+ * poster. Nothing on the other side, or without a payment.
+ */
+function PaymentGroup({
+  listing,
+  sender,
+  units,
+}: {
+  listing: ListingAt;
+  sender: TradeSide;
+  units: number;
+}) {
+  return (
+    listing.payment?.side === sender && (
+      <PaymentBox
+        payment={listing.payment}
+        units={units}
+        perUnit={listing.units.kind === "buy"}
+        accepting
+        className="px-3 py-2.5"
+      />
+    )
+  );
+}
+
+/**
+ * What the claimer pays: the amount they offer when the listing takes
+ * offers on its payment, else the listing's payment, if they send it.
+ */
+function ClaimerPayment({
+  listing,
+  units,
+  proposing,
+  amount,
+  invalid,
+  onAmount,
+}: {
+  listing: ListingAt;
+  units: number;
+  proposing: boolean;
+  amount: string;
+  invalid: "amount" | "capped" | null;
+  onAmount: (amount: string) => void;
+}) {
+  return proposing && listing.payment !== null ? (
+    <OfferAmount
+      payment={listing.payment}
+      units={units}
+      amount={amount}
+      invalid={invalid}
+      onChange={onAmount}
+    />
+  ) : (
+    <PaymentGroup listing={listing} sender="to" units={units} />
+  );
+}
+
+/**
+ * The amount the claimer offers for each trade, in the listing's currency,
+ * its placeholder the asking price when there is one, with the total for
+ * every unit the offer takes, and why it can't go when it can't.
+ */
+function OfferAmount({
+  payment,
+  units,
+  amount,
+  invalid,
+  onChange,
+}: {
+  payment: ListingPayment;
+  units: number;
+  amount: string;
+  invalid: "amount" | "capped" | null;
+  onChange: (amount: string) => void;
+}) {
+  const id = useId();
+  const reasonId = useId();
+  const parsed = amountSchema.safeParse(amount);
+  return (
+    <div className="flex flex-col gap-2 rounded-lg border border-border bg-card px-3 py-2.5 text-sm">
+      <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
+        <Label htmlFor={id}>{m.listing_offer_amount()}</Label>
+        <AmountField
+          id={id}
+          currency={payment.currency}
+          amount={amount}
+          placeholder={
+            payment.amount === null
+              ? m.listing_composer_payment_amount()
+              : toNumeric(payment.amount)
+          }
+          aria-invalid={invalid !== null}
+          aria-describedby={invalid === null ? undefined : reasonId}
+          onChange={onChange}
+          className="w-28"
+        />
+        {units > 1 && (
+          <span className="text-muted-foreground">
+            {parsed.success
+              ? m.listing_offer_amount_total({
+                  count: units,
+                  amount: formatAmount(parsed.data, payment.currency),
+                  total: formatAmount(parsed.data * units, payment.currency),
+                })
+              : m.listing_detail_payment_each()}
+          </span>
+        )}
+      </div>
+      {invalid !== null && (
+        <p id={reasonId} className="text-xs text-destructive">
+          {invalid === "amount"
+            ? m.listing_offer_amount_invalid({
+                max: formatAmount(MAX_PAYMENT_AMOUNT, payment.currency),
+              })
+            : m.listing_offer_amount_capped()}
+        </p>
+      )}
+    </div>
+  );
 }
 
 /**

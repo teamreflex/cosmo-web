@@ -1,6 +1,11 @@
 import { m } from "@/i18n/messages";
 import { formatTokenRefusal } from "@/lib/client/errors/trades";
-import { objektName, posterName } from "@/lib/client/trade-listings";
+import {
+  formatAmount,
+  objektName,
+  posterName,
+  ratioText,
+} from "@/lib/client/trade-listings";
 import { env } from "@/lib/env/client";
 import { offeredTokenRefusalsQuery } from "@/lib/queries/trade-listings";
 import {
@@ -12,6 +17,7 @@ import {
   type TradeRatio,
 } from "@/lib/universal/trade-listings";
 import { cn } from "@/lib/utils";
+import type { TradePayment } from "@apollo/trades/payment";
 import { OFFER_WINDOW } from "@apollo/trades/timers";
 import { ParaglideMessage } from "@inlang/paraglide-js-react";
 import {
@@ -162,7 +168,7 @@ export function ClaimerCard({
           <ParaglideMessage
             message={m.listing_detail_claimer_size}
             inputs={{
-              ratio: m.market_listings_ratio(size),
+              ratio: ratioText(size),
             }}
             markup={{
               ratio: ({ children }) => (
@@ -172,11 +178,7 @@ export function ClaimerCard({
           />{" "}
           {deadlineAt === null
             ? m.listing_detail_claim_disputed()
-            : m.listing_detail_claimer_body({
-                count: size.get,
-                poster,
-                appName: env.VITE_APP_NAME,
-              })}
+            : claimerNext(size, poster)}
         </span>
         <span className="text-muted-foreground">
           {m.listing_detail_claimer_more()}
@@ -186,17 +188,42 @@ export function ClaimerCard({
   );
 }
 
+/**
+ * What a claimer still has to do, worded by what they send: objekts in the
+ * COSMO app, a payment outside Apollo, or both.
+ */
+function claimerNext(size: TradeRatio, poster: string) {
+  const appName = env.VITE_APP_NAME;
+  const paid = size.payment?.sender === "to" ? size.payment : null;
+  if (paid === null) {
+    return m.listing_detail_claimer_body({ count: size.get, poster, appName });
+  }
+  const amount =
+    paid.amount === null
+      ? m.listing_payment_your_offer()
+      : formatAmount(paid.amount, paid.currency);
+  return size.get === 0
+    ? m.listing_detail_claimer_pay({ poster, amount, appName })
+    : m.listing_detail_claimer_body_pay({
+        count: size.get,
+        poster,
+        amount,
+        appName,
+      });
+}
+
 type OffererProps = {
   listing: TradeListing;
   tradeId: string;
   expiresAt: Date;
   picks: ListingFeedItem[];
   given: ListingFeedItem[];
+  payment: TradePayment | null;
 };
 
 /**
  * The viewer's pending offer on the listing: how long the poster has to
- * answer it, both sides' objekts, that nothing is held meanwhile, and a
+ * answer it, both sides' objekts and its payment, that nothing is held meanwhile, and a
  * pick another trade has since taken, which stops the poster accepting it.
  * View opens the offer, and Withdraw ends it after asking. Once it's past
  * its expiry it says so and can't be withdrawn, until trade-timers closes
@@ -221,6 +248,7 @@ function OffererState({
   expiresAt,
   picks,
   given,
+  payment,
   expired,
 }: OffererProps & { expired: boolean }) {
   const [withdrawing, setWithdrawing] = useState(false);
@@ -268,7 +296,7 @@ function OffererState({
       <div className="flex flex-wrap items-center gap-3">
         <ObjektStrip items={picks} />
         <span className="font-mono text-muted-foreground tabular-nums">
-          {m.market_listings_ratio({ give: picks.length, get: given.length })}
+          {ratioText({ give: picks.length, get: given.length, payment })}
         </span>
         <ObjektStrip items={given} />
       </div>
@@ -397,6 +425,15 @@ export function NoticeStrip({ notice }: { notice: Notice }) {
 export function BlockedAlert({ listing }: { listing: TradeListing }) {
   const fallback = <p>{m.listing_detail_poster_blocked_body()}</p>;
 
+  // a buy listing offers no objekts, so only the poster's account stops it
+  if (listing.units.kind === "buy") {
+    return (
+      <Alert role="status" variant="warning">
+        <IconAlertTriangle />
+        <AlertTitle>{m.listing_detail_poster_blocked_title()}</AlertTitle>
+      </Alert>
+    );
+  }
   return (
     <Alert role="status" variant="warning">
       <IconAlertTriangle />
@@ -442,26 +479,34 @@ function BlockedReasons({ listing }: { listing: TradeListing }) {
 }
 
 /**
- * The strip saying trades hold so much of the pool that nobody can take the
- * listing until one of them ends: to its poster, nothing they need to fix,
+ * The strip saying trades hold so much of the pool, or of a buy listing's
+ * units, that nobody can take the listing until one of them ends: to its poster, nothing they need to fix,
  * and to anyone else, when to come back. `reasonId` and `detailId` describe
  * a refused Accept.
  */
 export function BusyAlert({
   poster = false,
+  buying,
   reasonId,
   detailId,
 }: {
   poster?: boolean;
+  /** a buy listing, whose units the trades hold rather than its pool */
+  buying: boolean;
   reasonId?: string;
   detailId?: string;
 }) {
+  const title = buying
+    ? poster
+      ? m.listing_poster_busy_title_buying()
+      : m.listing_detail_busy_title_buying()
+    : poster
+      ? m.listing_poster_busy_title()
+      : m.listing_detail_busy_title();
   return (
     <Alert role="status">
       <IconHourglassEmpty />
-      <AlertTitle id={reasonId}>
-        {poster ? m.listing_poster_busy_title() : m.listing_detail_busy_title()}
-      </AlertTitle>
+      <AlertTitle id={reasonId}>{title}</AlertTitle>
       <AlertDescription id={detailId}>
         {poster ? m.listing_poster_busy_body() : m.listing_detail_busy_body()}
       </AlertDescription>

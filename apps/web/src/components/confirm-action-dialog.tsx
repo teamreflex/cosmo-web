@@ -18,12 +18,16 @@ import { Spinner } from "./ui/spinner";
 type Props = {
   title: string;
   description?: ReactNode;
+  // a body below the header, such as a field the action needs
+  children?: ReactNode;
   confirmLabel: string;
   cancelLabel?: string;
   variant?: ComponentProps<typeof AlertDialogAction>["variant"];
   size?: ComponentProps<typeof AlertDialogContent>["size"];
   // applied to both buttons
   buttonClassName?: string;
+  // keeps the confirm button off until the body is filled in
+  disabled?: boolean;
   // the action, which takes no variables: the dialog starts it and waits on it
   mutation: { isPending: boolean; mutate: UseMutateFunction };
 } & (
@@ -49,11 +53,13 @@ type Props = {
 export default function ConfirmActionDialog({
   title,
   description,
+  children,
   confirmLabel,
   cancelLabel = m.common_cancel(),
   variant,
   size,
   buttonClassName,
+  disabled = false,
   mutation,
   open,
   onOpenChange,
@@ -79,6 +85,7 @@ export default function ConfirmActionDialog({
             <AlertDialogDescription>{description}</AlertDialogDescription>
           )}
         </AlertDialogHeader>
+        {children}
         <AlertDialogFooter>
           <AlertDialogCancel
             className={buttonClassName}
@@ -101,7 +108,7 @@ export default function ConfirmActionDialog({
                 },
               });
             }}
-            disabled={mutation.isPending}
+            disabled={disabled || mutation.isPending}
           >
             {mutation.isPending && <Spinner />}
             {confirmLabel}

@@ -1,6 +1,7 @@
 import {
   ArtWell,
   FeedbackArt,
+  ListingKindArt,
   MatchesArt,
   SendingArt,
   TransfersArt,
@@ -22,9 +23,11 @@ import { env } from "@/lib/env/client";
 import { dismissedNoticesQuery } from "@/lib/queries/market";
 import { cn } from "@/lib/utils";
 import { CLAIM_CAP_BASE, CLAIM_CAP_CEILING } from "@apollo/trades/caps";
+import type { ListingType } from "@apollo/trades/listing";
 import { CLAIM_WINDOW, FEEDBACK_WINDOW_DAYS } from "@apollo/trades/timers";
 import { ParaglideMessage } from "@inlang/paraglide-js-react";
 import {
+  IconAlertTriangle,
   IconLock,
   IconMessageCircle,
   IconProgressCheck,
@@ -32,7 +35,14 @@ import {
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { type ReactNode, useRef, useState } from "react";
 
-const STEPS = [TransfersStep, WantStep, MatchesStep, SendingStep, FeedbackStep];
+const STEPS = [
+  TransfersStep,
+  WantStep,
+  ListingKindStep,
+  MatchesStep,
+  SendingStep,
+  FeedbackStep,
+];
 
 const WANT_KINDS = [
   {
@@ -54,6 +64,28 @@ const WANT_KINDS = [
   kind: WantKind;
   label: () => string;
   body: typeof m.market_notice_want_range;
+}[];
+
+const LISTING_KINDS = [
+  {
+    kind: "trade",
+    label: m.market_notice_listing_trade_tab,
+    body: m.market_notice_listing_trade,
+  },
+  {
+    kind: "sell",
+    label: m.market_notice_listing_sell_tab,
+    body: m.market_notice_listing_sell,
+  },
+  {
+    kind: "buy",
+    label: m.market_notice_listing_buy_tab,
+    body: m.market_notice_listing_buy,
+  },
+] as const satisfies readonly {
+  kind: ListingType;
+  label: () => string;
+  body: typeof m.market_notice_listing_trade;
 }[];
 
 /**
@@ -187,10 +219,23 @@ function Strong({ children }: { children?: ReactNode }) {
 }
 
 // a short point with an icon, for the steps that list a few
-function Point({ icon, children }: { icon: ReactNode; children: ReactNode }) {
+function Point({
+  icon,
+  warning = false,
+  children,
+}: {
+  icon: ReactNode;
+  warning?: boolean;
+  children: ReactNode;
+}) {
   return (
     <li className="flex items-start gap-2.5">
-      <div className="flex size-6 shrink-0 items-center justify-center rounded-md bg-muted [&_svg]:size-3.5">
+      <div
+        className={cn(
+          "flex size-6 shrink-0 items-center justify-center rounded-md bg-muted [&_svg]:size-3.5",
+          warning && "bg-amber-500/15 text-amber-700 dark:text-amber-400",
+        )}
+      >
         {icon}
       </div>
       <Body>{children}</Body>
@@ -256,6 +301,53 @@ function WantStep({ active }: StepProps) {
   );
 }
 
+function ListingKindStep({ active }: StepProps) {
+  const [selected, setSelected] = useState<(typeof LISTING_KINDS)[number]>(
+    LISTING_KINDS[1],
+  );
+
+  return (
+    <Tabs
+      value={selected.kind}
+      onValueChange={(value) =>
+        setSelected(
+          (current) =>
+            LISTING_KINDS.find((listing) => listing.kind === value) ?? current,
+        )
+      }
+      className="gap-5"
+    >
+      <ArtWell className="justify-between gap-3 p-3.5">
+        <TabsList
+          aria-label={m.market_notice_listing_kinds()}
+          className="w-full max-w-75"
+        >
+          {LISTING_KINDS.map((listing) => (
+            <TabsTrigger key={listing.kind} value={listing.kind}>
+              {listing.label()}
+            </TabsTrigger>
+          ))}
+        </TabsList>
+        {LISTING_KINDS.map((listing) => (
+          <TabsContent key={listing.kind} value={listing.kind}>
+            <ListingKindArt kind={listing.kind} />
+          </TabsContent>
+        ))}
+      </ArtWell>
+      <StepText active={active} title={m.market_notice_listing_title()}>
+        <Body>
+          <ParaglideMessage
+            message={selected.body}
+            inputs={{}}
+            markup={{ b: Strong }}
+          />
+        </Body>
+        <Body>{m.market_notice_listing_mix()}</Body>
+      </StepText>
+    </Tabs>
+  );
+}
+
 function MatchesStep({ active }: StepProps) {
   return (
     <>
@@ -289,6 +381,9 @@ function SendingStep({ active }: StepProps) {
           </Point>
           <Point icon={<IconProgressCheck />}>
             {m.market_notice_sending_tracked()}
+          </Point>
+          <Point icon={<IconAlertTriangle />} warning>
+            {m.market_notice_sending_refunds({ appName: env.VITE_APP_NAME })}
           </Point>
           <Point icon={<IconLock />}>
             {m.market_notice_sending_locked({ appName: env.VITE_APP_NAME })}

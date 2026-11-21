@@ -3,15 +3,25 @@ import { m } from "@/i18n/messages";
 import { formatError } from "@/lib/client/errors";
 import { $cancelTrade } from "@/lib/functions/trades";
 import type { TradeSide } from "@apollo/database/web/types";
+import type { TradePart } from "@apollo/trades/lifecycle";
 import { useMutation } from "@tanstack/react-query";
 import { toast } from "sonner";
 import ConfirmActionDialog from "../confirm-action-dialog";
+
+// what cancelling tells a listing's poster, who on a buy listing only pays
+const posterDescriptions = {
+  send: m.trade_page_cancel_description_poster,
+  send_pay: m.trade_page_cancel_description_poster,
+  pay: m.trade_page_cancel_description_buying,
+} satisfies Record<TradePart, () => string>;
 
 type Props = {
   tradeId: string;
   listingId: string | null;
   /** the viewer's side */
   side: TradeSide;
+  /** what the viewer does in the trade */
+  part: TradePart;
   /** the other party's name */
   name: string;
   open: boolean;
@@ -26,6 +36,7 @@ export default function CancelTradeDialog({
   tradeId,
   listingId,
   side,
+  part,
   name,
   open,
   onOpenChange,
@@ -49,9 +60,9 @@ export default function CancelTradeDialog({
       description={
         listingId === null
           ? undefined
-          : side === "from"
-            ? m.trade_page_cancel_description_poster()
-            : m.trade_page_cancel_description_claimer({ name })
+          : side === "to"
+            ? m.trade_page_cancel_description_claimer({ name })
+            : posterDescriptions[part]()
       }
       cancelLabel={m.trade_page_cancel_keep()}
       confirmLabel={m.trade_page_cancel()}

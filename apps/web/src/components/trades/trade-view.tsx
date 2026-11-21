@@ -1,8 +1,9 @@
 import { useHasPermission } from "@/hooks/use-has-permission";
 import { m } from "@/i18n/messages";
 import { reportReasonLabel } from "@/lib/client/reports";
-import { partyName } from "@/lib/client/trade-listings";
+import { formatAmount, partyName } from "@/lib/client/trade-listings";
 import {
+  acceptPayment,
   itemName,
   offerRoles,
   partyRole,
@@ -17,8 +18,9 @@ import type {
 import { cn } from "@/lib/utils";
 import type { TradeSide, TradeStatus } from "@apollo/database/web/types";
 import {
-  needsYou,
+  nextStep,
   otherSide,
+  owedAtDeadline,
   partyAction,
   transition,
 } from "@apollo/trades/lifecycle";
@@ -131,7 +133,7 @@ function PartyView({
     deadlinePassed: trade.deadlinePassed,
     arrived: trade.items.some((item) => item.status === "arrived"),
   };
-  const owing = needsYou(trade.state, side, facts);
+  const owing = nextStep(trade.state, side, facts) !== null;
   /**
    * Only waiting objekts are left to send: an arrived one waits for the
    * drain, and one that moved or can't move can't be sent. Copy only helps
@@ -214,6 +216,7 @@ function PartyView({
         tradeId={trade.id}
         listingId={trade.listingId}
         side={side}
+        part={trade.parts[side]}
         name={partyName(counterparty)}
         open={dialog === "cancel"}
         onOpenChange={(open) => setDialog(open ? "cancel" : null)}
@@ -222,7 +225,7 @@ function PartyView({
         tradeId={trade.id}
         listingId={trade.listingId}
         deadline={trade.deadlineAt}
-        hasPayment={trade.items.some((item) => item.kind === "payment")}
+        owed={trade.parts[otherSide(side)]}
         open={dialog === "dispute"}
         onOpenChange={(open) => setDialog(open ? "dispute" : null)}
       />
@@ -303,6 +306,10 @@ function OfferView({ trade, side }: { trade: OfferTrade; side: TradeSide }) {
             action={action}
             name={partyName(trade.parties[otherSide(side)])}
             listingId={trade.listingId}
+            payment={acceptPayment(
+              trade.parts[side],
+              trade.parts[otherSide(side)],
+            )}
             open={dialog === action}
             onOpenChange={(open) => setDialog(open ? action : null)}
           />
@@ -496,7 +503,9 @@ function TradeLayout({
             </TransferRows>
             {trade.state.status === "accepted" && (
               <p className="text-xs leading-relaxed text-muted-foreground">
-                {m.trade_page_deadline_note()}
+                {trade.payment === null
+                  ? m.trade_page_deadline_note()
+                  : m.trade_page_deadline_note_payment()}
               </p>
             )}
           </div>
@@ -545,8 +554,10 @@ function TradeLayout({
 }
 
 /**
- * The strip under the transfers: what the viewer still has to send, beside
- * their actions from tablet width.
+ * The strip under the transfers: the one thing the viewer still has to do
+ * there, beside their actions from tablet width. A viewer who sends
+ * objekts reads what to send; one who only pays reads what to pay; the
+ * payment row's Confirm received is its recipient's instruction.
  */
 function ActionStrip({
   trade,
@@ -569,7 +580,24 @@ function ActionStrip({
   const arrived = trade.items.some(
     (item) => item.sender === side && item.status === "arrived",
   );
-  const lines = owing && (waiting > 0 || arrived);
+  const sends = owing && (waiting > 0 || arrived);
+  // a payment the viewer still pays, beside their objekts or alone
+  const payment =
+    trade.payment?.status === "waiting" &&
+    trade.payment.sender === side &&
+    trade.stage === "trade" &&
+    !trade.deadlinePassed
+      ? trade.payment
+      : null;
+  const pay =
+    payment === null
+      ? null
+      : {
+          name,
+          amount: formatAmount(payment.amount, payment.currency),
+          appName: env.VITE_APP_NAME,
+        };
+  const lines = sends || pay !== null;
   if (!lines && !children) return null;
 
   return (
@@ -581,20 +609,24 @@ function ActionStrip({
       )}
     >
       <div className="flex min-w-0 flex-[1_1_18rem] flex-col gap-1 text-sm wrap-anywhere text-muted-foreground">
-        {owing &&
-          (waiting > 0 ? (
-            <p>
-              {counterparty.cosmoUsername === null
-                ? m.trade_page_send_no_cosmo({
-                    count: waiting,
-                    name,
-                    appName: env.VITE_APP_NAME,
-                  })
-                : m.trade_page_send({ count: waiting, name })}
-            </p>
-          ) : (
-            arrived && <p>{m.trade_page_send_arrived()}</p>
-          ))}
+        {/* one sentence: what the viewer still sends, pays, or both */}
+        {owing && waiting > 0 ? (
+          <p>
+            {counterparty.cosmoUsername === null
+              ? m.trade_page_send_no_cosmo({
+                  count: waiting,
+                  name,
+                  appName: env.VITE_APP_NAME,
+                })
+              : pay === null
+                ? m.trade_page_send({ count: waiting, name })
+                : m.trade_page_send_pay({ count: waiting, ...pay })}
+          </p>
+        ) : pay !== null ? (
+          <p>{m.trade_page_payment_pay(pay)}</p>
+        ) : (
+          sends && <p>{m.trade_page_send_arrived()}</p>
+        )}
       </div>
       {children}
     </div>
@@ -722,7 +754,13 @@ function TradeSteps({ trade, side }: { trade: Trade; side: TradeSide | null }) {
   const paused =
     trade.dispute?.event.by === "staff" ||
     trade.dispute?.event.by === "deadline";
-  const seen = trade.items.filter((item) => item.status === "sent").length;
+  // the payment counts as a transfer, seen once its recipient confirms it
+  const transfers = [
+    ...trade.items.map((item) => item.status === "sent"),
+    ...(trade.payment === null ? [] : [trade.payment.status === "confirmed"]),
+  ];
+  const count = transfers.length;
+  const seen = transfers.filter(Boolean).length;
   const steps: {
     tone: keyof typeof stepTones;
     eyebrow: string;
@@ -756,7 +794,9 @@ function TradeSteps({ trade, side }: { trade: Trade; side: TradeSide | null }) {
           : status === "disputed"
             ? m.trade_page_step_dispute({ step: 2 })
             : m.trade_page_step({ step: 2 }),
-      title: m.trade_page_step_send({ seen, count: trade.items.length }),
+      title: (trade.payment === null
+        ? m.trade_page_step_send
+        : m.trade_page_step_send_payment)({ seen, count }),
     },
     {
       tone: completed ? "done" : "todo",
@@ -797,30 +837,33 @@ function TradeSteps({ trade, side }: { trade: Trade; side: TradeSide | null }) {
           </span>
           {offer && index === 0 && (
             <span className="text-xs text-muted-foreground sm:hidden">
-              {m.trade_page_step_offer_then({
+              {(trade.payment === null
+                ? m.trade_page_step_offer_then
+                : m.trade_page_step_offer_then_pay)({
                 hours: CLAIM_WINDOW / 3_600_000,
               })}
             </span>
           )}
           {index === 1 &&
-            (trade.items.length > 12 ? (
+            (count > 12 ? (
               <span
                 aria-hidden
                 className="mt-0.5 h-1.5 overflow-hidden rounded-full bg-muted"
               >
                 <span
                   className="block h-full rounded-full bg-teal-500"
-                  style={{ width: `${(seen / trade.items.length) * 100}%` }}
+                  style={{ width: `${(seen / count) * 100}%` }}
                 />
               </span>
             ) : (
+              // seen transfers fill from the left, whichever arrived first
               <span aria-hidden className="flex gap-0.75 pt-0.5">
-                {trade.items.map((item) => (
+                {Array.from({ length: count }, (_, position) => (
                   <span
-                    key={item.id}
+                    key={position}
                     className={cn(
                       "h-1.5 min-w-0 flex-1 rounded-full",
-                      item.status === "sent" ? "bg-teal-500" : "bg-muted",
+                      position < seen ? "bg-teal-500" : "bg-muted",
                     )}
                   />
                 ))}
@@ -917,7 +960,11 @@ function StatePanel({
           <IconCircleCheck />
           <AlertTitle>
             {staff === undefined
-              ? m.trade_page_completed_title({ count: trade.items.length })
+              ? trade.payment === null
+                ? m.trade_page_completed_title({ count: trade.items.length })
+                : m.trade_page_completed_title_payment({
+                    count: trade.items.length,
+                  })
               : m.trade_page_completed_staff({ appName })}
           </AlertTitle>
           {staff === undefined && last !== null && (
@@ -1033,7 +1080,11 @@ function DisputedAlert({
         {event.by === "staff"
           ? m.trade_page_disputed_staff({ appName })
           : event.by === "deadline"
-            ? m.trade_page_disputed_deadline({ appName })
+            ? {
+                objekts: m.trade_page_disputed_deadline,
+                payment: m.trade_page_disputed_deadline_payment,
+                both: m.trade_page_disputed_deadline_both,
+              }[owedAtDeadline(trade.state.items)]({ appName })
             : event.by === side
               ? m.trade_page_disputed_you({
                   reason: reportReasonLabel(event.reason),

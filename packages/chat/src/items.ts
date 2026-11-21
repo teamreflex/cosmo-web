@@ -2,6 +2,7 @@ import {
   accountClosers,
   disputeReasons,
   offerClosers,
+  paymentMethods,
   staleReasons,
   tradeSides,
 } from "@apollo/database/web/types";
@@ -50,6 +51,7 @@ const KnownTradeEvent = Schema.Union([
   Schema.Struct({
     type: Schema.Literal("payment_confirmed"),
     itemId: Schema.Int,
+    method: Schema.Literals(paymentMethods),
   }),
   Schema.Struct({ type: Schema.Literal("completed"), by: Schema.Null }),
   Schema.Struct({

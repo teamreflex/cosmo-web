@@ -6,16 +6,19 @@ Apollo matches people who want to swap objekts and records each swap, but never 
 
 ```
   poster
-    | $postListing: a pool of tokens, unit_size, want rows
+    | $postListing: a pool of tokens and unit_size, or a payment and
+    | max_units (a buy listing); 1-3 options of want rows
     v
   listing: open   reserves nothing; a token may sit in many open listings
     |
-    |<-- claimer $claimListing: N units, the picked pool tokens, one token
-    |    list per want row, and the listing's updated_at they saw
+    |<-- claimer $claimListing: the option they give, N units, the picked
+    |    pool tokens, one token list per want row of that option, an
+    |    offered amount or none, and the listing's updated_at they saw
     |
-    +-- does any want row have kind "range"? (takesOffers)
+    +-- a claim or an offer? (claimTerms on that option: any range row, no
+    |   asking price, or an amount other than an open-to-offers price)
     |                                         |
-    | no                                      | yes
+    | claim                                   | offer
     | listing_claimed -> poster               v
     |                          trade: pending   proposed_by = to (the claimer)
     |                          expires_at = now() + 72h, nothing live
@@ -32,14 +35,15 @@ Apollo matches people who want to swap objekts and records each swap, but never 
   chain -> indexer -> list_event_outbox -> schedules drain-outbox
     |     a token at its pinned receiver: item sent (chain time, tx hash)
     |
-    +-- every item sent -----------------------------------------> completed
-    |                                                       picks leave the pool
+    +-- every item done ------------------------------------------> completed
+    |   (tokens seen by the drain, a payment confirmed received  picks leave the pool
+    |    by its recipient in $confirmPayment)
     +-- a party cancels, nothing sent or arrived yet ------------> cancelled
     +-- a party opens a dispute, or a party is banned -----------> disputed
     +-- trade-timers: deadline_at <= the drain's watermark
-    |     nothing owed ------------------------------------------> completed
-    |     nothing sent ------------------------------------------> timed_out
-    |     something sent and something owed ---------------------> disputed
+    |     nothing done (no token arrived, no payment confirmed
+    |     or marked paid by its payer) ---------------------------> timed_out
+    |     something done or marked paid, something owed ---------> disputed
     |
   disputed   the clock stops; transfers are still recorded; only staff end it
        staff complete ----> completed
@@ -48,8 +52,8 @@ Apollo matches people who want to swap objekts and records each swap, but never 
 ```
 
 - A direct offer or counter from Trade Matches enters the same `trade: pending` box with `proposed_by = from`, and is accepted the same way ([offers.md](offers.md)).
-- A timed-out or cancelled trade changes nothing on the listing's pool: its picks never left it.
-- A deadline that passes with something sent and something owed files a `deadline_passed` report for staff ([lifecycle.md](lifecycle.md)).
+- A timed-out or cancelled trade changes nothing on the listing's pool: its picks never left it. On a buy listing it frees the units it held.
+- A deadline that passes with something sent, or a payment marked paid, and something owed files a `deadline_passed` report for staff ([lifecycle.md](lifecycle.md)).
 
 ## Components
 
@@ -69,15 +73,15 @@ Apollo matches people who want to swap objekts and records each swap, but never 
 
 ## Files in this folder
 
-| File                                             | Read it when you change                                                                                                                 |
-| ------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------- |
-| [data-model.md](data-model.md)                   | the trade tables, sides, items, wants, units, `updated_at`                                                                              |
-| [listings.md](listings.md)                       | posting, editing, bumping, withdrawing or closing a listing, the composer, the feed, the listing page, claims, offers on range listings |
-| [offers.md](offers.md)                           | direct offers, counters, offer windows, what a refusal may reveal                                                                       |
-| [lifecycle.md](lifecycle.md)                     | trade statuses, party actions, ending a trade, timers' decisions, disputes, bans                                                        |
-| [drain.md](drain.md)                             | what an on-chain transfer means for a trade, listing or offer                                                                           |
-| [feedback.md](feedback.md)                       | claim caps, listing limits, rate limits, ratings and notices                                                                            |
-| [notification-emails.md](notification-emails.md) | which notifications are emailed, the opt-out bits, the email task's claim, release and cooldown                                         |
+| File                                             | Read it when you change                                                                                                           |
+| ------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------- |
+| [data-model.md](data-model.md)                   | the trade tables, sides, items, wants, units, `updated_at`                                                                        |
+| [listings.md](listings.md)                       | posting, editing, bumping, withdrawing or closing a listing, the composer, the feed, the listing page, claims, offers on listings |
+| [offers.md](offers.md)                           | direct offers, counters, offer windows, what a refusal may reveal                                                                 |
+| [lifecycle.md](lifecycle.md)                     | trade statuses, party actions, ending a trade, timers' decisions, disputes, bans                                                  |
+| [drain.md](drain.md)                             | what an on-chain transfer means for a trade, listing or offer                                                                     |
+| [feedback.md](feedback.md)                       | claim caps, listing limits, rate limits, ratings and notices                                                                      |
+| [notification-emails.md](notification-emails.md) | which notifications are emailed, the opt-out bits, the email task's claim, release and cooldown                                   |
 
 ## Where to start
 

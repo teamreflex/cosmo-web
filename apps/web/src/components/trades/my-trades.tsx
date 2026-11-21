@@ -1,13 +1,16 @@
 import { m } from "@/i18n/messages";
-import { partyName } from "@/lib/client/trade-listings";
+import { formatAmount, partyName } from "@/lib/client/trade-listings";
 import { myTradesQuery } from "@/lib/queries/trades";
 import {
   type MyTradeRow,
+  type MyTradeSide,
   type MyTradesTab,
   myTradesTabs,
   type TradeDispute,
 } from "@/lib/universal/trades";
 import { cn } from "@/lib/utils";
+import type { NextStep, TradePart } from "@apollo/trades/lifecycle";
+import type { PaymentStage } from "@apollo/trades/payment";
 import { ParaglideMessage } from "@inlang/paraglide-js-react";
 import { IconArrowsExchange, IconArrowsRightLeft } from "@tabler/icons-react";
 import { useSuspenseInfiniteQuery } from "@tanstack/react-query";
@@ -17,6 +20,8 @@ import Countdown from "../misc/countdown";
 import {
   Half,
   OfferingCaption,
+  PaymentTile,
+  SlipDetail,
   Thumbs,
 } from "../trade-listings/listing-feed-row";
 import { tones } from "../trade-listings/state-tones";
@@ -163,10 +168,11 @@ function TradeRow({ row }: { row: MyTradeRow }) {
       >
         <Half
           label={m.my_trades_column_send()}
-          thumbs={<Thumbs items={row.send.items} />}
+          thumbs={<SideThumbs side={row.send} />}
           className="col-start-1 max-md:bg-teal-700/5 lg:col-start-2 max-md:dark:bg-teal-500/5"
         >
           <OfferingCaption items={row.send.items} />
+          <PaymentCaption side={row.send} />
         </Half>
 
         <span
@@ -181,10 +187,11 @@ function TradeRow({ row }: { row: MyTradeRow }) {
 
         <Half
           label={m.my_trades_column_get()}
-          thumbs={<Thumbs items={row.get.items} />}
+          thumbs={<SideThumbs side={row.get} />}
           className="col-start-3 max-md:bg-amber-700/5 lg:col-start-4 max-md:dark:bg-amber-500/5"
         >
           <OfferingCaption items={row.get.items} />
+          <PaymentCaption side={row.get} />
         </Half>
 
         <span className="col-span-full row-start-2 flex min-w-0 items-center gap-2 max-md:grid max-md:grid-cols-[minmax(0,1fr)_auto] max-md:gap-y-1.5 max-md:border-t max-md:border-dashed max-md:px-3 max-md:py-2 max-md:text-xs lg:contents">
@@ -220,6 +227,45 @@ function TradeRow({ row }: { row: MyTradeRow }) {
   );
 }
 
+// a side's objekts, or its payment's tile when it sends only a payment
+function SideThumbs({ side }: { side: MyTradeSide }) {
+  return side.part === "pay" ? (
+    <PaymentTile payment={side.payment} />
+  ) : (
+    <Thumbs items={side.items} />
+  );
+}
+
+// how a side's payment reads, alone or beside its objekts
+const paymentCaptions = {
+  pay: {
+    confirmed: m.my_trades_payment_only_received,
+    marked: m.my_trades_payment_only_paid,
+    unpaid: m.my_trades_payment_only,
+  },
+  send_pay: {
+    confirmed: m.my_trades_payment_received,
+    marked: m.my_trades_payment_paid,
+    unpaid: m.my_trades_payment,
+  },
+} satisfies Record<
+  Exclude<TradePart, "send">,
+  Record<PaymentStage, (inputs: { amount: string }) => string>
+>;
+
+// the payment a side sends, in its own currency, and whether it was confirmed received or marked paid
+function PaymentCaption({ side }: { side: MyTradeSide }) {
+  if (side.part === "send") return null;
+  const { payment } = side;
+  return (
+    <SlipDetail className="font-medium text-foreground">
+      {paymentCaptions[side.part][payment.progress.stage]({
+        amount: formatAmount(payment.amount, payment.currency),
+      })}
+    </SlipDetail>
+  );
+}
+
 /**
  * Who has to act next on a live trade or a pending offer, or how a
  * finished one ended.
@@ -227,18 +273,14 @@ function TradeRow({ row }: { row: MyTradeRow }) {
 function Status({ row }: { row: MyTradeRow }) {
   switch (row.state.status) {
     case "pending":
-      return row.needsYou ? (
+      return row.nextStep !== null ? (
         <Badge className={tones.cosmo}>{m.my_trades_next_respond()}</Badge>
       ) : (
         <Badge className={tones.muted}>{m.my_trades_next_reply()}</Badge>
       );
     case "accepted":
       return (
-        <NextStepBadge
-          needsYou={row.needsYou}
-          toSend={row.send.items.length - row.send.sent}
-          name={partyName(row.counterparty)}
-        />
+        <NextStepBadge step={row.nextStep} name={partyName(row.counterparty)} />
       );
     case "disputed":
       return <DisputeBadge dispute={row.dispute} />;
@@ -287,23 +329,33 @@ function Time({ row }: { row: MyTradeRow }) {
   }
 }
 
+// what the viewer's next step reads as
+function stepLabel(step: NextStep) {
+  switch (step.kind) {
+    case "answer":
+      return m.my_trades_next_respond();
+    case "send":
+      return m.my_trades_next_send({ count: step.count });
+    case "mark_paid":
+      return m.my_trades_next_mark_paid();
+    case "confirm":
+      return m.my_trades_next_confirm();
+  }
+}
+
 /**
- * What a live trade waits on: the viewer sending what they still owe, or
- * the other party, named.
+ * What a live trade waits on: the viewer's next step (NextStep), or the
+ * other party, named.
  */
 export function NextStepBadge({
-  needsYou,
-  toSend,
+  step,
   name,
 }: {
-  needsYou: boolean;
-  toSend: number;
+  step: NextStep | null;
   name: string;
 }) {
-  return needsYou ? (
-    <Badge className={tones.cosmo}>
-      {m.my_trades_next_send({ count: toSend })}
-    </Badge>
+  return step !== null ? (
+    <Badge className={tones.cosmo}>{stepLabel(step)}</Badge>
   ) : (
     // a long name gives way, so the verb stays
     <Badge

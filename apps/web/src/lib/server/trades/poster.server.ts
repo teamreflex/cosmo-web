@@ -1,5 +1,4 @@
 import { isBanActive } from "@apollo/auth/guard";
-import type { TradeWantKind } from "@apollo/database/web/types";
 import { isEqual } from "@apollo/util";
 
 /**
@@ -10,15 +9,13 @@ export const posterLinkColumns = {
 } as const;
 
 /**
- * Whether the poster's account or terms stop the listing from being claimed
- * at all: it asks for a payment (not claimable until sales arrive), the
- * poster is gone (null) or banned, or their COSMO link (`cosmoAccount`,
- * read with posterLinkColumns) no longer matches `fromAddress`. The listing
- * page disables Accept on the same verdict that refuses the claim, and on
- * too few free objekts (listingStop()).
+ * Whether the poster's account stops the listing from being claimed at
+ * all: the poster is gone (null) or banned, or their COSMO link
+ * (`cosmoAccount`, read with posterLinkColumns) no longer matches
+ * `fromAddress`. The listing page disables Accept on the same verdict that
+ * refuses the claim, and on too few free objekts (listingStop()).
  */
 export function posterBlocked(
-  wants: readonly { kind: TradeWantKind }[],
   poster: {
     banned: boolean;
     banExpires: Date | null;
@@ -28,7 +25,6 @@ export function posterBlocked(
   now = new Date(),
 ) {
   return (
-    wants.some((want) => want.kind === "payment") ||
     poster === null ||
     isBanActive(poster, now) ||
     poster.cosmoAccount === null ||

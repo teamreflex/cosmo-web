@@ -9,7 +9,7 @@ import type {
 } from "@apollo/database/web/types";
 import { objektFrontImageUrl } from "@apollo/image";
 import type { MailObjekt, MailTradeSide, NotificationItem } from "@apollo/mail";
-import { otherSide } from "@apollo/trades/lifecycle";
+import { otherSide, tradeParts } from "@apollo/trades/lifecycle";
 import {
   type EmailNotificationType,
   isEmailNotificationType,
@@ -139,7 +139,9 @@ type EmailedRow = MailableNotification & {
  */
 function tradeSides(row: EmailedRow, mine: TradeSide, input: PlanInput) {
   const items = input.items.get(row.offer.id) ?? [];
+  const parts = tradeParts(items);
   const side = (sender: NotifiedItem["sender"]): MailTradeSide => ({
+    part: parts[sender],
     objekts: items.flatMap((item): MailObjekt[] => {
       const objekt =
         item.sender === sender && item.tokenId !== null

@@ -1,7 +1,7 @@
 import { m } from "@/i18n/messages";
 import type { TradeItemView, TradeView } from "@/lib/universal/trades";
 import type { TradeSide } from "@apollo/database/web/types";
-import { otherSide } from "@apollo/trades/lifecycle";
+import { otherSide, type TradePart } from "@apollo/trades/lifecycle";
 import { formatSerial } from "@apollo/util";
 import { formatError } from "./errors";
 import {
@@ -111,4 +111,28 @@ export function formatOfferError(
   return refusal.side === "own"
     ? formatTokenRefusal(refusal.reason, token)
     : formatPartnerTokenRefusal(token);
+}
+
+/**
+ * What accepting an offer asks of each side when it carries a payment: the
+ * other side pays and sends nothing else (`paid_only`), pays beside their
+ * objekts (`paid`), or the viewer pays (`paying`).
+ */
+export type AcceptPayment = "paid_only" | "paid" | "paying";
+
+const acceptPayments = {
+  send: null,
+  pay: "paid_only",
+  send_pay: "paid",
+} as const satisfies Record<TradePart, AcceptPayment | null>;
+
+/**
+ * How accepting the offer splits its payment, from the viewer's part and
+ * the other side's (TradePart). Null without a payment.
+ */
+export function acceptPayment(
+  you: TradePart,
+  them: TradePart,
+): AcceptPayment | null {
+  return you === "send" ? acceptPayments[them] : "paying";
 }

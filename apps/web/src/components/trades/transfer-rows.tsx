@@ -1,21 +1,31 @@
 import { m } from "@/i18n/messages";
 import { getObjektFrontImageUrl } from "@/lib/client/objekt-util";
-import { partyName } from "@/lib/client/trade-listings";
+import {
+  formatAmount,
+  partyName,
+  paymentMethodLabel,
+} from "@/lib/client/trade-listings";
 import { itemLabel, tradeTimeFormat, txUrl } from "@/lib/client/trades";
 import { env } from "@/lib/env/client";
 import type { Objekt } from "@/lib/universal/objekt-conversion";
-import type { TradeItemView, TradeView } from "@/lib/universal/trades";
+import type {
+  TradeItemView,
+  TradePaymentView,
+  TradeView,
+} from "@/lib/universal/trades";
 import { cn } from "@/lib/utils";
 import type { TradeSide } from "@apollo/database/web/types";
-import { otherSide } from "@apollo/trades/lifecycle";
-import type { TradeItemStatus } from "@apollo/trades/transfers";
+import { otherSide, partyAction } from "@apollo/trades/lifecycle";
+import type { PaymentStatus, TradeItemStatus } from "@apollo/trades/transfers";
 import { formatSerial } from "@apollo/util";
-import { IconExternalLink, IconLock } from "@tabler/icons-react";
+import { IconCash, IconExternalLink, IconLock } from "@tabler/icons-react";
 import { type ReactNode, useState } from "react";
 import { tones } from "../trade-listings/state-tones";
 import { Badge } from "../ui/badge";
-import { buttonVariants } from "../ui/button";
+import { Button, buttonVariants } from "../ui/button";
 import { Timestamp } from "../ui/timestamp";
+import ConfirmPaymentDialog from "./confirm-payment-dialog";
+import MarkPaidDialog from "./mark-paid-dialog";
 
 type Props = {
   trade: TradeView;
@@ -27,11 +37,12 @@ type Props = {
 
 /**
  * Every serial in the trade, grouped by direction with what the viewer
- * receives first, or the poster's first for staff. Each row shows where its
- * transfer stands and, once the drain has seen it, when and a link to the
- * transaction. An objekt that moved elsewhere or turned untransferable shows
- * when the drain saw that. Before an offer is accepted, each row says
- * whether its sender still holds it.
+ * receives first, or the poster's first for staff, and the payment under
+ * its sender's. Each row shows where its transfer stands and, once the
+ * drain has seen it, when and a link to the transaction. An objekt that
+ * moved elsewhere or turned untransferable shows when the drain saw that.
+ * Before an offer is accepted, each row says whether its sender still holds
+ * it. A payment says whether its recipient confirmed it received, and how.
  */
 export default function TransferRows({ trade, side, children }: Props) {
   return (
@@ -45,7 +56,8 @@ export default function TransferRows({ trade, side, children }: Props) {
           : ["from", "to"]) satisfies TradeSide[]
       ).map((sender) => {
         const sent = trade.items.filter((item) => item.sender === sender);
-        if (sent.length === 0) return null;
+        const payment = trade.payment?.sender === sender ? trade.payment : null;
+        if (sent.length === 0 && payment === null) return null;
         const from = partyName(trade.parties[sender]);
         const to = partyName(trade.parties[otherSide(sender)]);
         const heading =
@@ -60,12 +72,15 @@ export default function TransferRows({ trade, side, children }: Props) {
               <span className="min-w-0 flex-1 truncate" title={heading}>
                 {heading}
               </span>
-              <span className="tabular-nums">
-                {m.trade_page_direction_seen({
-                  seen: sent.filter((item) => item.status === "sent").length,
-                  count: sent.length,
-                })}
-              </span>
+              {/* a payment is confirmed received, never seen; its row says which */}
+              {sent.length > 0 && (
+                <span className="tabular-nums">
+                  {m.trade_page_direction_seen({
+                    seen: sent.filter((item) => item.status === "sent").length,
+                    count: sent.length,
+                  })}
+                </span>
+              )}
             </h3>
             <ul>
               {sent.map((item) => (
@@ -83,6 +98,9 @@ export default function TransferRows({ trade, side, children }: Props) {
                   }
                 />
               ))}
+              {payment !== null && (
+                <PaymentRow trade={trade} payment={payment} side={side} />
+              )}
             </ul>
           </div>
         );
@@ -91,6 +109,131 @@ export default function TransferRows({ trade, side, children }: Props) {
     </section>
   );
 }
+
+/**
+ * The trade's payment: its amount for every unit, when its recipient marked
+ * it received and by which method, or when its sender marked it paid, and
+ * Mark paid for the sender and Confirm received for the recipient wherever
+ * the server would allow them, the same judgement it makes, so a refused
+ * action refetches into a row that no longer offers it.
+ */
+function PaymentRow({
+  trade,
+  payment,
+  side,
+}: {
+  trade: TradeView;
+  payment: TradePaymentView;
+  /** the viewer's side, or null for staff */
+  side: TradeSide | null;
+}) {
+  const [open, setOpen] = useState(false);
+  const offered = (type: "mark_paid" | "confirm_payment") =>
+    side !== null &&
+    partyAction(
+      trade.state,
+      {
+        type,
+        item: trade.state.items.findIndex((item) => item.kind === "payment"),
+        by: side,
+      },
+      {
+        deadlinePassed: trade.stage === "trade" && trade.deadlinePassed,
+        arrived: trade.items.some((item) => item.status === "arrived"),
+      },
+    ).ok;
+  const { progress } = payment;
+  const when =
+    progress.stage === "unpaid" ? null : (
+      <Timestamp date={progress.at} format={tradeTimeFormat} />
+    );
+
+  const action = offered("mark_paid") ? (
+    <MarkPaidDialog
+      tradeId={trade.id}
+      listingId={trade.listingId}
+      payment={payment}
+    />
+  ) : offered("confirm_payment") ? (
+    <>
+      <Button size="sm" onClick={() => setOpen(true)}>
+        {m.trade_page_payment_mark_received()}
+      </Button>
+      <ConfirmPaymentDialog
+        tradeId={trade.id}
+        listingId={trade.listingId}
+        payment={payment}
+        methods={trade.paymentMethods}
+        name={partyName(trade.parties[payment.sender])}
+        open={open}
+        onOpenChange={setOpen}
+      />
+    </>
+  ) : null;
+
+  return (
+    <li className="flex items-center gap-3 border-t border-border/60 px-4 py-2.5">
+      <span className="grid aspect-photocard w-7.5 shrink-0 place-items-center rounded-[3px] bg-amber-500/15 text-amber-700 dark:text-amber-400">
+        <IconCash className="size-4" />
+      </span>
+      {/* a narrow list puts the action under the amount, so a long label never covers it */}
+      <div className="flex min-w-0 flex-1 flex-wrap items-center gap-x-3 gap-y-1.5">
+        <div className="flex min-w-0 flex-wrap items-baseline gap-x-2 gap-y-0.5">
+          <span className="font-mono font-semibold tabular-nums">
+            {formatAmount(payment.amount, payment.currency)}
+          </span>
+          {progress.stage === "confirmed" && (
+            <span className="text-xs text-muted-foreground">
+              {m.trade_page_payment_via({
+                method: paymentMethodLabel(progress.method),
+              })}
+            </span>
+          )}
+          {when !== null && (
+            <span className="text-xs text-muted-foreground @lg:hidden">
+              {when}
+            </span>
+          )}
+        </div>
+        {action !== null && (
+          <div className="ms-auto shrink-0 @max-lg:ms-0 @max-lg:basis-full">
+            {action}
+          </div>
+        )}
+      </div>
+      <span className="w-32 shrink-0 text-right text-xs text-muted-foreground tabular-nums @max-lg:hidden">
+        {when}
+      </span>
+      <ItemBadge {...paymentBadges[payment.status]} />
+      {/* the objekt rows' transfer link column, so the badges line up */}
+      <span className="size-8 shrink-0 @max-lg:hidden" />
+    </li>
+  );
+}
+
+const paymentBadges = {
+  confirmed: {
+    label: m.trade_page_payment_received,
+    className: tones.teal,
+  },
+  // the sender's word, which settles nothing until the recipient confirms
+  paid: {
+    label: m.trade_page_payment_paid,
+    className: tones.warn,
+  },
+  waiting: {
+    label: m.trade_page_payment_not_paid,
+    className: tones.waiting,
+  },
+  not_started: {
+    label: m.trade_page_item_not_started,
+    className: tones.muted,
+  },
+  not_confirmed: {
+    label: m.trade_page_payment_not_paid,
+    className: tones.muted,
+  },
+} satisfies Record<PaymentStatus, { label: () => string; className: string }>;
 
 /**
  * One objekt's transfer. A narrow list, on phones or beside the admin
@@ -158,7 +301,7 @@ function TransferRow({
       <span className="w-32 shrink-0 text-right text-xs text-muted-foreground tabular-nums @max-lg:hidden">
         {when}
       </span>
-      <StatusBadge status={status} />
+      <ItemBadge {...statusBadges[status]} />
       {item.txHash === null ? (
         <span className="size-8 shrink-0 @max-lg:hidden" />
       ) : (
@@ -207,8 +350,7 @@ function Thumbnail({ collection }: { collection: Objekt.Collection | null }) {
 const statusBadges = {
   sent: {
     label: m.trade_page_item_sent,
-    className:
-      "border-transparent bg-teal-500/10 text-teal-700 dark:text-teal-500",
+    className: tones.teal,
   },
   arrived: {
     label: m.trade_page_item_arrived,
@@ -216,7 +358,7 @@ const statusBadges = {
   },
   waiting: {
     label: m.trade_page_item_waiting,
-    className: "border-amber-500/40 text-amber-700 dark:text-amber-400",
+    className: tones.waiting,
   },
   moved: {
     label: m.trade_page_item_moved,
@@ -237,8 +379,14 @@ const statusBadges = {
   },
 } satisfies Record<TradeItemStatus, { label: () => string; className: string }>;
 
-function StatusBadge({ status }: { status: TradeItemStatus }) {
-  const { label, className } = statusBadges[status];
+// a payment's or an objekt's status at the end of its row
+function ItemBadge({
+  label,
+  className,
+}: {
+  label: () => string;
+  className: string;
+}) {
   return (
     <Badge variant="outline" className={cn("shrink-0", className)}>
       {label()}

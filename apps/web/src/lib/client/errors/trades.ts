@@ -48,6 +48,12 @@ export function formatTradeError(code: string): string | null {
       return m.trade_error_listing_range_empty();
     case "listing_bump_too_soon":
       return m.trade_error_listing_bump_too_soon();
+    case "listing_full":
+      return m.trade_error_listing_full();
+    case "listing_units_taken":
+      return m.trade_error_listing_units_taken();
+    case "listing_kind_fixed":
+      return m.trade_error_listing_kind_fixed();
     case "claim_cap_reached":
       return m.trade_error_claim_cap_reached();
     case "claim_assignment_invalid":
@@ -60,12 +66,18 @@ export function formatTradeError(code: string): string | null {
       return m.trade_error_trade_status_changed();
     case "trade_cancel_started":
       return m.trade_error_trade_cancel_started();
+    case "trade_cancel_started_payment":
+      return m.trade_error_trade_cancel_started_payment();
+    case "trade_cancel_payment_due":
+      return m.trade_error_trade_cancel_payment_due();
     case "trade_deadline_passed":
       return m.trade_error_trade_deadline_passed();
     case "trade_own":
       return m.trade_error_trade_own();
     case "trade_party_banned":
       return m.trade_error_trade_party_banned();
+    case "payment_method_unaccepted":
+      return m.trade_error_payment_method_unaccepted();
     case "offer_own":
       return m.trade_error_offer_own();
     case "offer_unavailable":
@@ -217,6 +229,8 @@ export function formatOfferRefusal(
       return m.trade_error_offer_expired();
     case "listing_updated":
       return m.trade_error_listing_updated();
+    case "listing_full":
+      return m.trade_error_listing_full();
     case "cosmo_not_linked":
       return m.auth_error_cosmo_required();
     case "offer_unavailable":

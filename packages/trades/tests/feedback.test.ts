@@ -90,6 +90,19 @@ describe("feedbackScored", () => {
     ).toBe(true);
   });
 
+  test("a rating counts once a payment was confirmed", () => {
+    expect(
+      feedbackScored({
+        status: "cancelled",
+        cancelledBy: "staff",
+        items: [
+          objekt("from"),
+          { kind: "payment", sender: "to", stage: "confirmed" },
+        ],
+      }),
+    ).toBe(true);
+  });
+
   test("a rating doesn't count when nothing changed hands (SCORED-03)", () => {
     expect(
       feedbackScored({
@@ -144,5 +157,37 @@ describe("feedback window", () => {
 describe("feedback roles", () => {
   test("a swap has two traders (ROLE-01)", () => {
     expect(feedbackRole([objekt("from"), objekt("to")], "from")).toBe("trader");
+  });
+
+  test("a sale: the side sending only the payment is the buyer", () => {
+    const items: TradeItemState[] = [
+      objekt("from"),
+      { kind: "payment", sender: "to", stage: "unpaid" },
+    ];
+    expect(feedbackRole(items, "from")).toBe("seller");
+    expect(feedbackRole(items, "to")).toBe("buyer");
+  });
+
+  test("a buy listing's trade: the poster paying is the buyer", () => {
+    const items: TradeItemState[] = [
+      objekt("to"),
+      objekt("to"),
+      { kind: "payment", sender: "from", stage: "unpaid" },
+    ];
+    expect(feedbackRole(items, "from")).toBe("buyer");
+    expect(feedbackRole(items, "to")).toBe("seller");
+  });
+
+  test.each([
+    ["the claimer's payment beside their objekt", "to"],
+    ["the poster's payment on top of theirs", "from"],
+  ] as const)("%s: both are traders", (_, sender) => {
+    const items: TradeItemState[] = [
+      objekt("from"),
+      objekt("to"),
+      { kind: "payment", sender, stage: "unpaid" },
+    ];
+    expect(feedbackRole(items, "from")).toBe("trader");
+    expect(feedbackRole(items, "to")).toBe("trader");
   });
 });

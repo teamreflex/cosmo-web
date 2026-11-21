@@ -1,49 +1,54 @@
 import { listingRatio } from "@/lib/client/trade-listings";
 import {
-  type Candidate,
+  type CandidateOption,
+  type ListingAt,
   type ListingFeedWant,
   type ListingPick,
+  optionParts,
   toggleOffered,
-  type TradeListing,
 } from "@/lib/universal/trade-listings";
 import { fitsWant, scaleWants, type TradeWant } from "@apollo/trades/allocate";
 import { validateAssignment } from "@apollo/trades/assignment";
 import { totalWanted } from "@apollo/trades/composer";
-import { CLAIM_WINDOW, OFFER_WINDOW } from "@apollo/trades/timers";
+import type { ListingAcceptance } from "@apollo/trades/lifecycle";
 import { useState } from "react";
 
 export type PickerRow = {
-  want: Exclude<ListingFeedWant, { kind: "payment" }>;
+  want: ListingFeedWant;
   trade: TradeWant;
 };
 
 /**
- * What Accept froze for the confirm dialog: how many units, the pool
- * objekts the viewer gets, their picks, one list per want row, and when the
- * trade would have to finish if it were claimed then, or the offer expire
- * if sent then.
+ * What Accept or Make an offer froze for the confirm dialog: how many
+ * units, the pool objekts the viewer gets, their picks, one list per want
+ * row, whether the viewer chose to make an offer, and when, which the
+ * trade's deadline or the offer's expiry counts from.
  */
 export type ConfirmSnapshot = {
   units: number;
   offered: number[];
   picked: ListingPick[][];
-  endsAt: Date;
+  offer: boolean;
+  frozenAt: Date;
 };
 
 /**
- * The viewer's claim as they build it: how many units, the pool objekts
- * they get, their picks per want row, and whether it all fits. A bundle
- * (no `ratio`) takes its whole pool, so it has no units or pool picks to
- * choose. Null unless the viewer is picking.
+ * The viewer's claim on the option they give as they build it: how many
+ * units, the pool objekts they get, their picks per want row, and whether
+ * it all fits. A bundle (no `ratio`) takes its whole pool, so it has no
+ * units or pool picks to choose, and a buy listing has no pool to pick
+ * from. Null unless the viewer is picking.
  */
 export function useListingPicks(
-  listing: Pick<TradeListing, "unitSize" | "items" | "wants">,
-  viewer: Candidate | null,
+  listing: Pick<ListingAt, "units" | "items" | "wants" | "payment">,
+  // what the viewer can give for that option
+  viewer: CandidateOption | null,
   rows: PickerRow[],
-  // whether Accept sends an offer, as on a listing with a range row
-  offers: boolean,
+  // whether Accept claims, sends an offer, or the viewer picks which
+  acceptance: ListingAcceptance,
 ) {
-  const { unitSize } = listing;
+  // a buy listing has no pool, so its units take none of it
+  const unitSize = listing.units.kind === "pool" ? listing.units.unitSize : 0;
   const wants = rows.map((row) => row.trade);
   const free = listing.items.flatMap((item) =>
     item.availability.kind === "free" ? [item.tokenId] : [],
@@ -69,17 +74,24 @@ export function useListingPicks(
     setState((current) => ({ ...current, ...next(current) }));
 
   return {
+    viewer,
     units,
     // the most the viewer can take; the stepper starts at one even when they can't fill it
     maxUnits: Math.max(viewer.units, 1),
     ratio,
     freeCount: free.length,
-    takesOffers: offers,
+    // a buy listing's units, which bound the stepper in place of a pool
+    buying: listing.units.kind === "buy" ? listing.units : null,
+    acceptance,
     offered,
     offeredCount,
     picked,
     // the want rows at this many units
     wants: scaled,
+    // the listing's payment for each unit, on whichever side sends it
+    payment: listing.payment,
+    // what each side of the claim does
+    parts: optionParts(listing),
     valid:
       offered.length === offeredCount &&
       validateAssignment(
@@ -92,11 +104,12 @@ export function useListingPicks(
       offered.length + picked.reduce((total, picks) => total + picks.length, 0),
     total: offeredCount + giveTotal,
     short: viewer.rows.reduce((total, row) => total + row.missing, 0),
-    freeze: (): ConfirmSnapshot => ({
+    freeze: (offer: boolean): ConfirmSnapshot => ({
       units,
       offered,
       picked,
-      endsAt: new Date(Date.now() + (offers ? OFFER_WINDOW : CLAIM_WINDOW)),
+      offer,
+      frozenAt: new Date(),
     }),
     /**
      * Takes that many units: the pool picks and each want row keep what

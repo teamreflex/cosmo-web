@@ -6,6 +6,7 @@ import {
   expectedItems,
   foldTransfers,
   itemStatus,
+  paymentStatus,
   recordChainEvents,
   toChainRow,
 } from "../src/transfers";
@@ -422,5 +423,20 @@ describe("itemStatus", () => {
     expect(
       itemStatus({ sender: "to", transferredAt: null }, held(KAIRU), live),
     ).toBe("arrived");
+  });
+});
+
+describe("paymentStatus", () => {
+  test.each([
+    ["unpaid", "pending", "not_started"],
+    ["unpaid", "accepted", "waiting"],
+    ["unpaid", "disputed", "waiting"],
+    ["unpaid", "completed", "not_confirmed"],
+    ["marked", "accepted", "paid"],
+    ["marked", "cancelled", "paid"],
+    ["confirmed", "accepted", "confirmed"],
+    ["confirmed", "cancelled", "confirmed"],
+  ] as const)("a payment %s on a %s trade is %s", (stage, status, expected) => {
+    expect(paymentStatus(stage, status)).toBe(expected);
   });
 });

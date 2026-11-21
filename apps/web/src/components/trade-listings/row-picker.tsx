@@ -14,7 +14,7 @@ type Props = {
   address: string;
   /** the want row as the page heads it */
   label: ReactNode;
-  want: Exclude<ListingFeedWant, { kind: "payment" }>;
+  want: ListingFeedWant;
   count: number;
   /** the row's picks */
   picked: readonly ListingPick[];

@@ -1,5 +1,11 @@
 import { m } from "@/i18n/messages";
-import { listingRatio } from "@/lib/client/trade-listings";
+import {
+  listingTypeLabels,
+  listingTypesOfListing,
+  pillRatio,
+  ratioSides,
+  ratioText,
+} from "@/lib/client/trade-listings";
 import type { TradeListing, TradeRatio } from "@/lib/universal/trade-listings";
 import { cn } from "@/lib/utils";
 import { ParaglideMessage } from "@inlang/paraglide-js-react";
@@ -23,13 +29,7 @@ type Props = {
 };
 
 /**
- * Who posted the listing, as the page's heading, with its kind, state and
- * ratio and, under them, the poster's ratings and when they posted (on
- * their own listing, that it's theirs, when they posted and when it last
- * changed), with the viewer's status and actions at the far end. Phones
- * drop the kind beside a ratio, to leave the name room. The poster's tabs
- * run along its foot. From tablet width it sticks under the navbar, so
- * Accept and the tabs stay in reach.
+ * Who posted the listing, as the page's heading, with its kinds (one per kind its options make it), state and ratio and, under them, the poster's ratings and when they posted (on their own listing, that it's theirs, when they posted and when it last changed), with the viewer's status and actions at the far end. Phones drop the kind beside a ratio, to leave the name room. The poster's tabs run along its foot. From tablet width it sticks under the navbar, so Accept and the tabs stay in reach.
  */
 export default function ListingHeader({
   listing,
@@ -38,7 +38,7 @@ export default function ListingHeader({
   tabs,
   own = false,
 }: Props) {
-  const ratio = listingRatio(listing, listing.items.length);
+  const ratio = pillRatio(listing, listing.items.length);
   /**
    * An edit, or the drain dropping an objekt that left the poster, moves
    * `updated_at`. Posting sets it beside `created_at`, which keeps its
@@ -66,15 +66,18 @@ export default function ListingHeader({
             <PartyLink party={party} />
           </h1>
           <div className="col-start-3 row-start-1 row-end-3 flex gap-1.5 md:row-end-2">
-            <Badge
-              variant="outline"
-              className={cn(
-                "text-muted-foreground",
-                ratio !== null && "max-md:hidden",
-              )}
-            >
-              {m.listing_detail_kind_trade()}
-            </Badge>
+            {listingTypesOfListing(listing).map((type) => (
+              <Badge
+                key={type}
+                variant="outline"
+                className={cn(
+                  "text-muted-foreground",
+                  ratio !== null && "max-md:hidden",
+                )}
+              >
+                {listingTypeLabels[type]()}
+              </Badge>
+            ))}
             <ListingStateBadge status={listing.state.status} />
             {ratio !== null && (
               <Badge
@@ -154,12 +157,13 @@ export default function ListingHeader({
  * A ratio as a pill shows it, "1 : 5", read out as "1 for 5".
  */
 export function RatioText({ ratio }: { ratio: TradeRatio }) {
+  const { give, get } = ratioSides(ratio);
   return (
     <>
       <span aria-hidden>
-        {ratio.give} : {ratio.get}
+        {give} : {get}
       </span>
-      <span className="sr-only">{m.market_listings_ratio(ratio)}</span>
+      <span className="sr-only">{ratioText(ratio)}</span>
     </>
   );
 }

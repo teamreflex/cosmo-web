@@ -8,10 +8,13 @@ import {
   tradeOffers,
 } from "@apollo/database/web/schema";
 import type {
+  ListingOfferMode,
+  PaymentMethod,
   TradeListingWant,
   TradeListingWantOption,
   TradeListingWantRange,
   TradeOfferItem,
+  TradeSide,
 } from "@apollo/database/web/types";
 import type { TokenFlags } from "@apollo/trades/holdings";
 import {
@@ -23,7 +26,10 @@ import {
   eq,
   exists,
   inArray,
+  isNotNull,
   isNull,
+  ne,
+  not,
   notExists,
   or,
   sql,
@@ -37,8 +43,9 @@ import {
 import {
   type ListingFeedItem,
   type ListingFeedWant,
+  type ListingOption,
+  listingOptions,
   storedObjektItemSchema,
-  storedWantSchema,
 } from "../../universal/trade-listings";
 import { indexer } from "../db/indexer";
 import { type TokenState, toTokenStates } from "./holdings.server";
@@ -104,12 +111,29 @@ function narrowed(side: FeedSide) {
  * Offering: some single offered objekt holds every narrowed value, the
  * navbar's artists included. The listing-level arrays narrow the
  * candidates through their GIN index first; they hold the union over the
- * listing's objekts, so the EXISTS still decides.
+ * listing's objekts, so the EXISTS still decides. A buy listing offers no
+ * objekt, so it never matches the Offering filters; with only the navbar's
+ * artists narrowing, it matches when one of its want rows names one of them
+ * (lookingForConditions()).
  */
 function offeringConditions(side: FeedSide, artists: string[]) {
   const columns = narrowed(side);
   if (columns.length === 0 && artists.length === 0) return [];
+  const offering = offeredConditions(columns, artists);
+  if (columns.length > 0) return offering;
+  return [
+    or(
+      and(...offering),
+      and(buy, ...lookingForConditions({ artist: artists })),
+    ),
+  ];
+}
 
+// some single offered objekt holds every narrowed value and one of the navbar's artists
+function offeredConditions(
+  columns: ReturnType<typeof narrowed>,
+  artists: string[],
+) {
   const item = and(
     eq(tradeOfferItems.offerId, tradeOffers.id),
     isNull(tradeOfferItems.leftAt),
@@ -195,6 +219,65 @@ function lookingForConditions(side: FeedSide) {
         ),
     ),
   ];
+}
+
+const paymentWant = alias(tradeListingWants, "payment_want");
+
+// an objekt row of the listing, in the option `option` when given
+function objektWant(option?: AnyColumn) {
+  return qb
+    .select({ id: tradeListingWants.id })
+    .from(tradeListingWants)
+    .where(
+      and(
+        eq(tradeListingWants.listingId, tradeOffers.id),
+        ne(tradeListingWants.kind, "payment"),
+        ...(option === undefined ? [] : [eq(tradeListingWants.option, option)]),
+      ),
+    );
+}
+
+// a sale: the claimer sends its payment and some option asks for nothing else
+const sale = and(
+  eq(tradeOffers.paymentSide, "to"),
+  exists(
+    qb
+      .select({ id: paymentWant.id })
+      .from(paymentWant)
+      .where(
+        and(
+          eq(paymentWant.listingId, tradeOffers.id),
+          eq(paymentWant.kind, "payment"),
+          notExists(objektWant(paymentWant.option)),
+        ),
+      ),
+  ),
+);
+
+// a buy: the poster sends its payment for up to its most units and offers no objekts
+const buy = isNotNull(tradeOffers.maxUnits);
+
+/**
+ * Each listing type as SQL, as listingTypesOf() decides it, so a listing
+ * matches every type one of its options makes it: a sale when an option
+ * asks for nothing but the claimer's payment, a buy when the poster sends
+ * nothing but theirs, and a trade when an option asks for objekts, a
+ * payment beside them or not.
+ */
+function typeConditions(type: ListingFeedInput["type"]) {
+  switch (type) {
+    case null:
+      return [];
+    case "trade":
+      return [
+        or(isNull(tradeOffers.paymentSide), not(buy)),
+        exists(objektWant()),
+      ];
+    case "sell":
+      return [sale];
+    case "buy":
+      return [buy];
+  }
 }
 
 const liveCopy = alias(tradeOfferItems, "live_copy");
@@ -307,15 +390,17 @@ export function postedCount(listingId: AnyColumn) {
 /**
  * Which open listings the feed shows, narrowed by the filters, however much
  * of their pool live trades hold. Values within a column are ORed and
- * columns ANDed, each side on one objekt or want row. `type` doesn't narrow
- * yet: every listing is a trade until sales add the payment side.
- * Arrays bind through `arrayOverlaps` and `inArray` only.
+ * columns ANDed, each side on one objekt or want row, so Looking for
+ * matches a listing when any of its options does. `type` narrows on the
+ * types its options make it (typeConditions()). Arrays bind through
+ * `arrayOverlaps` and `inArray` only.
  */
 export function listingFeedWhere(
-  input: Pick<ListingFeedInput, "filters" | "artists">,
+  input: Pick<ListingFeedInput, "filters" | "artists" | "type">,
 ) {
   return and(
     openListing,
+    ...typeConditions(input.type),
     ...offeringConditions(input.filters.offering, input.artists),
     ...lookingForConditions(input.filters.lookingFor),
   );
@@ -398,7 +483,7 @@ export function feedItem(
 }
 
 /**
- * A listing's want rows as storedWantSchema reads them, for a relational
+ * A listing's want rows as listingOptions() reads them, for a relational
  * query: in posted (id) order, each choice row with its collections and
  * each range row with its ranges.
  */
@@ -414,6 +499,10 @@ export const storedWants = {
  * A listing's stored items and wants, as the relational query reads them.
  */
 type StoredParts = {
+  id: string;
+  paymentSide: TradeSide | null;
+  paymentMethods: PaymentMethod[];
+  offers: ListingOfferMode | null;
   items: TradeOfferItem[];
   wants: (TradeListingWant & {
     options: TradeListingWantOption[];
@@ -424,40 +513,50 @@ type StoredParts = {
 /**
  * Parses each listing's stored items and wants and fills in what the
  * indexer knows: every objekt's serial and the collection behind each
- * offered objekt, exact want and choice row's option. Wants keep their
- * posted (id) order. The token states come back too, for judging the
- * poster's side.
+ * offered objekt, exact want and choice row's option. Wants come out
+ * grouped into the listing's options (listingOptions()), each keeping its
+ * posted (id) order and its payment. The token states come back too, for
+ * judging the poster's side.
  */
 export async function hydrateListings<T extends StoredParts>(
   rows: T[],
 ): Promise<{
-  listings: (Omit<T, keyof StoredParts> & {
+  listings: (Omit<
+    T,
+    "items" | "wants" | "paymentSide" | "paymentMethods" | "offers"
+  > & {
     items: ListingFeedItem[];
-    wants: ListingFeedWant[];
+    options: ListingOption<ListingFeedWant>[];
   })[];
   states: ReadonlyMap<number, TokenState>;
 }> {
-  const listings = rows.map(({ items, wants, ...rest }) => ({
-    rest,
-    items: items.map((item) => storedObjektItemSchema.parse(item)),
-    wants: wants.map((want) => storedWantSchema.parse(want)),
-  }));
+  const listings = rows.map(
+    ({ items, wants, paymentSide, paymentMethods, offers, ...rest }) => ({
+      rest,
+      items: items.map((item) => storedObjektItemSchema.parse(item)),
+      options: listingOptions(
+        { id: rest.id, paymentSide, paymentMethods, offers },
+        wants,
+      ),
+    }),
+  );
   const indexed = await readIndexed(
     [
       ...new Set(
         listings.flatMap((listing) => [
           ...listing.items.map((item) => item.attributes.slug),
-          ...listing.wants.flatMap((want) => {
-            switch (want.kind) {
-              case "exact":
-                return [want.objekt.slug];
-              case "choice":
-                return want.options.map((option) => option.slug);
-              case "range":
-              case "payment":
-                return [];
-            }
-          }),
+          ...listing.options.flatMap((option) =>
+            option.wants.flatMap((want) => {
+              switch (want.kind) {
+                case "exact":
+                  return [want.objekt.slug];
+                case "choice":
+                  return want.options.map((choice) => choice.slug);
+                case "range":
+                  return [];
+              }
+            }),
+          ),
         ]),
       ),
     ],
@@ -475,26 +574,28 @@ export async function hydrateListings<T extends StoredParts>(
     listings: listings.map((listing) => ({
       ...listing.rest,
       items: listing.items.map((item) => feedItem(item, indexed)),
-      wants: listing.wants.map((want): ListingFeedWant => {
-        switch (want.kind) {
-          case "exact":
-            return {
-              ...want,
-              collection: indexed.collections.get(want.objekt.slug) ?? null,
-            };
-          case "choice":
-            return {
-              ...want,
-              options: want.options.map((option) => ({
-                ...option,
-                collection: indexed.collections.get(option.slug) ?? null,
-              })),
-            };
-          case "range":
-          case "payment":
-            return want;
-        }
-      }),
+      options: listing.options.map((option) => ({
+        payment: option.payment,
+        wants: option.wants.map((want): ListingFeedWant => {
+          switch (want.kind) {
+            case "exact":
+              return {
+                ...want,
+                collection: indexed.collections.get(want.objekt.slug) ?? null,
+              };
+            case "choice":
+              return {
+                ...want,
+                options: want.options.map((choice) => ({
+                  ...choice,
+                  collection: indexed.collections.get(choice.slug) ?? null,
+                })),
+              };
+            case "range":
+              return want;
+          }
+        }),
+      })),
     })),
   };
 }

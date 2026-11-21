@@ -1,6 +1,11 @@
 import { m } from "@/i18n/messages";
 import { formatOfferRefusal } from "@/lib/client/errors/trades";
-import { partyName } from "@/lib/client/trade-listings";
+import {
+  formatAmount,
+  partyName,
+  ratioText,
+} from "@/lib/client/trade-listings";
+import { acceptPayment } from "@/lib/client/trades";
 import {
   isLiveTrade,
   type ListingFeedItem,
@@ -10,6 +15,7 @@ import {
   type PosterTab,
   posterTabs,
 } from "@/lib/universal/trade-listings";
+import type { TradePayment } from "@apollo/trades/payment";
 import { ParaglideMessage } from "@inlang/paraglide-js-react";
 import {
   IconAlertTriangle,
@@ -103,14 +109,18 @@ export function PosterTabBar({
 
 /**
  * The pending offers on the poster's listing, newest first. The listing's
- * trades name who holds a pick that stops one.
+ * trades name who holds a pick that stops one, and on a listing with
+ * several options each offer names the one it gives.
  */
 export function PosterOffers({
   listingId,
+  options,
   offers,
   trades,
 }: {
   listingId: string;
+  /** how many options the listing has */
+  options: number;
   offers: ListingOfferSummary[];
   trades: ListingTrade[];
 }) {
@@ -127,7 +137,12 @@ export function PosterOffers({
     <ul className="flex flex-col gap-3.5">
       {offers.map((offer) => (
         <li key={offer.tradeId}>
-          <OfferCard listingId={listingId} offer={offer} trades={trades} />
+          <OfferCard
+            listingId={listingId}
+            offer={offer}
+            trades={trades}
+            optionShown={options > 1}
+          />
         </li>
       ))}
     </ul>
@@ -135,7 +150,8 @@ export function PosterOffers({
 }
 
 /**
- * A pending offer: who sent it with their rating, its ratio and how long
+ * A pending offer: who sent it with their rating, the option it gives on
+ * a listing with several, its ratio and how long
  * it has left, then what they send for which of the poster's objekts.
  * One that can't be accepted now says why, dims the objekt it names and
  * can only be declined. Accept and Decline each ask first.
@@ -144,10 +160,13 @@ function OfferCard({
   listingId,
   offer,
   trades,
+  optionShown,
 }: {
   listingId: string;
   offer: ListingOfferSummary;
   trades: ListingTrade[];
+  /** whether to name the listing's option the offer gives */
+  optionShown: boolean;
 }) {
   const reasonId = useId();
   const [dialog, setDialog] = useState<OfferAction | null>(null);
@@ -175,10 +194,16 @@ function OfferCard({
           {claimer.user !== null && (
             <FeedbackBadge variant="full" rep={claimer.rep} narrow />
           )}
+          {optionShown && (
+            <Badge variant="outline">
+              {m.listing_option_label({ number: offer.option + 1 })}
+            </Badge>
+          )}
           <Badge variant="secondary" className="font-mono tabular-nums">
-            {m.market_listings_ratio({
+            {ratioText({
               give: offer.picks.length,
               get: offer.given.length,
+              payment: offer.payment,
             })}
           </Badge>
         </>
@@ -218,6 +243,7 @@ function OfferCard({
               name={partyName(claimer)}
               listingId={listingId}
               linkTrade
+              payment={acceptPayment(offer.parts.from, offer.parts.to)}
               open={dialog === action}
               onOpenChange={(open) => setDialog(open ? action : null)}
             />
@@ -230,12 +256,14 @@ function OfferCard({
           tone="want"
           title={m.listing_poster_offer_they_send()}
           items={offer.given}
+          payment={offer.payment?.sender === "to" ? offer.payment : null}
           dimmed={refusedToken}
         />
         <OfferSide
           tone="have"
           title={m.listing_poster_offer_you_send()}
           items={offer.picks}
+          payment={offer.payment?.sender === "from" ? offer.payment : null}
           dimmed={refusedToken}
         />
       </div>
@@ -253,24 +281,37 @@ function OfferCard({
 
 /**
  * One side of an offer under its label: "They send" in the want colour,
- * "You send" in the have colour, each objekt with its serial.
+ * "You send" in the have colour, each objekt with its serial, and the
+ * payment that side sends for every unit, in its own currency.
  */
 function OfferSide({
   tone,
   title,
   items,
+  payment,
   dimmed,
 }: {
   tone: "have" | "want";
   title: string;
   items: ListingFeedItem[];
+  payment: TradePayment | null;
   /** the objekt the offer's refusal names */
   dimmed: number | null;
 }) {
   return (
     <div className="flex min-w-0 flex-col gap-2">
       <Eyebrow tone={tone}>{title}</Eyebrow>
-      <ObjektStrip items={items} captions dimmed={dimmed} />
+      {items.length > 0 && (
+        <ObjektStrip items={items} captions dimmed={dimmed} />
+      )}
+      {payment !== null && (
+        <p className="flex items-center gap-2 text-sm">
+          <Badge variant="outline">{m.listing_detail_kind_payment()}</Badge>
+          <span className="font-mono font-semibold tabular-nums">
+            {formatAmount(payment.amount, payment.currency)}
+          </span>
+        </p>
+      )}
     </div>
   );
 }
@@ -349,9 +390,10 @@ function TradeRow({ trade }: { trade: ListingTrade }) {
         {partyName(trade.claimer)}
       </span>
       <span className="font-mono text-xs text-muted-foreground tabular-nums">
-        {m.market_listings_ratio({
+        {ratioText({
           give: trade.tokenIds.length,
           get: trade.givenCount,
+          payment: trade.payment,
         })}
       </span>
       <TradeState trade={trade} name={partyName(trade.claimer)} />
@@ -381,11 +423,7 @@ function TradeState({
     case "accepted":
       return (
         <>
-          <NextStepBadge
-            needsYou={trade.needsYou}
-            toSend={trade.toSend}
-            name={name}
-          />
+          <NextStepBadge step={trade.nextStep} name={name} />
           <span className="ms-auto text-xs text-muted-foreground tabular-nums">
             <TimeLeft deadline={trade.deadlineAt} />
           </span>

@@ -1,12 +1,17 @@
 import {
   type DisputeReason,
-  paymentMethods,
+  type PaymentMethod,
   type TradeItemKind,
   type TradeSide,
   tradeSides,
 } from "@apollo/database/web/types";
 import { accountName, formatSerial } from "@apollo/util";
 import * as z from "zod";
+import {
+  formatPaymentText,
+  parsePaymentItem,
+  type PaymentItem,
+} from "./payment";
 
 /**
  * A dispute staff hear about in Discord: one a party opened, or one
@@ -31,6 +36,7 @@ export type DisputeParty = {
 
 // a `trade_offer_items` row as both apps read it
 export type DisputeItemRow = {
+  id: number;
   sender: TradeSide;
   kind: TradeItemKind;
   tokenId: number | null;
@@ -38,27 +44,21 @@ export type DisputeItemRow = {
   season: string | null;
   amount: string | null;
   currency: string | null;
-  method: string | null;
+  method: PaymentMethod | null;
+  markedPaidAt: Date | null;
+  confirmedAt: Date | null;
 };
 
-// the row narrowed by kind, as `trade_offer_items_objekt_chk` guarantees
-const disputeItemSchema = z.discriminatedUnion("kind", [
-  z.object({
-    kind: z.literal("objekt"),
-    sender: z.enum(tradeSides),
-    tokenId: z.int(),
-    member: z.string(),
-    season: z.string(),
-  }),
-  z.object({
-    kind: z.literal("payment"),
-    sender: z.enum(tradeSides),
-    amount: z.string(),
-    currency: z.string(),
-    method: z.enum(paymentMethods).nullable(),
-  }),
-]);
-type DisputeItem = z.infer<typeof disputeItemSchema>;
+// an objekt row narrowed, as `trade_offer_items_objekt_chk` guarantees
+const disputeObjektSchema = z.object({
+  sender: z.enum(tradeSides),
+  tokenId: z.int(),
+  member: z.string(),
+  season: z.string(),
+});
+type DisputeItem =
+  | ({ kind: "objekt" } & z.infer<typeof disputeObjektSchema>)
+  | ({ kind: "payment" } & PaymentItem);
 
 // what each app reads after the dispute commits
 export type DisputeDetails = {
@@ -87,7 +87,11 @@ export function disputeWebhookRequest(
   const url = new URL(webhookUrl);
   url.searchParams.set("with_components", "true");
   const name = (side: TradeSide) => partyName(details.parties[side]);
-  const items = z.array(disputeItemSchema).parse(details.items);
+  const items = details.items.map((row): DisputeItem =>
+    row.kind === "payment"
+      ? { kind: "payment", ...parsePaymentItem(row) }
+      : { kind: "objekt", ...disputeObjektSchema.parse(row) },
+  );
 
   return {
     url: url.href,
@@ -142,7 +146,7 @@ function partyName(party: DisputeParty) {
   return party.username ?? "Unnamed account";
 }
 
-// "JinSoul Atom01 344Z #00012" or "USD 12.50 via wise", one per line
+// "JinSoul Atom01 344Z #00012" or "USD 12.50, confirmed via wise", one per line
 function sideSummary(
   items: readonly DisputeItem[],
   tokens: DisputeDetails["tokens"],
@@ -159,12 +163,15 @@ function sideSummary(
 
 function itemLabel(item: DisputeItem, tokens: DisputeDetails["tokens"]) {
   if (item.kind === "payment") {
-    const amount = new Intl.NumberFormat("en-US", {
-      style: "currency",
-      currency: item.currency,
-      currencyDisplay: "code",
-    }).format(Number(item.amount));
-    return item.method === null ? amount : `${amount} via ${item.method}`;
+    const amount = formatPaymentText(item.amount, item.currency);
+    switch (item.progress.stage) {
+      case "confirmed":
+        return `${amount}, confirmed via ${item.progress.method}`;
+      case "marked":
+        return `${amount}, marked paid, not confirmed`;
+      case "unpaid":
+        return `${amount}, not confirmed`;
+    }
   }
   const token = tokens.get(item.tokenId);
   return token === undefined

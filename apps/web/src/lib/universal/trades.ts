@@ -1,14 +1,20 @@
 import {
   type OfferCloser,
   offerClosers,
+  type PaymentMethod,
   type ReportStatus,
   type TradeEvent,
-  type TradeItemKind,
   type TradeSide,
 } from "@apollo/database/web/types";
 import type { SerialPick } from "@apollo/trades/holdings";
-import type { TradeState } from "@apollo/trades/lifecycle";
-import type { TradeItemStatus } from "@apollo/trades/transfers";
+import type {
+  NextStep,
+  TradePart,
+  TradeParts,
+  TradeState,
+} from "@apollo/trades/lifecycle";
+import type { PaymentItem } from "@apollo/trades/payment";
+import type { PaymentStatus, TradeItemStatus } from "@apollo/trades/transfers";
 import type { z } from "zod";
 import type { PublicUser } from "./auth";
 import type { FeedbackRep, TradeFeedbackView } from "./feedback";
@@ -41,17 +47,23 @@ export type TradeNamedItem = {
   collection: Objekt.Collection | null;
 };
 
-// an item as the trade page shows it
+// an objekt item as the trade page shows it
 export type TradeItemView = TradeNamedItem & {
   id: number;
   sender: TradeSide;
-  kind: TradeItemKind;
   transferredAt: Date | null;
   txHash: string | null;
   // its sender locked it in Apollo while it's still owed, which COSMO ignores
   locked: boolean;
   status: TradeItemStatus;
 };
+
+/**
+ * A trade's payment as its page shows it: the stored item (PaymentItem),
+ * its amount for every unit the trade took, and where it stands as the
+ * trade's status reads it (PaymentStatus).
+ */
+export type TradePaymentView = PaymentItem & { status: PaymentStatus };
 
 /**
  * The dispute that froze a disputed trade: when it was opened, and by a
@@ -105,12 +117,19 @@ export type TradeStage =
     };
 
 /**
- * A trade as its page shows it. `parentId` is the offer a counter answers.
- * `feedback` is where the viewer's feedback stands, `none` for staff.
+ * A trade as its page shows it. `items` are its objekts and `payment` its
+ * payment, if any, with `paymentMethods` the methods its listing accepts,
+ * which the payment's recipient confirms one of. `parts` is what each side
+ * does (tradeParts()). `parentId` is the offer a
+ * counter answers. `feedback` is where the viewer's feedback stands, `none`
+ * for staff.
  */
 export type TradeView = TradeStage & {
   id: string;
+  payment: TradePaymentView | null;
+  paymentMethods: PaymentMethod[];
   state: TradeState;
+  parts: TradeParts;
   endedAt: Date | null;
   dispute: TradeDispute | null;
   listingId: string | null;
@@ -135,19 +154,25 @@ export type MyTradesTab = (typeof myTradesTabs)[number];
 
 /**
  * One side of a trade in a My trades row: the objekts it sends, as the
- * Listings feed shows an offered side, and how many the drain has seen.
+ * Listings feed shows an offered side, how many the drain has seen, and
+ * what it does (TradePart) with the payment it sends, if any.
  */
 export type MyTradeSide = {
   items: ListingFeedItem[];
   sent: number;
-};
+} & (
+  | { part: "send"; payment: null }
+  | {
+      part: Exclude<TradePart, "send">;
+      payment: PaymentItem;
+    }
+);
 
 /**
  * A trade as My trades lists it, from the viewer's side. `dueAt` is an
- * accepted trade's deadline, or until then the offer's expiry. `needsYou`
- * says the viewer has an offer to answer, or an accepted trade whose
- * deadline hasn't passed the drain's watermark and on which they still owe
- * something. `closer` says what ended the offer when a ban, an account
+ * accepted trade's deadline, or until then the offer's expiry. `nextStep`
+ * is what the viewer has to do next (nextStep()), null when nothing.
+ * `closer` says what ended the offer when a ban, an account
  * deletion or its listing closing did, rather than a party.
  */
 export type MyTradeRow = {
@@ -161,7 +186,7 @@ export type MyTradeRow = {
   counterparty: TradePartyName;
   send: MyTradeSide;
   get: MyTradeSide;
-  needsYou: boolean;
+  nextStep: NextStep | null;
 };
 
 export type MyTradesCursor = z.infer<typeof myTradesCursorSchema>;

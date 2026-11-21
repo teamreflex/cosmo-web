@@ -6,7 +6,9 @@ import {
   type ClosedListingState,
   hasRatio,
   type ListingFeedWant,
+  listingPaymentTerms,
   type ListingPick,
+  type ListingSize,
   type PoolAvailability,
   type PoolStanding,
   type TokenRefusalReason,
@@ -20,8 +22,16 @@ import {
   type ValidArtist,
   validOnlineTypes,
 } from "@apollo/cosmo/types/common";
+import {
+  type PaymentMethod,
+  paymentMethods,
+  type TradeSide,
+} from "@apollo/database/web/types";
 import { rangeSummaryColumns, totalWanted } from "@apollo/trades/composer";
 import { heldTokenRefusal, type TokenFlags } from "@apollo/trades/holdings";
+import type { ListingUnits } from "@apollo/trades/lifecycle";
+import { type ListingType, listingTypesOf } from "@apollo/trades/listing";
+import { formatPayment, type ListingPayment } from "@apollo/trades/payment";
 import {
   hasBidiControl,
   type ObjektAttributes,
@@ -48,12 +58,73 @@ export function partyName(party: TradePartyName) {
 }
 
 /**
- * How many objekts the listing asks for; a payment row asks for none.
+ * An amount in minor units, in its own currency with two decimals and
+ * never converted, "$3.00".
  */
-export function wantedObjektCount(wants: readonly ListingFeedWant[]) {
-  return totalWanted(
-    wants.flatMap((want) => (want.kind === "payment" ? [] : [want])),
-  );
+export function formatAmount(amount: number, currency: string) {
+  return formatPayment(amount, currency, getLocale());
+}
+
+/**
+ * A listing's payment as one phrase in its own currency: its price for
+ * `units` units, "$3.00", the price and that it takes offers, "$3.00 ·
+ * offers", or "Make an offer" when it has no asking price.
+ */
+export function askingPriceText(
+  payment: Pick<ListingPayment, "mode" | "amount" | "currency">,
+  units = 1,
+) {
+  if (payment.amount === null) return m.listing_payment_offer_only();
+  const price = formatAmount(payment.amount * units, payment.currency);
+  return payment.mode === "price_or_offer"
+    ? m.listing_payment_open_to_offers({ price })
+    : price;
+}
+
+/**
+ * One side of an offer's terms: its objekt count, "$2.50" for a payment
+ * alone, or "1 + $2.50".
+ */
+export function offerSideText(
+  count: number,
+  payment: { amount: number; currency: string } | null,
+) {
+  if (payment === null) return m.offer_terms_count({ count });
+  const amount = formatAmount(payment.amount, payment.currency);
+  return count === 0 ? amount : m.offer_terms_with_payment({ count, amount });
+}
+
+/**
+ * A payment method's name, "PayPal F&F".
+ */
+export function paymentMethodLabel(method: PaymentMethod) {
+  return paymentMethodLabels[method]();
+}
+
+const paymentMethodLabels = {
+  paypal_ff: m.payment_method_paypal_ff,
+  wise: m.payment_method_wise,
+  bank_transfer: m.payment_method_bank_transfer,
+  promptpay: m.payment_method_promptpay,
+  kakaopay: m.payment_method_kakaopay,
+  toss: m.payment_method_toss,
+  gcash: m.payment_method_gcash,
+  alipay: m.payment_method_alipay,
+  wechat_pay: m.payment_method_wechat_pay,
+  venmo: m.payment_method_venmo,
+  cashapp: m.payment_method_cashapp,
+  other: m.payment_method_other,
+} satisfies Record<PaymentMethod, () => string>;
+
+/**
+ * The methods a payment may arrive by, in the list's order, "PayPal F&F,
+ * Wise".
+ */
+export function paymentMethodsText(methods: readonly PaymentMethod[]) {
+  return paymentMethods
+    .filter((method) => methods.includes(method))
+    .map(paymentMethodLabel)
+    .join(", ");
 }
 
 /**
@@ -181,8 +252,6 @@ export function wantLabel(want: ListingFeedWant) {
       return rangeLabel(want.ranges);
     case "choice":
       return m.listing_want_any_of_count({ count: want.options.length });
-    case "payment":
-      return `${want.amount} ${want.currency}`;
   }
 }
 
@@ -190,9 +259,7 @@ export function wantLabel(want: ListingFeedWant) {
  * A want row with its count, "5× Atom02 · ARTMS · First".
  */
 export function wantText(want: ListingFeedWant) {
-  return want.kind === "payment"
-    ? wantLabel(want)
-    : `${want.count}× ${wantLabel(want)}`;
+  return `${want.count}× ${wantLabel(want)}`;
 }
 
 /**
@@ -201,11 +268,7 @@ export function wantText(want: ListingFeedWant) {
  */
 export function wantsCaption(wants: readonly ListingFeedWant[]) {
   return wants
-    .map((want) =>
-      want.kind === "payment" || want.count === 1
-        ? wantLabel(want)
-        : wantText(want),
-    )
+    .map((want) => (want.count === 1 ? wantLabel(want) : wantText(want)))
     .join(", ");
 }
 
@@ -214,6 +277,66 @@ export function wantsCaption(wants: readonly ListingFeedWant[]) {
  */
 export function wantsSummary(wants: readonly ListingFeedWant[]) {
   return wants.map(wantText).join(", ");
+}
+
+type OptionShown = {
+  wants: readonly ListingFeedWant[];
+  payment: ListingPayment | null;
+};
+
+// the claimer's payment beside an option's rows: its price, or "your offer" with no asking price
+function priceBeside(payment: ListingPayment | null) {
+  if (payment?.side !== "to") return null;
+  return payment.amount === null
+    ? m.listing_payment_your_offer()
+    : askingPriceText(payment);
+}
+
+/**
+ * One of a listing's options as a short phrase: its objekt rows as
+ * askingTitle() reads them, the claimer's payment added, "1 objekt +
+ * $1.00" or, with no asking price, "1 objekt + your offer", or the payment
+ * alone, "$3.00".
+ */
+export function optionTitle(option: OptionShown) {
+  if (option.wants.length === 0) {
+    return option.payment?.side === "to" ? askingPriceText(option.payment) : "";
+  }
+  return withPriceBeside(askingTitle(option.wants), option.payment);
+}
+
+function withPriceBeside(rows: string, payment: ListingPayment | null) {
+  const price = priceBeside(payment);
+  return price === null ? rows : withPayment(rows, price);
+}
+
+// a side's objekts with its payment added, "1 objekt + $3.00"
+export function withPayment(text: string, price: string) {
+  return `${text} + ${price}`;
+}
+
+/**
+ * Every option's title (optionTitle()), each told apart from the others:
+ * options whose titles read alike, "6 objekts" twice, name their rows
+ * instead (wantsSummary()).
+ */
+export function optionTitles(options: readonly OptionShown[]) {
+  const titles = options.map(optionTitle);
+  return options.map((option, index) => {
+    const title = titles[index] ?? "";
+    return titles.indexOf(title) === titles.lastIndexOf(title) ||
+      option.wants.length === 0
+      ? title
+      : withPriceBeside(wantsSummary(option.wants), option.payment);
+  });
+}
+
+/**
+ * Phrases for a listing's options joined as alternatives, "2 objekts or
+ * $3.00".
+ */
+export function joinOptions(phrases: readonly string[]) {
+  return phrases.join(` ${m.listing_option_or()} `);
 }
 
 /**
@@ -226,20 +349,25 @@ export function askingTitle(wants: readonly ListingFeedWant[]) {
   if (only !== undefined && wants.length === 1) {
     return wantLabel(only);
   }
-  return m.market_listings_objekts({ count: wantedObjektCount(wants) });
+  return m.market_listings_objekts({ count: totalWanted(wants) });
 }
 
 /**
  * How many rows of each kind a listing asks for, as the Looking for heading
- * sums them up: "1 range · 1 exact · 1 any of".
+ * sums them up: "1 range · 1 exact · 1 any of · 1 payment", the payment
+ * when the claimer sends one.
  */
-export function wantKindsSummary(wants: readonly ListingFeedWant[]) {
+export function wantKindsSummary(
+  wants: readonly ListingFeedWant[],
+  payment: ListingPayment | null,
+) {
   const count = (kind: ListingFeedWant["kind"]) =>
     wants.filter((want) => want.kind === kind).length;
   const ranges = count("range");
   const exact = count("exact");
   const choices = count("choice");
-  const payments = count("payment");
+  // a sale's heading already names its price
+  const payments = payment?.side === "to" && wants.length > 0 ? 1 : 0;
   return [
     ranges > 0 && m.listing_detail_summary_ranges({ count: ranges }),
     exact > 0 && m.listing_detail_summary_exact({ count: exact }),
@@ -286,7 +414,8 @@ export const emptyComposerDisplay: ComposerDisplay = {
 };
 
 /**
- * What the composer needs to show a listing's current terms.
+ * What the composer needs to show a listing's current terms, every
+ * option's collections included.
  */
 export function listingComposerDisplay(listing: TradeListing): ComposerDisplay {
   return {
@@ -301,33 +430,34 @@ export function listingComposerDisplay(listing: TradeListing): ComposerDisplay {
       ]),
     ),
     collections: new Map(
-      listing.wants.flatMap((want): [string, ComposerShown][] => {
-        switch (want.kind) {
-          case "exact":
-            return [
-              [
-                want.objekt.slug,
+      listing.options
+        .flatMap((option) => option.wants)
+        .flatMap((want): [string, ComposerShown][] => {
+          switch (want.kind) {
+            case "exact":
+              return [
+                [
+                  want.objekt.slug,
+                  {
+                    name: objektName(want.collection, want.objekt),
+                    serial: null,
+                    collection: want.collection,
+                  },
+                ],
+              ];
+            case "choice":
+              return want.options.map((option) => [
+                option.slug,
                 {
-                  name: objektName(want.collection, want.objekt),
+                  name: objektName(option.collection, option),
                   serial: null,
-                  collection: want.collection,
+                  collection: option.collection,
                 },
-              ],
-            ];
-          case "choice":
-            return want.options.map((option) => [
-              option.slug,
-              {
-                name: objektName(option.collection, option),
-                serial: null,
-                collection: option.collection,
-              },
-            ]);
-          case "range":
-          case "payment":
-            return [];
-        }
-      }),
+              ]);
+            case "range":
+              return [];
+          }
+        }),
     ),
   };
 }
@@ -385,17 +515,109 @@ export function availabilityLabel(availability: PoolAvailability) {
 
 /**
  * How many objekts one trade from the listing swaps on each side: its unit
- * size for the want rows' total, "1 : 5". Null for a bundle (hasRatio(),
- * against the `posted` objekts it has ever offered), whose one trade takes
- * everything.
+ * size for the want rows' total, "1 : 5", or a buy listing's payment for
+ * them, "$3.00 : 1". Null for a bundle (hasRatio(), against the `posted`
+ * objekts it has ever offered), whose one trade takes everything.
  */
 export function listingRatio(
-  listing: { unitSize: number; wants: readonly ListingFeedWant[] },
+  listing: {
+    units: ListingUnits;
+    wants: readonly ListingFeedWant[];
+    payment: ListingPayment | null;
+  },
   posted: number,
 ): TradeRatio | null {
-  return hasRatio(listing.unitSize, posted)
-    ? { give: listing.unitSize, get: wantedObjektCount(listing.wants) }
-    : null;
+  const { units } = listing;
+  if (units.kind === "pool" && !hasRatio(units.unitSize, posted)) return null;
+  return {
+    give: units.kind === "pool" ? units.unitSize : 0,
+    get: totalWanted(listing.wants),
+    payment: listing.payment && {
+      sender: listing.payment.side,
+      amount: listing.payment.amount,
+      currency: listing.payment.currency,
+    },
+  };
+}
+
+/**
+ * The ratio a listing's pill shows (listingRatio()): only for one option without a payment, since several options trade at several ratios and a payment's ratio doesn't fit the pill.
+ */
+export function pillRatio(
+  listing: {
+    units: ListingUnits;
+    options: readonly {
+      wants: readonly ListingFeedWant[];
+      payment: ListingPayment | null;
+    }[];
+  },
+  posted: number,
+) {
+  const [first, ...others] = listing.options;
+  return first === undefined || others.length > 0 || first.payment !== null
+    ? null
+    : listingRatio({ units: listing.units, ...first }, posted);
+}
+
+/**
+ * What a buy listing has left to buy: "Up to 3" until a trade holds some
+ * of its units, then "2 of 3 left".
+ */
+export function buyingText(units: Extract<ListingSize, { kind: "buy" }>) {
+  return units.taken === 0
+    ? m.market_listings_buying_up_to({ count: units.maxUnits })
+    : m.market_listings_buying_left({
+        left: Math.max(units.maxUnits - units.taken, 0),
+        max: units.maxUnits,
+      });
+}
+
+/**
+ * Each side of a ratio as text, its payment added to the side that sends
+ * it: "1", "$3.00" for a sale's payment alone, "1 + $3.00" beside objekts.
+ */
+export function ratioSides({ give, get, payment }: TradeRatio) {
+  const side = (count: number, sender: TradeSide) => {
+    if (payment === null || payment.sender !== sender) return String(count);
+    const price =
+      payment.amount === null
+        ? m.listing_payment_offer()
+        : formatAmount(payment.amount, payment.currency);
+    return count === 0 ? price : withPayment(String(count), price);
+  };
+  return { give: side(give, "from"), get: side(get, "to") };
+}
+
+/**
+ * Every type a listing's options make it (listingTypesOf()), from its
+ * units' kind, its payment's side and each option's objekt want rows.
+ */
+export function listingTypesOfListing(listing: {
+  options: readonly {
+    wants: readonly unknown[];
+    payment: ListingPayment | null;
+  }[];
+  units: ListingUnits;
+}) {
+  return listingTypesOf({
+    units: listing.units.kind,
+    paymentSide: listingPaymentTerms(listing.options)?.side ?? null,
+    options: listing.options.map((option) => ({
+      objektWants: option.wants.length,
+    })),
+  });
+}
+
+// what kind of listing it is, as its badges and the feed's Type filter name it
+export const listingTypeLabels = {
+  trade: m.market_listings_trade,
+  sell: m.market_listings_sell,
+  buy: m.market_listings_buy,
+} satisfies Record<ListingType, () => string>;
+
+// a ratio as one line, "1 for $3.00"
+export function ratioText(ratio: TradeRatio) {
+  return m.market_listings_ratio(ratioSides(ratio));
 }
 
 /**
@@ -440,9 +662,7 @@ function rangesColumn<TValue extends string>(
  * row's column open when any of its ranges leaves it open. What the picker
  * lists comes from wantMatch().
  */
-export function wantScope(
-  want: Exclude<ListingFeedWant, { kind: "payment" }>,
-): PickerScope {
+export function wantScope(want: ListingFeedWant): PickerScope {
   if (want.kind === "range") {
     const values = <TValue extends string>(
       pick: (filter: RangeFilter) => readonly TValue[],
@@ -488,9 +708,7 @@ export function wantScope(
  * The collections a want row takes, as fitsWant() matches them: a range
  * row's ranges, or an exact or "any of" row's collections by slug.
  */
-export function wantMatch(
-  want: Exclude<ListingFeedWant, { kind: "payment" }>,
-): WantMatch {
+export function wantMatch(want: ListingFeedWant): WantMatch {
   switch (want.kind) {
     case "range":
       return { ranges: want.ranges, slugs: [] };

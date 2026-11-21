@@ -13,9 +13,12 @@ import {
   listingFeedInputSchema,
   listingFeedTotalInputSchema,
 } from "@/lib/universal/schema/listing-feed";
-import type { ListingFeedPage } from "@/lib/universal/trade-listings";
+import {
+  type ListingFeedPage,
+  listingSize,
+} from "@/lib/universal/trade-listings";
 import { tradeOffers } from "@apollo/database/web/schema";
-import { listingUnitSize } from "@apollo/trades/lifecycle";
+import { listingTakenUnits } from "@apollo/database/web/sql";
 import { createServerFn } from "@tanstack/react-start";
 import { and, desc, inArray, sql } from "drizzle-orm";
 
@@ -23,9 +26,9 @@ const PAGE_SIZE = 30;
 
 /**
  * One page of the Listings feed: open listings, most recently posted or
- * bumped first, keyset-paged on `(bumped_at, id)`, each with its unit size
- * and how many of its pool objekts are free, counted for the page's rows
- * only. The cursor is the previous page's last place as that page read it,
+ * bumped first, keyset-paged on `(bumped_at, id)`, each with its units
+ * and how many of its pool objekts are free, or a buy listing's units its
+ * trades hold, counted for the page's rows only. The cursor is the previous page's last place as that page read it,
  * so a listing bumped, claimed from, edited or withdrawn between pages
  * still marks the place; a bumped one moves to the top of a refetch rather
  * than repeating. The page reads one row past its size to say whether
@@ -60,10 +63,15 @@ export const $fetchListingFeed = createServerFn({ method: "GET" })
         fromUserId: true,
         fromAddress: true,
         unitSize: true,
+        maxUnits: true,
+        paymentSide: true,
+        paymentMethods: true,
+        offers: true,
       },
       extras: {
         free: (t) => freePoolCount(t),
         posted: (t) => postedCount(t.id),
+        taken: (t) => listingTakenUnits(t),
       },
       with: {
         items: { where: { leftAt: { isNull: true } }, orderBy: { id: "asc" } },
@@ -87,8 +95,8 @@ export const $fetchListingFeed = createServerFn({ method: "GET" })
         cosmoUsername: listing.fromCosmo?.username ?? null,
         rep: listing.fromUser && toFeedbackRep(listing.fromStats),
         items: listing.items,
-        wants: listing.wants,
-        unitSize: listingUnitSize(listing),
+        options: listing.options,
+        units: listingSize(listing),
         posted: listing.posted,
         free: listing.free,
       })),

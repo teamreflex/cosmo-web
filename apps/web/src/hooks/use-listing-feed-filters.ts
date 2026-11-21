@@ -8,6 +8,7 @@ import {
   countActiveListingFilters,
   type ListingFeedSearch,
 } from "@/lib/universal/parsers";
+import type { ListingType } from "@apollo/trades/listing";
 import { getRouteApi } from "@tanstack/react-router";
 
 const route = getRouteApi("/market/");
@@ -88,6 +89,24 @@ export function useFeedSideFilters(keys: SideKeys): PropsWithFilters {
   };
 
   return { filters, setFilters };
+}
+
+/**
+ * The listing type the feed shows, undefined for every type, and its
+ * setter.
+ */
+export function useListingTypeFilter() {
+  const navigate = route.useNavigate();
+  const type = route.useSearch({ select: (search) => search.type });
+
+  function setType(next: ListingType | undefined) {
+    void navigate({
+      search: (prev) => ({ ...prev, type: next }),
+      replace: true,
+    });
+  }
+
+  return { type, setType };
 }
 
 /**

@@ -1,14 +1,19 @@
 import type { TradeWant } from "@apollo/trades/allocate";
 import type { TokenFlags } from "@apollo/trades/holdings";
+import type { ListingPayment } from "@apollo/trades/payment";
 import type { ObjektAttributes } from "@apollo/trades/range";
 import { describe, expect, test } from "bun:test";
 import {
+  acceptCapped,
   type Candidate,
   candidatePanel,
   hasRatio,
   type ListingFeedItem,
   type ListingItem,
   type ListingOfferSummary,
+  listingOptions,
+  type ListingSize,
+  listingSize,
   listingStop,
   type ListingTrade,
   type OfferRefusal,
@@ -153,15 +158,18 @@ describe("whether the poster can accept an offer", () => {
     offerRefusal(
       {
         expiresAt: new Date("2026-10-27T00:00:00Z"),
+        option: 0,
         picks: [1],
+        units: null,
         given: [10],
+        payment: null,
         ...offer,
       },
       {
         fromAddress: poster,
         pool: new Set([1, 2]),
-        unitSize: 1,
-        wants,
+        units: { kind: "pool", unitSize: 1 },
+        options: [{ wants, payment: null }],
         posterRefused: false,
         ...listing,
       },
@@ -172,6 +180,55 @@ describe("whether the poster can accept an offer", () => {
 
   test("an offer that still fits can be accepted", () => {
     expect(judge({})).toBeNull();
+  });
+
+  describe("on a buy listing", () => {
+    // $3 for each KimLip 101Z, up to three
+    const payment: ListingPayment = {
+      side: "from",
+      currency: "USD",
+      methods: ["wise"],
+      mode: "price_only",
+      amount: 300,
+    };
+    const offer = {
+      picks: [],
+      units: 1,
+      payment: { sender: "from", amount: 300, currency: "USD" },
+    } satisfies Partial<Parameters<typeof offerRefusal>[0]>;
+    const listing = (taken: number) =>
+      ({
+        pool: new Set<number>(),
+        units: { kind: "buy", maxUnits: 3, taken },
+        options: [{ wants, payment }],
+      }) satisfies Partial<Parameters<typeof offerRefusal>[1]>;
+
+    test("fits while the listing has its units left", () => {
+      expect(judge({ offer, listing: listing(2) })).toBeNull();
+    });
+
+    test("is refused once other trades hold the units it takes", () => {
+      expect(judge({ offer, listing: listing(3) })).toEqual({
+        code: "listing_full",
+      });
+      expect(
+        judge({
+          offer: {
+            ...offer,
+            units: 2,
+            given: [10, 11],
+            payment: { sender: "from", amount: 600, currency: "USD" },
+          },
+          tokens: {
+            states: new Map([
+              ...states,
+              [11, held(11, claimer, "atom02-kimlip-101z")],
+            ]),
+          },
+          listing: listing(2),
+        }),
+      ).toEqual({ code: "listing_full" });
+    });
   });
 
   test("each check answers as $acceptOffer would", () => {
@@ -239,6 +296,68 @@ describe("whether the poster can accept an offer", () => {
       reason: "not_owned",
     });
   });
+
+  const sale = {
+    wants: [],
+    payment: {
+      side: "to",
+      currency: "USD",
+      methods: ["wise"],
+      mode: "price_or_offer",
+      amount: 300,
+    },
+  } satisfies Parameters<typeof offerRefusal>[1]["options"][number];
+  const offered = (amount: number, currency = "USD") =>
+    ({
+      given: [],
+      payment: { sender: "to", amount, currency },
+    }) satisfies Partial<Parameters<typeof offerRefusal>[0]>;
+
+  test("a sale's offer gives no objekts and is judged on its amount", () => {
+    const listing = { options: [sale] };
+    expect(judge({ offer: offered(250), listing })).toBeNull();
+    expect(judge({ offer: offered(250, "KRW"), listing })).toEqual({
+      code: "listing_updated",
+    });
+    expect(
+      judge({
+        offer: offered(250),
+        listing: {
+          options: [
+            { ...sale, payment: { ...sale.payment, mode: "price_only" } },
+          ],
+        },
+      }),
+    ).toEqual({ code: "listing_updated" });
+    expect(judge({ offer: { given: [] }, listing })).toEqual({
+      code: "listing_updated",
+    });
+  });
+
+  test("an offer is judged against the option it gives", () => {
+    // "the objekt or $3": the offer of $2.50 gives the payment option
+    const listing = { options: [{ wants, payment: null }, sale] };
+    expect(
+      judge({ offer: { ...offered(250), option: 1 }, listing }),
+    ).toBeNull();
+    // the same offer read against the objekt option no longer fits
+    expect(judge({ offer: { ...offered(250), option: 0 }, listing })).toEqual({
+      code: "listing_updated",
+    });
+    expect(judge({ offer: { option: 1 }, listing })).toEqual({
+      code: "listing_updated",
+    });
+  });
+
+  test("an option an edit removed changes the offer's terms", () => {
+    expect(judge({ offer: { option: 1 } })).toEqual({
+      code: "listing_updated",
+    });
+    // expiry is still judged first
+    expect(judge({ offer: { option: 2, expiresAt: now } })).toEqual({
+      code: "offer_expired",
+    });
+  });
 });
 
 describe("the error a refused accept throws", () => {
@@ -281,8 +400,7 @@ describe("the error a refused accept throws", () => {
 
 const candidate = (overrides: Partial<Candidate> = {}): Candidate => ({
   role: "candidate",
-  units: 1,
-  rows: [{ owned: 1, missing: 0 }],
+  options: [{ units: 1, rows: [{ owned: 1, missing: 0 }] }],
   claims: { active: 0, cap: 3 },
   ownAddress: false,
   endedOffer: null,
@@ -295,24 +413,62 @@ describe("what stops every claim", () => {
   const free: PoolAvailability = { kind: "free" };
   const busy: PoolAvailability = { kind: "in_trade" };
   const locked: PoolAvailability = { kind: "blocked", reason: "locked" };
+  const unit = (unitSize: number): ListingSize => ({ kind: "pool", unitSize });
 
   test("nothing while a trade's worth of the pool is free", () => {
-    expect(listingStop(pool(free, busy), 1, false)).toBeNull();
+    expect(listingStop(pool(free, busy), unit(1), false)).toBeNull();
   });
 
   test("trades holding the rest of the pool make it busy, not blocked", () => {
-    expect(listingStop(pool(free, busy, locked), 2, false)).toBe("busy");
+    expect(listingStop(pool(free, busy, locked), unit(2), false)).toBe("busy");
   });
 
   test("objekts the poster can't give, or their account, block it", () => {
-    expect(listingStop(pool(free, locked), 2, false)).toBe("blocked");
-    expect(listingStop(pool(free, free), 1, true)).toBe("blocked");
+    expect(listingStop(pool(free, locked), unit(2), false)).toBe("blocked");
+    expect(listingStop(pool(free, free), unit(1), true)).toBe("blocked");
   });
 
   test("objekts that left the pool count for nothing", () => {
     expect(
-      listingStop(pool(free, { kind: "traded", at: new Date(0) }), 2, false),
+      listingStop(
+        pool(free, { kind: "traded", at: new Date(0) }),
+        unit(2),
+        false,
+      ),
     ).toBe("blocked");
+  });
+
+  // a buy listing has no pool, so only the units its trades hold count
+  const buying = (taken: number): ListingSize => ({
+    kind: "buy",
+    maxUnits: 3,
+    taken,
+  });
+
+  test("a buy listing with units left takes claims", () => {
+    expect(listingStop([], buying(2), false)).toBeNull();
+  });
+
+  test("a buy listing whose trades hold every unit is busy", () => {
+    expect(listingStop([], buying(3), false)).toBe("busy");
+  });
+
+  test("a buy listing is blocked only by the poster's account", () => {
+    expect(listingStop([], buying(0), true)).toBe("blocked");
+  });
+});
+
+describe("a buy listing's units", () => {
+  test("parses the most units with what its trades hold", () => {
+    expect(
+      listingSize({ id: "l", unitSize: null, maxUnits: 3, taken: 2 }),
+    ).toEqual({ kind: "buy", maxUnits: 3, taken: 2 });
+  });
+
+  test("leaves a pool listing as its unit size", () => {
+    expect(
+      listingSize({ id: "l", unitSize: 2, maxUnits: null, taken: 0 }),
+    ).toEqual({ kind: "pool", unitSize: 2 });
   });
 });
 
@@ -327,12 +483,17 @@ describe("whether a listing reads as a ratio", () => {
 });
 
 describe("what a candidate sees", () => {
-  const listing = {
-    wants: [{ kind: "exact" as const }],
-    stop: null,
-  };
-  // a range row makes the listing take offers
-  const offers = { ...listing, wants: [{ kind: "range" as const }] };
+  const claims = { wants: [{ kind: "exact" as const }], payment: null };
+  // a range row makes an option take offers
+  const ranged = { ...claims, wants: [{ kind: "range" as const }] };
+  // a payment open to offers also claims at its asking price
+  const asking = { ...claims, payment: { mode: "price_or_offer" as const } };
+  // a payment with no asking price takes only offers
+  const unpriced = { ...claims, payment: { mode: "offer_only" as const } };
+  const listing = { options: [claims], stop: null };
+  const offers = { ...listing, options: [ranged] };
+  const either = { ...listing, options: [asking] };
+  const offerOnly = { ...listing, options: [unpriced] };
 
   test("a pool all in trades is busy until one ends", () => {
     expect(candidatePanel({ ...listing, stop: "busy" }, candidate())).toBe(
@@ -350,6 +511,28 @@ describe("what a candidate sees", () => {
     const capped = candidate({ claims: { active: 3, cap: 3 } });
     expect(candidatePanel(listing, capped)).toBe("cap");
     expect(candidatePanel(offers, capped)).toBe("picker");
+    expect(candidatePanel(either, capped)).toBe("picker");
+    expect(candidatePanel(offerOnly, capped)).toBe("picker");
+  });
+
+  test("the cap stops Accept beside Make an offer only on an option open to offers", () => {
+    const capped = candidate({ claims: { active: 3, cap: 3 } });
+    expect(acceptCapped(asking, capped)).toBe(true);
+    expect(acceptCapped(asking, candidate())).toBe(false);
+    expect(acceptCapped(unpriced, capped)).toBe(false);
+    expect(acceptCapped(ranged, capped)).toBe(false);
+  });
+
+  test("with options, the cap shows only when every option claims", () => {
+    const capped = candidate({ claims: { active: 3, cap: 3 } });
+    // "any Special-class objekt or $3": the range takes offers, the price claims
+    const mixed = { ...listing, options: [ranged, { ...claims, wants: [] }] };
+    expect(candidatePanel(mixed, capped)).toBe("picker");
+    expect(acceptCapped(ranged, capped)).toBe(false);
+    expect(acceptCapped(claims, capped)).toBe(true);
+    expect(
+      candidatePanel({ ...listing, options: [claims, claims] }, capped),
+    ).toBe("cap");
   });
 });
 
@@ -374,7 +557,9 @@ const trade = (
     claimer: counterparty(name),
     acceptedAt: new Date(acceptedAt),
     tokenIds,
+    units: null,
     givenCount: tokenIds.length,
+    payment: null,
   };
   switch (status) {
     case "accepted":
@@ -382,8 +567,7 @@ const trade = (
         ...base,
         status,
         deadlineAt: new Date(0),
-        toSend: tokenIds.length,
-        needsYou: true,
+        nextStep: { kind: "send", count: tokenIds.length },
       };
     case "disputed":
       return {
@@ -495,8 +679,11 @@ describe("the poster's tabs", () => {
     offers: Array.from({ length: offers }, (): ListingOfferSummary => ({
       tradeId: "o",
       claimer: counterparty("x"),
+      option: 0,
       picks: [],
       given: [],
+      payment: null,
+      parts: { from: "send", to: "send" },
       expiresAt: new Date(0),
       refusal: null,
     })),
@@ -524,5 +711,116 @@ describe("the poster's tabs", () => {
     const tabs = posterTabCounts({ takesOffers: false }, poster(0, []));
     expect(shownPosterTab("trades", tabs)).toBe("trades");
     expect(shownPosterTab("offers", tabs)).toBe("listing");
+  });
+});
+
+describe("a listing's options", () => {
+  const listing = {
+    id: "listing",
+    paymentSide: null,
+    paymentMethods: [],
+    offers: null,
+  } satisfies Parameters<typeof listingOptions>[0];
+  const exact = (option: number, slug: string) => ({
+    option,
+    kind: "exact",
+    count: 1,
+    slug,
+    artist: "artms",
+    member: "HeeJin",
+    season: "Atom02",
+    class: "Special",
+    onOffline: "online",
+  });
+  const special = (option: number) => ({
+    option,
+    kind: "range",
+    count: 1,
+    ranges: [
+      {
+        artists: [],
+        members: [],
+        seasons: [],
+        classes: ["Special"],
+        onOfflines: [],
+        collectionNos: [],
+      },
+    ],
+  });
+  const pay = (option: number, amount: string | null = "3.00") => ({
+    option,
+    kind: "payment",
+    amount,
+    currency: "USD",
+  });
+  const paid = {
+    ...listing,
+    paymentSide: "to",
+    paymentMethods: ["wise"],
+    offers: "price_only",
+  } satisfies Parameters<typeof listingOptions>[0];
+  const price = {
+    side: "to",
+    currency: "USD",
+    methods: ["wise"],
+    mode: "price_only",
+    amount: 300,
+  } satisfies ListingPayment;
+
+  test("a listing of one option reads as it was posted", () => {
+    expect(
+      listingOptions(listing, [exact(0, "a"), exact(0, "b")]).map((option) =>
+        option.wants.map((want) => want.kind === "exact" && want.objekt.slug),
+      ),
+    ).toEqual([["a", "b"]]);
+  });
+
+  test("rows group by option in order, each with its own price", () => {
+    const options = listingOptions(paid, [
+      special(0),
+      exact(2, "c"),
+      pay(1),
+      pay(2, "1.00"),
+    ]);
+    expect(options.map((option) => option.wants.length)).toEqual([1, 0, 1]);
+    expect(options.map((option) => option.payment)).toEqual([
+      null,
+      price,
+      { ...price, amount: 100 },
+    ]);
+  });
+
+  test("the poster's payment on top prices every option", () => {
+    const options = listingOptions({ ...paid, paymentSide: "from" }, [
+      exact(0, "a"),
+      pay(0),
+      special(1),
+    ]);
+    expect(options.map((option) => option.payment)).toEqual([
+      { ...price, side: "from" },
+      { ...price, side: "from" },
+    ]);
+  });
+
+  test("rows the post and edit paths never write throw", () => {
+    // a gap in the options
+    expect(() =>
+      listingOptions(listing, [exact(0, "a"), exact(2, "b")]),
+    ).toThrow();
+    // a payment row without the listing's payment columns, and the reverse
+    expect(() => listingOptions(listing, [exact(0, "a"), pay(1)])).toThrow();
+    expect(() => listingOptions(paid, [exact(0, "a")])).toThrow();
+    // the poster's payment outside option 0
+    expect(() =>
+      listingOptions({ ...paid, paymentSide: "from" }, [
+        exact(0, "a"),
+        exact(1, "b"),
+        pay(1),
+      ]),
+    ).toThrow();
+    // a price on a listing that only takes offers
+    expect(() =>
+      listingOptions({ ...paid, offers: "offer_only" }, [pay(0)]),
+    ).toThrow();
   });
 });

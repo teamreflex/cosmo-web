@@ -1,6 +1,10 @@
 import { m } from "@/i18n/messages";
 import { reportReasonLabel } from "@/lib/client/reports";
-import { partyName } from "@/lib/client/trade-listings";
+import {
+  formatAmount,
+  partyName,
+  paymentMethodLabel,
+} from "@/lib/client/trade-listings";
 import {
   itemName,
   offerRoles,
@@ -15,7 +19,7 @@ import type {
   TradeEvent,
   TradeSide,
 } from "@apollo/database/web/types";
-import { otherSide } from "@apollo/trades/lifecycle";
+import { otherSide, owedAtDeadline } from "@apollo/trades/lifecycle";
 import { ParaglideMessage } from "@inlang/paraglide-js-react";
 import { IconCheck, IconExternalLink } from "@tabler/icons-react";
 import { Link } from "@tanstack/react-router";
@@ -147,10 +151,64 @@ export function describeEvent(
           markup={bold}
         />
       );
-    // payments aren't implemented, so nothing writes these yet
-    case "marked_paid":
-    case "payment_confirmed":
-      return null;
+    case "marked_paid": {
+      const { payment } = trade;
+      if (payment === null || payment.id !== event.itemId) return null;
+      const amount = formatAmount(payment.amount, payment.currency);
+      switch (viewer(side, payment.sender)) {
+        case "you":
+          return m.trade_page_event_marked_paid_you({ amount });
+        case "them":
+          return (
+            <ParaglideMessage
+              message={m.trade_page_event_marked_paid_them}
+              inputs={{ amount, name: nameOf(payment.sender) }}
+              markup={bold}
+            />
+          );
+        case "staff":
+          return (
+            <ParaglideMessage
+              message={m.trade_page_event_marked_paid_staff}
+              inputs={{ amount, sender: nameOf(payment.sender) }}
+              markup={bold}
+            />
+          );
+      }
+    }
+    case "payment_confirmed": {
+      const { payment } = trade;
+      if (payment === null || payment.id !== event.itemId) return null;
+      const recipient = otherSide(payment.sender);
+      const inputs = {
+        amount: formatAmount(payment.amount, payment.currency),
+        method: paymentMethodLabel(event.method),
+      };
+      switch (viewer(side, recipient)) {
+        case "you":
+          return m.trade_page_event_payment_confirmed_you(inputs);
+        case "them":
+          return (
+            <ParaglideMessage
+              message={m.trade_page_event_payment_confirmed_them}
+              inputs={{ ...inputs, name: nameOf(recipient) }}
+              markup={bold}
+            />
+          );
+        case "staff":
+          return (
+            <ParaglideMessage
+              message={m.trade_page_event_payment_confirmed_staff}
+              inputs={{
+                ...inputs,
+                recipient: nameOf(recipient),
+                sender: nameOf(payment.sender),
+              }}
+              markup={bold}
+            />
+          );
+      }
+    }
     default:
       // only a trade that started as an offer writes these
       return trade.proposedBy === null
@@ -378,7 +436,11 @@ function describeDispute(
     case "staff":
       return m.trade_page_event_disputed_staff({ appName });
     case "deadline":
-      return m.trade_page_event_disputed_deadline({ appName });
+      return {
+        objekts: m.trade_page_event_disputed_deadline,
+        payment: m.trade_page_event_disputed_deadline_payment,
+        both: m.trade_page_event_disputed_deadline_both,
+      }[owedAtDeadline(trade.state.items)]({ appName });
     default:
       return event.by === side ? (
         m.trade_page_event_disputed_you({

@@ -7,16 +7,19 @@ import {
 import type {
   ReportStatus,
   TradeEvent,
+  TradeOfferItem,
   TradeSide,
 } from "@apollo/database/web/types";
 import {
   isOpenTrade,
   tradeListingId,
+  tradeParts,
   type TradeState,
   tradeState,
 } from "@apollo/trades/lifecycle";
+import { parsePaymentItem } from "@apollo/trades/payment";
 import { DRAIN_CURSOR_NAME, isTimedOut } from "@apollo/trades/timers";
-import { itemStatus } from "@apollo/trades/transfers";
+import { itemStatus, paymentStatus } from "@apollo/trades/transfers";
 import { and, eq, isNull, sql } from "drizzle-orm";
 import {
   toFeedbackRep,
@@ -37,6 +40,28 @@ import { type ServerUser, toPublicUser } from "../auth.server";
 import { db } from "../db";
 import { feedbackRepColumns } from "../feedback.server";
 import { readIndexed } from "./feed.server";
+
+/**
+ * A trade's payment as its page shows it (TradePaymentView), and the
+ * methods it may arrive by, which the trade took from its listing when
+ * claimed.
+ */
+function paymentViewOf(
+  items: readonly TradeOfferItem[],
+  paymentMethods: TradeView["paymentMethods"],
+  state: TradeState,
+): Pick<TradeView, "payment" | "paymentMethods"> {
+  const row = items.find((item) => item.kind === "payment");
+  if (row === undefined) return { payment: null, paymentMethods: [] };
+  const payment = parsePaymentItem(row);
+  return {
+    payment: {
+      ...payment,
+      status: paymentStatus(payment.progress.stage, state.status),
+    },
+    paymentMethods,
+  };
+}
 
 /**
  * The drain's watermark as a scalar subquery, so a trade read gets it in
@@ -154,6 +179,7 @@ export async function readTradeView(
       expiresAt: true,
       endedAt: true,
       parentId: true,
+      paymentMethods: true,
     },
     extras: {
       watermark: watermarkExtra,
@@ -303,13 +329,17 @@ export async function readTradeView(
     throw new Error("offer without an expiry or a proposer");
   }
 
+  const listingId = tradeListingId(row.items);
+
   const trade: TradeView = {
     ...stage,
     id: row.id,
+    ...paymentViewOf(row.items, row.paymentMethods, state),
     state,
+    parts: tradeParts(row.items),
     endedAt: row.endedAt,
     dispute: tradeDispute(state, events),
-    listingId: tradeListingId(row.items),
+    listingId,
     parentId: row.parentId,
     parties: {
       from: toTradeParty(
@@ -320,26 +350,32 @@ export async function readTradeView(
       ),
       to: toTradeParty(row.toUserId, row.toUser, row.toCosmo, row.toStats),
     },
-    items: row.items.map((item): TradeItemView => {
+    items: row.items.flatMap((item): TradeItemView[] => {
+      if (item.kind === "payment") return [];
       const token =
         item.tokenId === null ? undefined : indexed.states.get(item.tokenId);
-      return {
-        ...toNamedItem(item),
-        id: item.id,
-        sender: item.sender,
-        kind: item.kind,
-        transferredAt: item.transferredAt,
-        txHash: item.txHash,
-        locked:
-          isOpenTrade(state.status) &&
-          item.tokenId !== null &&
-          row.lockedTokenIds.includes(item.tokenId),
-        status: itemStatus(item, token?.kind === "found" ? token : undefined, {
-          status: state.status,
-          fromAddress: row.fromAddress,
-          toAddress: row.toAddress,
-        }),
-      };
+      return [
+        {
+          ...toNamedItem(item),
+          id: item.id,
+          sender: item.sender,
+          transferredAt: item.transferredAt,
+          txHash: item.txHash,
+          locked:
+            isOpenTrade(state.status) &&
+            item.tokenId !== null &&
+            row.lockedTokenIds.includes(item.tokenId),
+          status: itemStatus(
+            item,
+            token?.kind === "found" ? token : undefined,
+            {
+              status: state.status,
+              fromAddress: row.fromAddress,
+              toAddress: row.toAddress,
+            },
+          ),
+        },
+      ];
     }),
     events,
     feedback:

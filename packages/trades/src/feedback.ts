@@ -3,7 +3,13 @@ import type {
   FeedbackRole,
   TradeSide,
 } from "@apollo/database/web/types";
-import { isDone, type TradeItemState, type TradeState } from "./lifecycle";
+import {
+  isDone,
+  otherSide,
+  type TradeItemState,
+  tradeParts,
+  type TradeState,
+} from "./lifecycle";
 import { FEEDBACK_WINDOW_DAYS } from "./timers";
 
 const DAY = 24 * 60 * 60 * 1000;
@@ -43,8 +49,8 @@ function rateableEnding(state: TradeState): RateableEnding | null {
  * Whether a rating counts towards the rated party's score, share positive,
  * counts and claim cap. A completed trade's always does, including one staff
  * completed without seeing a transfer; any other only once a token arrived
- * or a payment was confirmed, since a payment marked paid doesn't count. A
- * rating that doesn't count still shows.
+ * or a payment's recipient confirmed it. A rating that doesn't count still
+ * shows.
  */
 export function feedbackScored(state: TradeState): boolean {
   return state.status === "completed" || state.items.some(isDone);
@@ -91,16 +97,17 @@ export function feedbackDaysLeft(closesAt: Date, now: Date) {
 }
 
 /**
- * The rater's role: with a payment, its sender is the buyer and the other
- * side the seller. A swap has two traders.
+ * The rater's role: when one side sends nothing but a payment (its part is
+ * `pay`), it is the buyer and the other side the seller. A swap, a payment
+ * beside objekts on both sides included, has two traders.
  */
 export function feedbackRole(
   items: readonly TradeItemState[],
   side: TradeSide,
 ): FeedbackRole {
-  const payment = items.find((item) => item.kind === "payment");
-  if (payment === undefined) return "trader";
-  return payment.sender === side ? "buyer" : "seller";
+  const parts = tradeParts(items);
+  if (parts[side] === "pay") return "buyer";
+  return parts[otherSide(side)] === "pay" ? "seller" : "trader";
 }
 
 const ratedRoles = {

@@ -1,9 +1,14 @@
 import { m } from "@/i18n/messages";
-import type { AdminReportRowTarget, BanLength } from "@/lib/universal/reports";
+import type {
+  AdminReportDetail,
+  AdminReportRowTarget,
+  BanLength,
+} from "@/lib/universal/reports";
 import type {
   ReportStatus,
   StoredReportReason,
 } from "@apollo/database/web/types";
+import { type DeadlineOwed, owedAtDeadline } from "@apollo/trades/lifecycle";
 
 const reasonLabels = {
   scam: m.report_reason_scam,
@@ -27,6 +32,31 @@ const reasonLabels = {
  */
 export function reportReasonLabel(reason: StoredReportReason): string {
   return reasonLabels[reason]();
+}
+
+// what a report's trade still owes, as its detail reads the trade, or null for any other report
+export function reportOwed(report: AdminReportDetail) {
+  return report.target.type === "trade" && report.target.trade !== null
+    ? owedAtDeadline(report.target.trade.view.state.items)
+    : null;
+}
+
+/**
+ * A report's label in the staff queue and detail: a deadline dispute says
+ * what the trade still owes, objekts, a payment or both.
+ */
+export function reportTitle(
+  reason: StoredReportReason,
+  owed: DeadlineOwed | null,
+) {
+  if (reason !== "deadline_passed" || owed === null) {
+    return reportReasonLabel(reason);
+  }
+  return {
+    objekts: m.report_reason_deadline_passed,
+    payment: m.report_reason_deadline_passed_unpaid,
+    both: m.report_reason_deadline_passed_both,
+  }[owed]();
 }
 
 const statusLabels = {

@@ -41,9 +41,12 @@ import {
   lockListingOffers,
   lockPoster,
   ownListing,
+  paymentColumns,
   posterRow,
   recheckTokens,
   refuseEdit,
+  refuseUnitsChange,
+  unitColumns,
 } from "@/lib/server/trades/listings.server";
 import {
   posterBlocked,
@@ -54,6 +57,7 @@ import { ExpectedError } from "@/lib/universal/errors/expected";
 import { toFeedbackRep } from "@/lib/universal/feedback";
 import {
   type ListingItem,
+  listingSize,
   listingStop,
   type ListingViewer,
   type ListingWriteResult,
@@ -67,10 +71,10 @@ import {
   tradeOfferItems,
   tradeOffers,
 } from "@apollo/database/web/schema";
-import { bumpUpdatedAt } from "@apollo/database/web/sql";
-import { MAX_WANT_ROWS } from "@apollo/trades/caps";
+import { bumpUpdatedAt, listingTakenUnits } from "@apollo/database/web/sql";
+import { MAX_LISTING_OPTIONS, MAX_WANT_ROWS } from "@apollo/trades/caps";
 import { tokenRefusals } from "@apollo/trades/holdings";
-import { listingTransition, listingUnitSize } from "@apollo/trades/lifecycle";
+import { listingTransition } from "@apollo/trades/lifecycle";
 import {
   claimListingInputSchema,
   editListingInputSchema,
@@ -119,9 +123,10 @@ export const $postListing = createServerFn({ method: "POST" })
           status: "open",
           fromUserId: actor.userId,
           fromAddress: address,
-          unitSize: data.unitSize,
+          ...unitColumns(data.units),
           note: data.note,
           ...listingArrays(terms.offered),
+          ...paymentColumns(data.payment),
         })
         .returning({ id: tradeOffers.id });
       if (!listing) throw new Error("Listing insert returned no row");
@@ -133,9 +138,11 @@ export const $postListing = createServerFn({ method: "POST" })
 
 /**
  * Replace the terms of the caller's open listing: the arrays, the pinned
- * address, the unit size, the note, its items and its wants. Refusals
- * follow a fixed order: the poster, then the listing (missing or not
- * theirs, closed), then the wants, then the offered tokens. Its live trades
+ * address, the unit size or a buy listing's most units, the note, its items
+ * and its wants. Refusals follow a fixed order: the poster, then the
+ * listing (missing or not theirs, closed), then the wants, then, under the
+ * listing's lock, a change of kind or most units its trades rule out
+ * (refuseUnitsChange()), then the offered tokens. Its live trades
  * keep their own copies of the objekts they took, whatever the edit drops,
  * but its pending offers were made on the old terms, so they turn stale and
  * their claimers hear of it. They are locked before the listing
@@ -178,6 +185,7 @@ export const $editListing = createServerFn({ method: "POST" })
           data.listingId,
         ).for("update");
         refuseEdit(listing);
+        await refuseUnitsChange(tx, listing, data.units);
         const locked = new Set(offers.map((offer) => offer.id));
         const now = await listingOffers(tx, actor.userId, data.listingId);
         if (now.some((offer) => !locked.has(offer.id))) {
@@ -191,8 +199,9 @@ export const $editListing = createServerFn({ method: "POST" })
           .set({
             ...listingArrays(terms.offered),
             fromAddress: address,
-            unitSize: data.unitSize,
+            ...unitColumns(data.units),
             note: data.note,
+            ...paymentColumns(data.payment),
             updatedAt: bumpUpdatedAt,
           })
           .where(eq(tradeOffers.id, data.listingId));
@@ -305,13 +314,14 @@ export const $bumpListing = createServerFn({ method: "POST" })
   });
 
 /**
- * Accept some units of a listing: the poster's objekts the claimer picked
- * from the pool and the tokens they give, one list per want row, as of the
- * listing's `updated_at` they saw. Each claim is its own trade, and claims
- * on one listing run side by side as long as they pick different objekts;
- * a claimer holds one live trade per listing. A listing with a range row
- * takes offers instead (takesOffers): the same request, checked the same
- * way except for the claim cap, sends the poster a pending offer that
+ * Accept some units of a listing for one of its options: the poster's
+ * objekts the claimer picked from the pool and the tokens they give, one
+ * list per want row of that option, as of the listing's `updated_at` they
+ * saw. Each claim is its own trade, and claims on one listing run side by
+ * side as long as they pick different objekts; a claimer holds one live
+ * trade per listing. An option with a range row, or an amount the claimer
+ * offers for its payment, makes it an offer instead (claimTerms()): the same request, checked the same way except
+ * for the claim cap, sends the poster a pending offer at that amount that
  * reserves nothing and that they accept or decline, and a claimer holds one
  * live trade or pending offer per listing. Every refusal is an
  * ExpectedError and writes nothing. The order they're checked in is fixed,
@@ -346,13 +356,15 @@ export const $claimListing = createServerFn({ method: "POST" })
   });
 
 /**
- * How many collections each range row matches, in total and per range, in
- * the rows' order, for the composer's preview and the listing page, in one
- * indexer statement. POST although it only reads, because a listing's rows can
- * hold more values than fit in a URL.
+ * How many collections each range row matches, in total and per range, in the rows' order, for the composer's preview and the listing page (every option's rows), in one indexer statement. POST although it only reads, because a listing's rows can hold more values than fit in a URL.
  */
 export const $fetchRangeMatchCounts = createServerFn({ method: "POST" })
-  .validator(z.array(rangesSchema).min(1).max(MAX_WANT_ROWS))
+  .validator(
+    z
+      .array(rangesSchema)
+      .min(1)
+      .max(MAX_WANT_ROWS * MAX_LISTING_OPTIONS),
+  )
   .handler(({ data }) => countRangeMatches(data));
 
 /**
@@ -459,8 +471,15 @@ export const $fetchTradeListing = createServerFn({ method: "GET" })
           fromUserId: true,
           fromAddress: true,
           unitSize: true,
+          maxUnits: true,
+          paymentSide: true,
+          paymentMethods: true,
+          offers: true,
         },
-        extras: listingStateExtras,
+        extras: {
+          ...listingStateExtras,
+          taken: (t) => listingTakenUnits(t),
+        },
         with: {
           items: { orderBy: { id: "asc" }, extras: poolItemExtras },
           wants: storedWants,
@@ -470,7 +489,7 @@ export const $fetchTradeListing = createServerFn({ method: "GET" })
         },
       });
       if (!row) return null;
-      const unitSize = listingUnitSize(row);
+      const units = listingSize(row);
 
       const {
         listings: [listing],
@@ -502,7 +521,6 @@ export const $fetchTradeListing = createServerFn({ method: "GET" })
           : [],
       );
       const posterRefused = posterBlocked(
-        listing.wants,
         listing.fromUser,
         listing.fromAddress,
       );
@@ -516,14 +534,14 @@ export const $fetchTradeListing = createServerFn({ method: "GET" })
           poster: listing.fromUser && toPublicUser(listing.fromUser),
           cosmoUsername: listing.fromCosmo?.username ?? null,
           rep: listing.fromUser && toFeedbackRep(listing.fromStats),
-          unitSize,
+          units,
           items,
-          wants: listing.wants,
+          options: listing.options,
           state,
           // only an open listing can be claimed, so only an open one is judged
           stop:
             state.status === "open"
-              ? listingStop(items, unitSize, posterRefused)
+              ? listingStop(items, units, posterRefused)
               : null,
         },
         viewer: await readListingViewer(
@@ -532,8 +550,8 @@ export const $fetchTradeListing = createServerFn({ method: "GET" })
             status: row.status,
             fromUserId: row.fromUserId,
             fromAddress: row.fromAddress,
-            unitSize,
-            wants: listing.wants,
+            units,
+            options: listing.options,
             pool: poolItems({ items }).map((item) => item.tokenId),
             free: items.filter((item) => item.availability.kind === "free")
               .length,

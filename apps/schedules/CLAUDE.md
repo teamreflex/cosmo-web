@@ -113,9 +113,8 @@ A task that needs a new service adds it to the closed requirement union of `Sche
    2. decline pending offers on listings that aren't open  |   no time involved
    3. end accepted trades          deadline_at <= watermark <-- cursor FOR SHARE
         transition(time_out):
-          nothing owed               -> completed  (endTrade)
-          something sent, some owed  -> disputed   (disputeAtDeadline)
-          nothing sent               -> timed_out  (endTrade; picks stay in the pool)
+          something done or marked paid, some owed -> disputed  (disputeAtDeadline)
+          neither                    -> timed_out  (endTrade; picks stay in the pool)
         then closeSpentListings once on every ended trade's listing
 
   each pass: its own transaction, <= 100 rows, users FOR KEY SHARE then rows in

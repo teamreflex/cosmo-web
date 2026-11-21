@@ -11,6 +11,7 @@ import {
   type TradeState,
   transition,
 } from "./lifecycle";
+import type { PaymentStage } from "./payment";
 
 /**
  * One outbox row as the drain reads it, with the token id parsed to the
@@ -389,4 +390,24 @@ export function itemStatus(
   }
   if (token.owner !== pinned.from && token.owner !== pinned.to) return "moved";
   return token.transferable ? waiting : "untransferable";
+}
+
+/**
+ * Where a payment stands: `confirmed` once its recipient said it arrived,
+ * else `paid` once its sender marked it paid, else `waiting` on it while
+ * the trade is live, `not_started` while it is a pending offer, and
+ * `not_confirmed` once the trade ended without either. Apollo never sees
+ * the money move, so it only knows what the parties say.
+ */
+export type PaymentStatus =
+  "confirmed" | "paid" | "waiting" | "not_started" | "not_confirmed";
+
+export function paymentStatus(
+  stage: PaymentStage,
+  status: TradeStatus,
+): PaymentStatus {
+  if (stage === "confirmed") return "confirmed";
+  if (stage === "marked") return "paid";
+  if (!isOpenTrade(status)) return "not_confirmed";
+  return status === "pending" ? "not_started" : "waiting";
 }

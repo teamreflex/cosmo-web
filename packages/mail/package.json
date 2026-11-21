@@ -15,6 +15,7 @@
     "format": "bun fmt"
   },
   "dependencies": {
+    "@apollo/trades": "workspace:*",
     "@apollo/util": "workspace:*",
     "@aws-sdk/client-ses": "^3.1164.0",
     "react": "19.3.1",

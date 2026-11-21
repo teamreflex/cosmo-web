@@ -4,10 +4,13 @@ import {
   offeringKeys,
   useFeedSideFilters,
   useListingFeedFilters,
+  useListingTypeFilter,
   wantKeys,
 } from "@/hooks/use-listing-feed-filters";
 import { m } from "@/i18n/messages";
+import { listingTypeLabels } from "@/lib/client/trade-listings";
 import { cn } from "@/lib/utils";
+import { listingTypes } from "@apollo/trades/listing";
 import { IconAdjustmentsHorizontal } from "@tabler/icons-react";
 import { type ReactNode, Suspense, useId, useState } from "react";
 import { ErrorBoundary } from "react-error-boundary";
@@ -26,6 +29,7 @@ import {
   DrawerTrigger,
 } from "../ui/drawer";
 import { Skeleton } from "../ui/skeleton";
+import { ToggleGroup, ToggleGroupItem } from "../ui/toggle-group";
 
 /**
  * Two chip groups: Offering narrows what a listing gives, Looking for what
@@ -37,11 +41,10 @@ export default function ListingFeedFilters() {
 
   return (
     <>
-      <div className="grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-x-3 gap-y-2 max-md:hidden">
-        <FilterGroups />
-        <div className="col-start-3 row-span-2 row-start-1">
-          <ResetFilters count={count} onReset={reset} />
-        </div>
+      <div className="grid grid-cols-[auto_minmax(0,1fr)] items-center gap-x-3 gap-y-2 max-md:hidden">
+        <FilterGroups
+          besideType={<ResetFilters count={count} onReset={reset} />}
+        />
       </div>
 
       <FiltersDrawer count={count} onReset={reset} />
@@ -52,14 +55,43 @@ export default function ListingFeedFilters() {
 /**
  * From md, each group spans the first two columns of its parent grid, so
  * the labels share one column as wide as the longer of them. Below md, in
- * the drawer, each label sits above its chips.
+ * the drawer, each label sits above its chips. `besideType` follows the
+ * type toggles on their row.
  */
-function FilterGroups() {
+function FilterGroups({ besideType }: { besideType?: ReactNode }) {
   const offering = useFeedSideFilters(offeringKeys);
   const want = useFeedSideFilters(wantKeys);
+  const { type, setType } = useListingTypeFilter();
 
   return (
     <>
+      <FilterGroup
+        label={m.market_listings_type()}
+        className="text-muted-foreground"
+      >
+        <ToggleGroup
+          aria-label={m.market_listings_type()}
+          variant="outline"
+          size="sm"
+          spacing={0}
+          value={[type ?? "all"]}
+          // pressing the shown type again keeps it
+          onValueChange={([picked]) => {
+            if (picked === undefined) return;
+            setType(listingTypes.find((option) => option === picked));
+          }}
+        >
+          <ToggleGroupItem value="all">
+            {m.market_listings_type_all()}
+          </ToggleGroupItem>
+          {listingTypes.map((option) => (
+            <ToggleGroupItem key={option} value={option}>
+              {listingTypeLabels[option]()}
+            </ToggleGroupItem>
+          ))}
+        </ToggleGroup>
+        {besideType}
+      </FilterGroup>
       <FilterGroup
         label={m.market_listings_offering()}
         className="text-teal-700 dark:text-teal-500"
@@ -221,7 +253,8 @@ function FiltersDrawer({
       <DrawerContent className="rounded-t-md">
         <div className="flex items-center gap-2 px-4 pt-1.5 pb-2.5">
           <DrawerTitle className="text-base">{m.common_filters()}</DrawerTitle>
-          <div className="ml-auto">
+          {/* as tall as the button, so the header keeps its height when it shows */}
+          <div className="ml-auto flex h-8 items-center">
             <ResetFilters count={count} onReset={onReset} />
           </div>
         </div>

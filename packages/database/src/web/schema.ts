@@ -693,7 +693,9 @@ const tradeTimestamp = (name: string) =>
  *
  * A listing offers a pool of objekts in units: `unit_size` of them for its
  * want rows at their counts. Each claim takes some number of units and
- * becomes its own trade, so one listing can have several live trades.
+ * becomes its own trade, so one listing can have several live trades. A buy
+ * listing has no pool: it pays for up to `max_units` units, and each of its
+ * trades records the `units` it filled.
  *
  * The collection arrays copy the indexer's values verbatim for every objekt a
  * listing offers, so the feed's filters run without crossing databases.
@@ -719,10 +721,32 @@ export const tradeOffers = pgTable(
     }),
     // judged against the drain's chain-time watermark, not the clock
     deadlineAt: tradeTimestamp("deadline_at"),
-    // listings with a payment side
+    // how a listing with a payment takes offers; null on other listings and trades
     offers: listingOfferMode("offers"),
-    // the pool objekts one unit of a listing takes; null on trades
+    /**
+     * Who sends a listing's payment want: `to` the claimer (a sale, or a
+     * payment alongside objekts), `from` the poster (on top of their
+     * objekts). Null on listings without a payment and on trades, whose
+     * payment items carry their own sender.
+     */
+    paymentSide: tradeSide("payment_side"),
+    /**
+     * The methods a payment may arrive by: a listing's, and on a trade with a
+     * payment the listing's as the claim read them, so an edit never changes
+     * a live trade's. Empty without a payment.
+     */
+    paymentMethods: paymentMethod("payment_methods")
+      .array()
+      .notNull()
+      .default([]),
+    // the pool objekts one unit of a listing takes; null on trades and buy listings
     unitSize: smallint("unit_size"),
+    // the most units a buy listing takes, in place of a pool; null on other rows
+    maxUnits: smallint("max_units"),
+    // the units a trade from a buy listing filled; null on other rows
+    units: smallint("units"),
+    // which of its listing's options a claim or an offer on a listing gives; null on other rows
+    listingOption: smallint("listing_option"),
     slugs: varchar("slugs", { length: 255 }).array().notNull().default([]),
     artists: varchar("artists", { length: 32 }).array().notNull().default([]),
     seasons: varchar("seasons", { length: 32 }).array().notNull().default([]),
@@ -816,12 +840,25 @@ export const tradeOffers = pgTable(
       sql`${t.kind} = 'trade' OR num_nulls(${t.toUserId}, ${t.toAddress}, ${t.parentId}, ${t.deadlineAt}, ${t.acceptedAt}, ${t.expiresAt}) = 6`,
     ),
     check(
+      "trade_offers_listing_option_chk",
+      sql`${t.listingOption} IS NULL OR (${t.kind} = 'trade' AND ${t.listingOption} >= 0)`,
+    ),
+    check(
       "trade_offers_unit_size_chk",
-      sql`CASE ${t.kind} WHEN 'listing' THEN coalesce(${t.unitSize}, 0) > 0 ELSE ${t.unitSize} IS NULL END`,
+      sql`CASE ${t.kind} WHEN 'listing' THEN num_nulls(${t.unitSize}, ${t.maxUnits}) = 1 AND coalesce(${t.unitSize}, ${t.maxUnits}) > 0 ELSE num_nulls(${t.unitSize}, ${t.maxUnits}) = 2 END`,
+    ),
+    check(
+      "trade_offers_units_chk",
+      sql`${t.units} IS NULL OR (${t.kind} = 'trade' AND ${t.units} > 0)`,
     ),
     check(
       "trade_offers_trade_chk",
-      sql`${t.kind} = 'listing' OR (${t.toAddress} IS NOT NULL AND ${t.offers} IS NULL AND ${t.note} IS NULL)`,
+      sql`${t.kind} = 'listing' OR (${t.toAddress} IS NOT NULL AND ${t.offers} IS NULL AND ${t.note} IS NULL AND ${t.paymentSide} IS NULL)`,
+    ),
+    // a listing's payment has a side, an offer mode and at least one method, or none of them
+    check(
+      "trade_offers_payment_chk",
+      sql`${t.kind} = 'trade' OR num_nulls(${t.paymentSide}, ${t.offers}, nullif(cardinality(${t.paymentMethods}), 0)) IN (0, 3)`,
     ),
     check(
       "trade_offers_accepted_chk",
@@ -894,7 +931,9 @@ export const tradeOfferItems = pgTable(
     // chain time and hash of the transfer the drain matched
     transferredAt: tradeTimestamp("transferred_at"),
     txHash: varchar("tx_hash", { length: 66 }),
+    // when a payment's sender marked it paid, a record that settles nothing
     markedPaidAt: tradeTimestamp("marked_paid_at"),
+    // when a payment's recipient said it arrived, and `method` how
     confirmedAt: tradeTimestamp("confirmed_at"),
     /**
      * When a pool token left its listing's pool: given in one of the
@@ -932,12 +971,15 @@ export const tradeOfferItems = pgTable(
  * What one unit of a listing asks for. Exact rows name a collection and copy
  * its indexer values, range rows hold their ranges in
  * `trade_listing_want_ranges`, choice rows name their collections in
- * `trade_listing_want_options`, and the payment row prices the listing. The
- * trade side is every exact, range and choice row, all required, with each
- * count multiplied by the units a claim takes. A listing's wants are
- * inserted together and replaced together on edit, so id order is the
- * posted order. Any change to them updates the listing row in the same
- * transaction.
+ * `trade_listing_want_options`, and a payment row prices the listing's
+ * payment, with no amount when the listing only takes offers on it. Rows
+ * sharing an `option` are one option, all of its rows required, with each
+ * count multiplied by the units a claim takes; the claimer gives one
+ * option. The claimer's payment rows sit in the options that ask for one,
+ * and the poster's payment on top is one row in option 0 that prices every
+ * option. A listing's wants are inserted together and replaced together on
+ * edit, so id order is the posted order. Any change to them updates the
+ * listing row in the same transaction.
  */
 export const tradeListingWants = pgTable(
   "trade_listing_wants",
@@ -947,6 +989,8 @@ export const tradeListingWants = pgTable(
       .notNull()
       .references(() => tradeOffers.id, { onDelete: "cascade" }),
     kind: tradeWantKind("kind").notNull(),
+    // the option the row belongs to, 0 for a listing with one
+    option: smallint("option").notNull().default(0),
     count: smallint("count"),
     slug: varchar("slug", { length: 255 }),
     artist: varchar("artist", { length: 32 }),
@@ -960,17 +1004,18 @@ export const tradeListingWants = pgTable(
   (t) => [
     // a listing's wants in the order they were posted, which is id order
     index("trade_listing_wants_listing_idx").on(t.listingId, t.id),
-    // at most one payment side
+    // at most one payment per option
     uniqueIndex("trade_listing_wants_payment_idx")
-      .on(t.listingId)
+      .on(t.listingId, t.option)
       .where(sql`${t.kind} = 'payment'`),
+    check("trade_listing_wants_option_chk", sql`${t.option} >= 0`),
     check(
       "trade_listing_wants_shape_chk",
       sql`CASE ${t.kind}
         WHEN 'exact' THEN coalesce(${t.count}, 0) > 0 AND num_nulls(${t.slug}, ${t.artist}, ${t.member}, ${t.season}, ${t.class}, ${t.onOffline}) = 0 AND num_nonnulls(${t.amount}, ${t.currency}) = 0
         WHEN 'range' THEN coalesce(${t.count}, 0) > 0 AND num_nonnulls(${t.slug}, ${t.artist}, ${t.member}, ${t.season}, ${t.class}, ${t.onOffline}, ${t.amount}, ${t.currency}) = 0
         WHEN 'choice' THEN coalesce(${t.count}, 0) > 0 AND num_nonnulls(${t.slug}, ${t.artist}, ${t.member}, ${t.season}, ${t.class}, ${t.onOffline}, ${t.amount}, ${t.currency}) = 0
-        ELSE coalesce(${t.amount}, 0) > 0 AND ${t.currency} IS NOT NULL AND num_nonnulls(${t.count}, ${t.slug}, ${t.artist}, ${t.member}, ${t.season}, ${t.class}, ${t.onOffline}) = 0
+        ELSE coalesce(${t.amount}, 1) > 0 AND ${t.currency} IS NOT NULL AND num_nonnulls(${t.count}, ${t.slug}, ${t.artist}, ${t.member}, ${t.season}, ${t.class}, ${t.onOffline}) = 0
       END`,
     ),
   ],

@@ -6,6 +6,7 @@ import { cn } from "@/lib/utils";
 import { MAX_OFFERED } from "@apollo/trades/caps";
 import { formatSerial } from "@apollo/util";
 import { IconPlus, IconX } from "@tabler/icons-react";
+import type { ReactNode } from "react";
 import { ObjektCardFace } from "../objekt/common";
 import { Button } from "../ui/button";
 import { FieldError } from "../ui/field";
@@ -19,6 +20,8 @@ type OfferedProps = {
   error: string | undefined;
   onAdd: () => void;
   onRemove: (tokenId: number) => void;
+  /** a control on the heading's line */
+  action?: ReactNode;
 };
 
 /**
@@ -33,6 +36,7 @@ export default function ComposerOffered({
   error,
   onAdd,
   onRemove,
+  action,
 }: OfferedProps) {
   const full = tokenIds.length >= MAX_OFFERED;
   const refused = tokenIds.flatMap((tokenId) => {
@@ -49,9 +53,12 @@ export default function ComposerOffered({
 
   return (
     <section className="flex flex-col gap-3 px-4 py-4 md:px-5">
-      <span className="text-xxs font-medium tracking-widest text-teal-700 uppercase dark:text-teal-500">
-        {m.listing_composer_offering({ count: tokenIds.length })}
-      </span>
+      <div className="flex items-center justify-between gap-3">
+        <span className="text-xxs font-medium tracking-widest text-teal-700 uppercase dark:text-teal-500">
+          {m.listing_composer_offering({ count: tokenIds.length })}
+        </span>
+        {action}
+      </div>
 
       <ul className="flex flex-wrap items-start gap-3">
         {tokenIds.map((tokenId) => {

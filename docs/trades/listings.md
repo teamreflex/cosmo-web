@@ -1,6 +1,6 @@
 # Listings and claims
 
-A listing offers a pool of the poster's tokens in units, and stays open while the trades claimed from it run beside it.
+A listing offers a pool of the poster's tokens in units, or, as a buy listing, a payment for up to its most units, and stays open while the trades claimed from it run beside it.
 
 ## Listing lifecycle
 
@@ -18,32 +18,38 @@ A listing offers a pool of the poster's tokens in units, and stays open while th
     |           (pending offers end; accepted trades are disputed)
     |
     +-- after any of its trades ends, or the drain drops a pool token:
-        listingClosing(pool, unit_size, live, completed)
-          pool >= unit_size, or a trade still live --------> stays open
-          else one of its trades completed ----------------> filled
-          else --------------------------------------------> broken
+        listingClosing(units, pool, live, completed, completedUnits)
+          a trade still live -------------------------------> stays open
+          pool: pool >= unit_size --------------------------> stays open
+                else one of its trades completed -----------> filled
+                else ---------------------------------------> broken
+          buy:  completedUnits >= max_units ----------------> filled
+                else ---------------------------------------> stays open
                                                   listing_closed -> poster
 ```
 
 | Pool change                                                         | Effect                                                                                          |
 | ------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------- |
-| a trade completes                                                   | its picks get `left_at`                                                                         |
-| a trade is cancelled or times out                                   | nothing; the picks it hadn't sent never left the pool                                           |
+| a trade completes                                                   | its picks get `left_at`; on a buy listing its `units` count toward `max_units`                  |
+| a trade is cancelled or times out                                   | nothing; the picks it hadn't sent never left the pool, and a buy listing's units are free again |
 | the drain sees a pool token leave the poster or turn untransferable | `left_at`, `updated_at` bumped                                                                  |
 | the poster edits                                                    | rows still in the pool and all wants replaced, `updated_at` bumped, pending offers turn `stale` |
 
 - A listing never reopens and never expires.
-- `listingClosing()` waits while a trade is live because a poster sending a pick to its claimer also leaves the poster, so the drain drops that pick from the pool before the trade completes.
+- `listingClosing()` waits while a trade is live because a poster sending a pick to its claimer also leaves the poster, so the drain drops that pick from the pool before the trade completes. A trade is live by its status, read through the item that carries the listing's id (`listingPoolState` in `sql.ts`), since a buy listing's trade has no live poster item.
+- A buy listing never breaks: it has no pool to lose, so it stays open until its completed units reach `max_units` or the poster withdraws it.
 - `closeSpentListings` applies the rule after every trade ends and after every drain drop. The web app runs it in `endTrade()`; the drain and `trade-timers` run it once per batch, after every trade the batch ends.
 - Every break sends `listing_closed` to the poster in the same transaction unless they are banned. It names the token when the drain dropped one, and none when a cancelled or timed-out trade left the listing broken, since no single token did. A fill notifies nobody.
 - `claimed` and `timed_out` are listing statuses nothing writes: no listing holds `claimed`, which stays a `trade_offer_status` value, and `timed_out` marks older listings that closed when their one trade timed out.
 
 ## Posting, editing, withdrawing
 
-- **Post** (`$postListing`): `checkTerms()` resolves the wants and checks every offered token against the indexer before the transaction. It refuses `listing_range_empty` when any one range matches no collection, so a dead range can't hide behind a live one in its row. The transaction locks the poster, re-checks the tokens for locks and live trades (`recheckTokens()`) and inserts the listing, its pool rows and its wants.
+- **Post** (`$postListing`): `checkTerms()` refuses a payment currency without a rate (`unsupported_currency`), resolves the wants and checks every offered token against the indexer before the transaction. It refuses `listing_range_empty` when any one range matches no collection, so a dead range can't hide behind a live one in its row. The transaction locks the poster, re-checks the tokens for locks and live trades (`recheckTokens()`) and inserts the listing, its pool rows and its wants.
 - A token the poster can't offer comes back as a `token_unavailable` result naming it, not as a thrown error, so the composer can show the serial.
 - A token may sit in several open listings at once. Only a live trade reserves it.
-- **Edit** (`$editListing`): replaces the listing arrays, pinned address, unit size, note, the pool rows still in the pool and the wants in one transaction. It leaves `bumped_at` alone, so the listing keeps its place in the feed.
+- **Edit** (`$editListing`): replaces the listing arrays, pinned address, unit size or most units, note, payment columns, the pool rows still in the pool and the wants in one transaction. It leaves `bumped_at` alone, so the listing keeps its place in the feed.
+- Under the listing's lock an edit is judged against its trades (`editUnitsRefusal()`, `refuseUnitsChange()`). A listing with no live or completed trade may turn from a pool listing into a buy listing or back; one with such a trade keeps its kind (`listing_kind_fixed`), because its trades decide how it closes, and a completed buy trade would make a pool that runs dry read as filled.
+- A buy listing's most units can't drop below the units its live and completed trades fill, or to its completed ones alone, which would leave it full with nothing live to close it (`listing_units_taken`).
 - An edit leaves its live trades alone, since they hold their own copies. It may keep a token that is live in one of the listing's own trades (`readWebTokenFlags()` with `editedListing`).
 - The composer's reads, `$fetchOfferedTokenRefusals` and `$fetchTradeTokenStates`, take the edited listing too once the server confirms it is the caller's, so neither flags nor greys out what Save would keep.
 - An edit turns the listing's pending offers `stale` (event `{ type: "stale", reason: "edited" }`, `offer_stale` to each claimer). An offer sent after the edit read them refuses the edit with `listing_updated`.
@@ -76,10 +82,20 @@ A listing offers a pool of the poster's tokens in units, and stays open while th
 - A poster needs another range only when one range would match too much: `tripleS · Atom02 · (First or Double)` is one range, while `SeoYeon · Atom02 · First` or `SeoYeon · Binary02 · Double` is two.
 - A range can pick several artists and matches an objekt from any of them. Its member, season and class chips list only the picked artists' values; adding an artist keeps the range's values and removing one drops those no remaining artist has (`setRangeArtists()`). Members that leave a picked artist with none of its own hold Post back (`range_artist_unused` in `composerBlock()`), since that artist would add nothing.
 - The first range row carries a note that the listing will take offers, so the poster picks the objekts, and points to "any of" for specific collections.
-- A Post or Save that makes a listing start taking offers (a new one with a range row, or an edit that adds the first) opens a dialog explaining offers first (`composer-range-confirm.tsx`). Back returns to the form, where the poster can make the row an "any of" instead, and its "Don't show this again" box dismisses the `range-offers-notice` ([feedback.md](feedback.md#notices)).
+- A Post or Save that gives a listing its first range row (a new one with a range row, or an edit that adds the first) opens a dialog explaining offers first (`composer-range-confirm.tsx`); ticking "Open to offers" is the poster's own choice, so it opens none. Back returns to the form, where the poster can make the row an "any of" instead, and its "Don't show this again" box dismisses the `range-offers-notice` ([feedback.md](feedback.md#notices)).
 - The footer holds Post and Save back with a translated reason for what the schema refuses (`composerBlock()`): a range with nothing narrowed or a column over `MAX_RANGE_VALUES`, a range that matches no collection, one range twice in a row, two range rows holding the same ranges (`rangesDistinct()`), an "any of" row with fewer than two or more than `MAX_CHOICE_OPTIONS` collections or one collection twice, two rows naming the same set (`choicesDistinct()`), a unit size over the pool. Every row's count goes into the total the steppers keep under `MAX_TOTAL_WANTED`.
 - Ranges are compared as Post sends them: a range naming one artist's whole roster is sent as that artist (`collapseWholeGroup()`), so the footer collapses each range with the rosters before comparing, and `tripleS` beside `tripleS` with all its members is held back as a repeat.
 - A collection the indexer doesn't know is refused by the server with `listing_want_unknown`.
+- A payment is a row beside the want rows, kept last, that the claimer pays for each trade, or a payment the poster adds under their objekts, paid on top in every trade. A payment on one side disables the other side's Payment button, since a listing has one payment.
+- The poster's payment with no objekts offered is a buy listing: the row reads "Paying", the Ratio control gives way to "Buying up to", stepping its most units from 1 to `MAX_BUY_UNITS`, and the form holds `maxUnits` exactly while that holds (`followMaxUnits()`), so adding an objekt or removing the payment drops it.
+- Either payment shows the payment strip: the listing's currency (the poster's display currency to start) and the methods it accepts, Other included. Handles are swapped in the trade chat, so the listing holds none. The footer holds Post back until the amount reads with at most two decimals and a method is picked.
+- The strip's "Open to offers" box shows only for the claimer's payment, since the poster's on top is always a fixed price. Ticked, the amount is an asking price (`price_or_offer`), and an empty amount leaves none, so the listing only takes offers (`offer_only`); `claimerPaymentTerms()` sets the row and the mode together. A new payment starts unticked, a fixed price.
+- The input schema takes the claimer's payment as a `payment` want row and the poster's as `offeredPayment`, with `payment` holding the currency, methods and offer mode; it parses them into one `payment` with its side (`withPaymentRules()` in `listing.ts`), and `formValuesToInput()` turns that back into the input the server parses again. The row's amount is left out exactly when the mode is `offer_only`.
+- The Ratio control also shows for a sale, whose want side is its price. With no asking price, or with several options, which trade at several ratios, it shows only the poster's side.
+- What the poster is looking for is 1 to `MAX_LISTING_OPTIONS` options, each its own box of rows with "or" between them (`composer-want-rows.tsx`); the claimer gives one. "Add option" sits on the "You're looking for" line while there is one option, so a one-option form is as tall as a listing without options, and under the boxes once there are several, where each box is named and can be removed. On phones an option's Payment button sits on its box's heading line rather than beside Exact, Any of and Range, for the same reason.
+- The form holds `options`, one array of rows per option, which is the input's shape: its index is the stored `option`, and each option follows the row rules on its own. Footer, Ratio and summary read the options joined by "or".
+- The claimer's payment may sit in any option, at most one per option, each with its own amount; the currency, methods and "Open to offers" are the listing's. Open to offers with every amount empty is `offer_only`, so every option's payment then has no asking price, and an empty amount beside a typed one holds Post back (`claimerPaymentTerms()`). The poster's payment on top prices every option, so it rules out a payment row in any of them.
+- Post waits while an option is empty (`option_empty`) or two options ask for the same rows in any order (`option_repeated`), which the schema also refuses.
 
 ## The feed
 
@@ -89,9 +105,14 @@ A listing offers a pool of the poster's tokens in units, and stays open while th
 - Each row counts its pool's free objekts: no live copy and no lock by the poster (`freePoolCount()`, at most `MAX_OFFERED` pool rows per listing, each probing `trade_offer_items_live_token_idx` and `address_token_idx`).
 - The count is selected for the page's rows only, never filtered on, so neither the page nor its total (`$fetchListingFeedTotal`) runs it for every open listing.
 - It reads only the web database, so a free token the poster has since moved still counts until the drain drops it. A lock never reaches the drain, so a locked token stays in the pool, blocked, until the poster unlocks it or edits it out.
-- Each row carries its unit size, its free count (which may be 0) and how many objekts the listing has ever offered. A row with a ratio ([data-model.md](data-model.md#units)) shows it, unit size to the want rows' total, in place of the arrow, with how many objekts are free; a bundle keeps the arrow.
+- Each row carries its units (`ListingSize`: a unit size, or a buy listing's most units with the units its live and completed trades hold), its free count (which may be 0) and how many objekts the listing has ever offered. A row with a ratio ([data-model.md](data-model.md#units)) shows it, unit size to the want rows' total, in place of the arrow, with how many objekts are free; a bundle keeps the arrow.
+- A buy listing's offering half is its price for each unit over "Up to 3", or "2 of 3 left" once trades hold some, and its methods; its ratio reads "$3.00 : 1".
 - Choice rows show their collections' thumbnails and read "Any of 4 collections".
-- The "Looking for" filter matches a want row holding every narrowed value: an exact row's copied values, one of a range row's ranges in `trade_listing_want_ranges` (an empty column matches any value), or one of a choice row's collections in `trade_listing_want_options`, so the member of one range or collection and the season of another don't add up.
+- A listing with several options reads them as alternatives, "2 objekts or $3.00" (`optionTitle()`, `joinOptions()`), its thumbnails the options' in order; it keeps the arrow, since its options trade at different ratios, but still counts its free objekts when it has a ratio. Rows from different options never mix in one line.
+- A listing's payment shows in its own currency: a sale's price, with its methods, in the asking half and its ratio; a payment beside want rows added to their title; the poster's payment on top under their objekts. A price open to offers reads "$3.00 · open to offers", and no asking price "Make an offer" (`askingPriceText()`).
+- The Type filter (`type` in the URL) narrows on `listingTypesOf()` as SQL (`typeConditions()` in `feed.server.ts`): Selling when an option asks for only the claimer's payment, Buying when the poster sends only theirs, Trade when an option asks for objekts, a payment beside them or not. A listing of "objekts or $3" matches both Trade and Selling, and its row and header show a badge for each.
+- The Offering filters match only offered objekts, so they never match a buy listing; with only the navbar's artists narrowing, a buy listing matches when one of its want rows names one of them.
+- The "Looking for" filter matches a listing when any one want row, so any one option, holds every narrowed value: an exact row's copied values, one of a range row's ranges in `trade_listing_want_ranges` (an empty column matches any value), or one of a choice row's collections in `trade_listing_want_options`, so the member of one range or collection and the season of another don't add up.
 - A range row reads as its ranges joined by "or", and its tile takes an artist's colour and logo only when every range names that one artist (`rangeArtist()`).
 
 ## The listing page
@@ -99,9 +120,10 @@ A listing offers a pool of the poster's tokens in units, and stays open while th
 `$fetchTradeListing` answers the page from one read of the listing row: the public `listing` and the session's `viewer`, whose candidate takes its free count from the public pool. If any part fails, the page shows its error.
 
 - Every listing-page query sits under `tradeListingKey`, which `removeViewerQueries()` removes on an account change. The route sets `preload: false`, since a candidate's answer reads their holdings.
-- `listing` is public and never names a claimer. It carries the unit size and every objekt the listing has offered, the ones that left the pool included, each once (one offered again after it left shows as its latest row).
+- `listing` is public and never names a claimer. It carries its units (`ListingSize`) and every objekt the listing has offered, the ones that left the pool included, each once (one offered again after it left shows as its latest row).
 - Each objekt says where it stands (`poolAvailability()`): `free`, `in_trade` (a live copy, whoever holds it now), `traded` (`left_at` set, with when, shown dimmed) or `blocked` (moved, untransferable or locked).
-- Its `stop` says what stops every claim on an open listing right now (`listingStop()`), and the page disables Accept on either. `blocked` is a fault on the poster's side: `posterBlocked()` holds, or the pool's free and in-trade objekts together come to less than a unit (the rest locked, moved or untransferable). `busy` means a unit is there but trades hold so much of it that less than a unit is free, which the page shows everyone as a note to wait.
+- Its `stop` says what stops every claim on an open listing right now (`listingStop()`), and the page disables Accept on either. `blocked` is a fault on the poster's side: `posterBlocked()` holds, or the pool's free and in-trade objekts together come to less than a unit (the rest locked, moved or untransferable). `busy` means a unit is there but trades hold so much of it that less than a unit is free, or hold every unit a buy listing pays for, which the page shows everyone as a note to wait.
+- A buy listing's offering half is its payment, "You get" for the units a candidate takes, "You pay" for its poster and "Paying" for anyone else, with how many units it has left.
 - A filled listing names the COSMO account behind its latest completed trade and counts its completed trades.
 
 | `viewer` role        | Who                                                   | Carries                                                                                                                               |
@@ -115,24 +137,26 @@ A listing offers a pool of the poster's tokens in units, and stays open while th
 
 - The poster's offers each carry the claimer, both sides' tokens with serials, the expiry and whether it can be accepted now (`offerRefusal()`, in `$acceptOffer`'s order and with its codes). The page reads the indexer once, the claimers' caps in one grouped statement and the locks by address.
 - The poster's trades come from one query (`readListingTrades()`): each with when it was accepted and the pool tokens it took, a live one with what the poster still has to send and whether it waits on them, a disputed one with the dispute that froze it.
-- A candidate gets the most units they can take (`allocateUnits()`, bounded by the free pool, `MAX_PER_ROW`, `MAX_TOTAL_WANTED` and their holdings), and per want row how many matching objekts they own and how many it is short.
+- A candidate gets, for each option, the most units they can take giving it (`allocateUnits()`, bounded by the free pool or a buy listing's units left, `MAX_PER_ROW`, `MAX_TOTAL_WANTED` and their holdings), and per want row how many matching objekts they own and how many it is short. One holdings read covers every option's rows.
+- On a listing with several options the picker starts with an option picker (`option-picker.tsx`), each option saying whether giving it claims or sends an offer; it starts on the first option the candidate can fill. The page reads the listing at the chosen option (`listingAt()`), and switching option starts the picks over. Everyone else sees every option in its own box with "or" between them (`WantList`).
 - A candidate also gets how their latest offer on the listing ended when the poster or the listing ended it (`endedOffer()`: declined, expired or stale), which the page shows over the picker. One read of their latest trade on the listing finds that and any live trade or pending offer.
 - The picker starts with nothing picked: the viewer fills each want row from their collection and, on a listing with a ratio, picks which pool objekts they get; a bundle takes its whole pool. Stepping the units down trims both sides' picks to the new count, and a refetch keeps them unless the terms or the most units changed, dropping a pool pick that's no longer free.
 - A row's picker lists only the objekts that fit the row, matched as `fitsWant()` and the holdings reads (`readCandidates()`) match them: a range row's ranges by their columns, an exact or "any of" row's collections by slug. `RowPicker` hands `ObjektPicker` a `rangeFilterObjektsQuery` built from `wantMatch()`, and `$fetchRangeFilterObjekts` ORs the ranges and slugs (`withWantMatch()`) under the viewer's own filters, with no navbar artists. `wantScope()` only shapes the filter panel and artist switch.
 - `useListingPicks().toggle()` refuses a pick that fails `fitsWant()`, the rule the server checks, as a guard behind the picker.
 - A short want row shows what it still needs greyed out, the wanted objekt or every collection an "any of" row takes, while a range row crosses out its short slots. An exact row's open slots show its objekt dimmed.
 - Only a candidate's read touches holdings.
-- A candidate who has reached their claim cap sees a notice with their count and cap in place of the picker (`candidatePanel()`), but only on a listing that claims at once. A listing that takes offers still shows the picker, because an offer is checked against the cap when the poster accepts it ([feedback.md](feedback.md#claim-cap)).
+- A candidate who has reached their claim cap sees a notice with their count and cap in place of the picker (`candidatePanel()`), but only when every option only claims. A listing that takes offers still shows the picker, because an offer is checked against the cap when the poster accepts it ([feedback.md](feedback.md#claim-cap)). On an option that claims beside one that takes offers, or one open to offers, a capped candidate gets the cap notice above the picker and a disabled Accept (`acceptCapped()`, judged on the chosen option), since an Accept is a claim; the offer dialog likewise holds back an amount equal to the asking price.
+- The picker's buttons follow `listingAcceptance()` for the chosen option: Accept on an option that claims, Send offer on one that only takes offers, and Make an offer beside Accept on one open to offers. The confirm dialog takes the amount offered per trade when the listing takes offers on its payment. An amount equal to the asking price of a listing open to offers turns it back into Accept. With a range row an empty amount offers the asking price; without one an offer needs an amount, since Accept already claims at that price.
 
 ## The poster's tabs
 
 The poster's own open listing has Listing, Offers and Trades tabs (`components/trade-listings/poster-panels.tsx`), the open one in the `tab` search param (`listingSearchSchema`), left out of the URL for Listing. The header keeps Edit, Bump and Withdraw on every tab and says the listing is theirs, when they posted it and when it last changed.
 
-| Tab     | Shows                                                                                                                                                            |
-| ------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Listing | both sides, each objekt with how it stands and who has it (`poolStanding()`); on a listing with a ratio, the want rows say how many of the poster's they are for |
-| Offers  | while the listing takes offers: each offer's claimer and rating, its ratio, both sides with serials, its expiry                                                  |
-| Trades  | the live trades, each saying where it stands as My trades does, then the finished ones, each opening its trade page                                              |
+| Tab     | Shows                                                                                                                                                                              |
+| ------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Listing | both sides, each objekt with how it stands and who has it (`poolStanding()`); on a listing with a ratio, the want rows say how many of the poster's they are for                   |
+| Offers  | while any option takes offers: each offer's claimer and rating, the option it gives when there are several, its ratio, both sides with serials and the offered payment, its expiry |
+| Trades  | the live trades, each saying where it stands as My trades does, then the finished ones, each opening its trade page                                                                |
 
 - `poolStanding()` reads free, in a live trade from the listing (naming its claimer) or from elsewhere, sent (already sent in a live trade from the listing, so the drain marks it leaving the pool), traded (naming who it went to), gone (it left the pool in no trade, so it left the poster's account) or blocked with its reason.
 - For a token that left the pool, `poolStanding()` looks for the newest trade that holds it and was live when it left: one that is still live reads as sent, a completed one as traded, and anything else as gone. So a token traded once, offered again in an edit and then moved out of the account reads as gone.
@@ -141,48 +165,60 @@ The poster's own open listing has Listing, Offers and Trades tabs (`components/t
 
 ## Claims
 
-`$claimListing` runs `preflightClaim()` without locks, then `lockAndRecheck()` and `insertTrade()` in one transaction (`lib/server/trades/claim.server.ts`). A listing with no range row is claimed at once:
+`$claimListing` runs `preflightClaim()` without locks, then `lockAndRecheck()` and `insertTrade()` in one transaction (`lib/server/trades/claim.server.ts`). Whether the request claims at once or sends an offer is `claimTerms()` ([Offers on listings](#offers-on-listings)). A claim:
 
-- The claim becomes an `accepted` trade with `deadline_at = now() + CLAIM_WINDOW` (48 h), all its items live, an `accepted` event and `listing_claimed` to the poster.
+- The trade records the option it gives in `listing_option`.
+- The claim becomes an `accepted` trade with `deadline_at = now() + CLAIM_WINDOW` (48 h), all its objekt items live, an `accepted` event and `listing_claimed` to the poster.
+- A listing with a payment adds the trade's payment item, the asking price times the units claimed, sent by the listing's `payment_side` and never live ([data-model.md](data-model.md#payments)). A sale's claim gives no tokens, so its `rows` are empty.
+- A buy listing's claim picks nothing from a pool, so its `picked` is empty, and its trade records the units it fills in `units`. The seller sends their objekts on chain, the poster pays outside Apollo, and the seller marks the payment received.
 - Claims on one listing serialise on its row lock (`FOR NO KEY UPDATE`, which conflicts with itself), while the trades they create run side by side.
 - A claimer holds at most one open trade or pending offer per listing (`listing_claim_exists`).
 
 Refusals are checked in a fixed order, so the same request always gets the same answer:
 
 1. `listing_not_found`, then `listing_own`, then `listing_closed` or `listing_updated` against the `updated_at` the claimer saw.
-2. `listing_unavailable` when `posterBlocked()` (`lib/server/trades/poster.server.ts`) stops any claim: a payment want, the poster gone or banned, or their link no longer matching `from_address`.
-3. `claim_assignment_invalid` when a pick isn't in the pool or the picks aren't a whole number of units.
+2. `listing_unavailable` when `posterBlocked()` (`lib/server/trades/poster.server.ts`) stops any claim: the poster gone or banned, or their link no longer matching `from_address`.
+3. `claim_assignment_invalid` when a pick isn't in the pool, the picks aren't a whole number of units (or are any at all on a buy listing), the listing has no such option, or the request carries an amount the option doesn't take (`claimTerms()` gives null). An option an edit removed is refused earlier, as `listing_updated`.
 4. `listing_pick_unavailable { tokenId }` for a pick the poster can't give now.
 5. `claim_token_unavailable { tokenId, reason: "not_owned" }` for a claimer token the indexer doesn't know.
-6. `claim_assignment_invalid` when the per-row token lists don't fit the rows scaled to the units (`validateAssignment()`).
+6. `claim_assignment_invalid` when the per-row token lists don't fit the option's rows scaled to the units (`validateAssignment()`).
 7. `claim_token_unavailable { tokenId, reason }` for a claimer token that isn't theirs or can't move.
 8. Under the lock: both users are locked `FOR NO KEY UPDATE` and their links re-read, then the listing row is locked behind its status and `updated_at` guard, which refuses as in step 1.
-9. Under the lock: `listing_unavailable` again, `listing_pick_unavailable` for a pick locked or live since, `forbidden` for a banned claimer, `cosmo_not_linked` for one who relinked.
+9. Under the lock: `listing_unavailable` again, `listing_pick_unavailable` for a pick locked or live since, `listing_full` when a buy listing's live and completed trades leave fewer units than the claim takes (`unitsLeft()`, read with the listing's lock), `forbidden` for a banned claimer, `cosmo_not_linked` for one who relinked.
 10. Under the lock: `listing_claim_exists`, then `claim_cap_reached` (claims only, see [feedback.md](feedback.md)), then `claim_token_unavailable` for a claimer token locked or live since.
 11. Inserting the items maps a live-token index clash to `listing_pick_unavailable` or `claim_token_unavailable` (`refuseLiveClash()`).
 
 - A refused poster or pick in preflight first re-reads the listing's status (`refuseAfterRecheck`), so a commit since the read gets the better answer.
 
-## Offers on range listings
+## Offers on listings
 
-A listing with any range row takes offers instead of claims (`takesOffers()`), because a range matches many serials and only the poster knows which they meant.
+Acceptance is decided per option: an option takes offers (`listingAcceptance()` is `offer`, or `either` beside claims) when it has a range row, because a range matches many serials and only the poster knows which they meant, or when it asks for the claimer's payment and the payment's offer mode lets the claimer name the amount. An option without the payment ignores the mode, so "any Special objekt or $3 fixed" claims the $3 at once and sends the Special pick as an offer. `claimTerms()` decides each request from the chosen option and the amount per unit it carries, if any:
 
-- The same `$claimListing` request, through the same checks and locks except the claim cap, creates a `pending` trade with `proposed_by = to`, `expires_at = now() + OFFER_WINDOW` (72 h), nothing live, an `offered` event and `offer_received` to the poster. It returns `{ tradeId, pending: true }`.
-- Whether the listing takes offers is decided from the wants as `preflightClaim()` read them; the lock's `updated_at` guard guarantees they haven't changed since.
+| Option                                      | No amount                                                       | An amount                                                        |
+| ------------------------------------------- | --------------------------------------------------------------- | ---------------------------------------------------------------- |
+| no payment, or a fixed price (`price_only`) | a claim, or an offer with a range row                           | refused                                                          |
+| open to offers (`price_or_offer`)           | a claim at the asking price, or an offer at it with a range row | an offer at that amount; the asking price itself is as no amount |
+| offer only (`offer_only`)                   | refused                                                         | an offer at that amount                                          |
+
+- An offer is the same `$claimListing` request, through the same checks and locks except the claim cap, and creates a `pending` trade with `proposed_by = to`, `expires_at = now() + OFFER_WINDOW` (72 h), nothing live, an `offered` event and `offer_received` to the poster. It returns `{ tradeId, pending: true }`.
+- Its payment item holds the offered amount times its units, so accepting it starts the trade at that amount, and the poster's Offers tab, My trades and the notification emails read it from there.
+- Only the claimer's payment takes offers. The poster's payment on top of their objekts is always a fixed price, so an offer never names what the poster pays.
+- Claim or offer is decided from the option's wants and payment as `preflightClaim()` read them; the lock's `updated_at` guard guarantees they haven't changed since.
 - Nothing is reserved, so several offers on one listing may pick the same tokens.
 - The poster accepts or declines it and the claimer may withdraw it, through the offer functions ([offers.md](offers.md)). It can't be countered.
 
 ## Accepting an offer on a listing
 
-`$acceptOffer` reads the indexer for both sides and the listing's terms (`readListingTerms()`) before the transaction. It then locks both users `FOR NO KEY UPDATE`, the offer, then the listing, refusing `listing_closed` once it isn't open. `recheckListingOffer()` reads the pool, the links, both sides' locks and live trades and the claimer's cap under those locks, and refuses as `offerRefusal()` decides, the verdict the poster's Offers tab shows:
+`$acceptOffer` reads the indexer for both sides and the listing's terms, every option's (`readListingTerms()`), before the transaction, and judges the offer against the option its `listing_option` names. It then locks both users `FOR NO KEY UPDATE`, the offer, then the listing, refusing `listing_closed` once it isn't open. `recheckListingOffer()` reads the pool, a buy listing's taken units, the links, both sides' locks and live trades and the claimer's cap under those locks, and refuses as `offerRefusal()` decides, the verdict the poster's Offers tab shows:
 
 1. `offer_expired` once `expires_at <= now()`.
-2. `listing_updated` when the picks are no longer in the pool or a whole number of the current units (`listingOfferRefusal()`).
+2. `listing_updated` when the option is gone, the picks are no longer in the pool or a whole number of the current units (`offerUnits()`: a buy listing's offer takes the units it recorded and no picks), or the offer's payment no longer fits the listing's: a payment gained or lost, another side or currency, or another amount than a fixed price times the units (`listingOfferRefusal()`, `paymentFits()`).
 3. `offer_unavailable { tokenId }` for a claimer token the indexer doesn't know.
-4. `listing_updated` when the claimer's tokens don't fill the current rows scaled to those units exactly. The tokens are allocated afresh with `fillsExactly()`, because the trade doesn't store which row each was for.
+4. `listing_updated` when the claimer's tokens don't fill the option's current rows scaled to those units exactly. The tokens are allocated afresh with `fillsExactly()`, because the trade doesn't store which row each was for.
 5. `cosmo_not_linked` when `posterBlocked()` holds for the poster.
-6. `listing_pick_unavailable` for a pick live in another trade; `claim_token_unavailable` naming why for any other undeliverable pick.
-7. `offer_unavailable` when the claimer is gone, banned, relinked or at their claim cap, without saying which, so the poster learns none of them.
-8. `offer_unavailable { tokenId }` for a claimer token that is no longer theirs to give, without saying why.
+6. `listing_full` when a buy listing's live and completed trades leave fewer units than the offer takes, since a pending offer held none.
+7. `listing_pick_unavailable` for a pick live in another trade; `claim_token_unavailable` naming why for any other undeliverable pick.
+8. `offer_unavailable` when the claimer is gone, banned, relinked or at their claim cap, without saying which, so the poster learns none of them.
+9. `offer_unavailable { tokenId }` for a claimer token that is no longer theirs to give, without saying why.
 
 It then becomes `accepted` with the claim window. The poster's picks go live first, so a live-token clash names the right side, then the claimer's. The claimer hears `offer_accepted`.

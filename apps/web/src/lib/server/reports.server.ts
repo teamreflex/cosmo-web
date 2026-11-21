@@ -41,6 +41,7 @@ import {
   type ReportStatus,
   type ReportTargetType,
 } from "@apollo/database/web/types";
+import { owedAtDeadline, tradeItemState } from "@apollo/trades/lifecycle";
 import {
   and,
   count,
@@ -311,7 +312,19 @@ export async function fetchReportQueue(
       : await db.query.tradeOffers.findMany({
           where: { id: { in: tradeIds }, kind: "trade" },
           columns: { id: true },
-          with: { fromUser: staffUserFields, toUser: staffUserFields },
+          with: {
+            fromUser: staffUserFields,
+            toUser: staffUserFields,
+            items: {
+              columns: {
+                kind: true,
+                sender: true,
+                transferredAt: true,
+                markedPaidAt: true,
+                confirmedAt: true,
+              },
+            },
+          },
         });
   const feedbackRows =
     feedbackIds.length === 0
@@ -345,7 +358,12 @@ function toRowTarget(
   users: Map<string, StaffUserRow>,
   trades: Map<
     string,
-    { id: string; fromUser: StaffUserRow | null; toUser: StaffUserRow | null }
+    {
+      id: string;
+      fromUser: StaffUserRow | null;
+      toUser: StaffUserRow | null;
+      items: Parameters<typeof tradeItemState>[0][];
+    }
   >,
   copies: Map<string, { tradeId: string; senderId: string | null }>,
   feedback: Map<
@@ -371,6 +389,7 @@ function toRowTarget(
                 id: trade.id,
                 from: staffUser(trade.fromUser),
                 to: staffUser(trade.toUser),
+                owed: owedAtDeadline(trade.items.map(tradeItemState)),
               },
       };
     }
