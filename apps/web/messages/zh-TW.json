@@ -2229,7 +2229,6 @@
   "market_notice_listing_sell_example": "一個重複的 101Z，{price}。",
   "market_notice_listing_buy_example": "107Z 或 108Z 任選，每個 {price}，最多三個。",
   "market_notice_listing_mix": "你也可以同時要求 Objekt 和付款，或讓對方任選其一。價格以刊登者設定的貨幣顯示，所以你總能看到自己要付的金額。",
-  "market_notice_art_any_of": "任選",
   "market_notice_matches_title": "找到交換對象",
   "market_notice_matches": "在市場中接受刊登，或在你的出卡和徵卡清單中打開{#b}交換配對{/b}。它會找到擁有你想要的、又想要你擁有的的人，讓你直接向他們送出報價。",
   "market_notice_art_want_list": "我的徵卡清單",

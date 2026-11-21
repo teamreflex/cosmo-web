@@ -259,7 +259,7 @@ const LISTING_EXAMPLES = {
         { label: "101Z", tint: TINTS.pink },
       ],
     },
-    want: { kind: "objekt", label: () => "107Z" },
+    want: { kind: "objekt", label: "107Z" },
     caption: () => m.market_notice_listing_trade_example(),
   },
   sell: {
@@ -271,7 +271,7 @@ const LISTING_EXAMPLES = {
   buy: {
     ratio: `${PRICE} : 1`,
     offer: { kind: "payment" },
-    want: { kind: "objekt", label: m.market_notice_art_any_of },
+    want: { kind: "any" },
     caption: () => m.market_notice_listing_buy_example({ price: PRICE }),
   },
 } satisfies Record<
@@ -281,10 +281,13 @@ const LISTING_EXAMPLES = {
     offer:
       | { kind: "objekts"; tiles: { label: string; tint: string }[] }
       | { kind: "payment" };
-    want: { kind: "objekt"; label: () => string } | { kind: "payment" };
+    want: ListingWant;
     caption: () => string;
   }
 >;
+
+type ListingWant =
+  { kind: "objekt"; label: string } | { kind: "any" } | { kind: "payment" };
 
 // what a trade, a sale and a purchase each swap, with a caption
 export function ListingKindArt({ kind }: { kind: ListingType }) {
@@ -300,20 +303,28 @@ export function ListingKindArt({ kind }: { kind: ListingType }) {
         )
       }
       ratio={example.ratio}
-      want={
-        example.want.kind === "payment" ? (
-          <PriceTile className={cn(wantLabel, "bg-amber-500/10")} />
-        ) : (
-          <WantedTile
-            label={example.want.label()}
-            // a purchase's "any of" runs longer than a card's width in some locales
-            className={kind === "buy" ? "w-12" : undefined}
-          />
-        )
-      }
+      want={<ListingWantTile want={example.want} />}
       caption={example.caption()}
     />
   );
+}
+
+// every kind of want is one card wide, so switching tabs moves nothing
+function ListingWantTile({ want }: { want: ListingWant }) {
+  switch (want.kind) {
+    case "payment":
+      return <PriceTile className={cn(wantLabel, "bg-amber-500/10")} />;
+    case "objekt":
+      return <WantedTile label={want.label} />;
+    case "any":
+      return (
+        <div className="flex aspect-photocard w-9 shrink-0 overflow-hidden rounded-sm">
+          {WANT_EXAMPLES.range.offer.map((tile) => (
+            <span key={tile.label} className={cn("flex-1", tile.tint)} />
+          ))}
+        </div>
+      );
+  }
 }
 
 // what you offer, the ratio, and what you want in return, over a caption
@@ -372,22 +383,12 @@ function TileStack({ tiles }: { tiles: { label: string; tint: string }[] }) {
   );
 }
 
-// an open slot for whatever the other side sends that fits; `className` widens it for a longer label
-function WantedTile({
-  label,
-  className,
-}: {
-  label: string;
-  className?: string;
-}) {
+// an open slot for whatever the other side sends that fits
+function WantedTile({ label }: { label: string }) {
   return (
     <Tile
       label={label}
-      className={cn(
-        "border-[1.5px] border-dashed border-current",
-        wantLabel,
-        className,
-      )}
+      className={cn("border-[1.5px] border-dashed border-current", wantLabel)}
     />
   );
 }

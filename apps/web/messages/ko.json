@@ -2227,7 +2227,6 @@
   "market_notice_listing_sell_example": "중복된 101Z를 {price}에.",
   "market_notice_listing_buy_example": "107Z나 108Z 중 아무거나 개당 {price}, 최대 3개.",
   "market_notice_listing_mix": "오브젝트와 결제를 함께 요청하거나, 둘 중 하나를 고르게 할 수도 있습니다. 가격은 글쓴이가 정한 통화로 표시되므로, 지불할 금액을 항상 알 수 있습니다.",
-  "market_notice_art_any_of": "아무거나",
   "market_notice_matches_title": "교환 상대를 찾으세요",
   "market_notice_matches": "마켓에서 교환 글을 수락하거나, 보유·구함 리스트의 {#b}교환 매칭{/b}을 열어 보세요. 내가 원하는 것을 가졌고 내가 가진 것을 원하는 사람을 찾아 주니, 바로 제안을 보낼 수 있습니다.",
   "market_notice_art_want_list": "내 구함 리스트",

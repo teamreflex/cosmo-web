@@ -2279,7 +2279,6 @@
   "market_notice_listing_sell_example": "Un 101Z en double pour {price}.",
   "market_notice_listing_buy_example": "{price} pièce pour des 107Z ou 108Z au choix, jusqu'à trois.",
   "market_notice_listing_mix": "Vous pouvez aussi demander des objekts et un paiement ensemble, ou laisser choisir l'un ou l'autre. Les prix s'affichent dans la devise choisie par l'auteur de l'annonce, pour que vous voyiez toujours le montant que vous paieriez.",
-  "market_notice_art_any_of": "au choix",
   "market_notice_matches_title": "Trouvez avec qui échanger",
   "market_notice_matches": "Acceptez une annonce du marché, ou ouvrez les {#b}Correspondances d'échange{/b} de vos listes Dispo et Recherche. Elles trouvent les gens qui ont ce que vous voulez et veulent ce que vous avez, pour leur envoyer une offre directement.",
   "market_notice_art_want_list": "Ma liste Recherche",

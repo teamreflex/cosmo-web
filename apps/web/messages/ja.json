@@ -2227,7 +2227,6 @@
   "market_notice_listing_sell_example": "重複した101Zを{price}で。",
   "market_notice_listing_buy_example": "107Zか108Zのいずれかを1枚{price}で、3枚まで。",
   "market_notice_listing_mix": "オブジェクトと支払いを一緒に求めたり、どちらかを選んでもらったりもできます。価格は出品者が設定した通貨で表示されるので、支払う金額がいつでも分かります。",
-  "market_notice_art_any_of": "いずれか",
   "market_notice_matches_title": "トレード相手を見つけましょう",
   "market_notice_matches": "マーケットで出品を承諾するか、所持・募集リストの{#b}交換マッチ{/b}を開きましょう。あなたの欲しいものを持ち、あなたの持っているものを欲しがっている人が見つかるので、直接オファーを送れます。",
   "market_notice_art_want_list": "募集リスト",

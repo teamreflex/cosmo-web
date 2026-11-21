@@ -2270,7 +2270,6 @@
   "market_notice_listing_sell_example": "A duplicate 101Z for {price}.",
   "market_notice_listing_buy_example": "{price} each for any of 107Z or 108Z, up to three.",
   "market_notice_listing_mix": "You can also ask for objekts and a payment together, or let people choose either. Prices show in the currency the poster set, so you always see the amount you'd pay.",
-  "market_notice_art_any_of": "any of",
   "market_notice_matches_title": "Find people to trade with",
   "market_notice_matches": "Accept a listing from the market, or open {#b}Trade Matches{/b} on your have and want lists. It finds people who have what you want and want what you have, so you can send them an offer directly.",
   "market_notice_art_want_list": "My want list",
