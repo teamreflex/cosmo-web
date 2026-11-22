@@ -303,7 +303,7 @@ function WantStep({ active }: StepProps) {
 
 function ListingKindStep({ active }: StepProps) {
   const [selected, setSelected] = useState<(typeof LISTING_KINDS)[number]>(
-    LISTING_KINDS[1],
+    LISTING_KINDS[0],
   );
 
   return (
