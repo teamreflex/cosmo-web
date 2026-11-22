@@ -224,9 +224,9 @@ function updateItem(
 
 /**
  * The ways out of an accepted trade before it completes: a party cancels
- * while nothing has started and they aren't owed an unconfirmed payment,
- * a party disputes, or the deadline passes, which times it out while
- * nobody has acted and otherwise disputes it.
+ * while nobody has acted and they aren't owed an unconfirmed payment, a
+ * party disputes, or the deadline passes, which times it out while nobody
+ * has acted and otherwise disputes it.
  */
 function endEarly(
   { status, items }: TradeState,
@@ -251,7 +251,11 @@ function endEarly(
       ) {
         return refuse("payment_due");
       }
-      if (items.some(isDone)) return refuse("already_started");
+      /**
+       * A payer who marked paid says the money left them, so cancelling
+       * could leave them out of pocket as well: they dispute instead.
+       */
+      if (items.some(isDelivered)) return refuse("already_started");
       return {
         ok: true,
         trade: { status: "cancelled", cancelledBy: event.by, items },
@@ -318,17 +322,17 @@ function settle(
 }
 
 /**
- * Whether a token arrived or a payment's recipient confirmed it, which is
- * also what counts as started: a payment is owed until it is confirmed.
+ * Whether a token arrived or a payment's recipient confirmed it: a payment
+ * is owed until it is confirmed.
  */
 export function isDone(item: TradeItemState) {
   return item.kind === "objekt" ? item.transferred : item.stage === "confirmed";
 }
 
 /**
- * Whether the item's sender did their part as the deadline judges it: a
- * token arrived, or a payment was confirmed or marked paid. Only the
- * deadline counts the mark; completing and cancelling go by isDone().
+ * Whether the item's sender has acted, as the deadline and a cancel judge
+ * it: a token arrived, or a payment was confirmed or marked paid.
+ * Completing goes by isDone(), which doesn't count the mark.
  */
 function isDelivered(item: TradeItemState) {
   return item.kind === "payment" ? item.stage !== "unpaid" : isDone(item);

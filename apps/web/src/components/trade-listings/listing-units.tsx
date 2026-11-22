@@ -21,9 +21,9 @@ type Props = {
  * then counts. Phones leave the counts to the bottom bar.
  */
 export default function ListingUnits({ ratio, picks }: Props) {
-  // with no asking price, the units are the objekts alone
+  // with no asking price on the claimer's payment, the units are the objekts alone; a buy listing's reads "an offer for 1"
   const text =
-    ratio.payment?.amount === null
+    ratio.payment?.amount === null && ratio.payment.sender === "to"
       ? ratio.get === 0
         ? m.market_listings_objekts({ count: ratio.give })
         : ratioText({ ...ratio, payment: null })
@@ -49,7 +49,9 @@ export default function ListingUnits({ ratio, picks }: Props) {
             : // the caption's "up to" already says it until trades hold some
               picks.buying.taken === 0
               ? caption
-              : `${caption} · ${buyingText(picks.buying)}`}
+              : [caption, buyingText(picks.buying)]
+                  .filter((part) => part !== undefined)
+                  .join(" · ")}
         </span>
       </div>
       <ComposerStepper
@@ -96,17 +98,19 @@ export function UnitCounts({
     <span
       className={cn("flex gap-4 font-mono text-xs tabular-nums", className)}
     >
-      <span className="text-amber-700 dark:text-amber-500">
-        {sideText(
-          picks.offeredCount,
-          priced?.side === "from" ? priced.amount : null,
-          {
-            count: m.listing_detail_units_get,
-            amount: m.listing_detail_units_get_amount,
-            both: m.listing_detail_units_get_pay,
-          },
-        )}
-      </span>
+      {(picks.offeredCount > 0 || priced?.side === "from") && (
+        <span className="text-amber-700 dark:text-amber-500">
+          {sideText(
+            picks.offeredCount,
+            priced?.side === "from" ? priced.amount : null,
+            {
+              count: m.listing_detail_units_get,
+              amount: m.listing_detail_units_get_amount,
+              both: m.listing_detail_units_get_pay,
+            },
+          )}
+        </span>
+      )}
       {(picks.giveTotal > 0 || priced?.side === "to") && (
         <span className="text-teal-700 dark:text-teal-500">
           {sideText(

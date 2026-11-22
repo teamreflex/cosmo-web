@@ -57,6 +57,35 @@ export function AmountField({
   );
 }
 
+// a payment row in the composer: an empty amount on a listing that takes offers asks for no price
+type RowProps = Omit<AmountProps, "placeholder"> & { offers: boolean };
+
+/**
+ * The row's amount field, reading "No price" while it asks for none, then
+ * `suffix`, the "each" a price takes.
+ */
+function RowAmount({
+  offers,
+  label,
+  suffix,
+  ...props
+}: RowProps & { label: string; suffix: string }) {
+  return (
+    <>
+      <AmountField
+        {...props}
+        placeholder={offers ? m.listing_composer_payment_no_price() : undefined}
+        aria-label={label}
+      />
+      {!(offers && props.amount.trim() === "") && (
+        <span className="shrink-0 text-sm whitespace-nowrap text-muted-foreground">
+          {suffix}
+        </span>
+      )}
+    </>
+  );
+}
+
 function RemoveButton({
   label,
   onRemove,
@@ -82,19 +111,17 @@ function RemoveButton({
  * The payment row among the want rows: what the claimer pays for each
  * trade.
  */
-export function ComposerPaymentRow(props: AmountProps) {
+export function ComposerPaymentRow(props: RowProps) {
   return (
     <div className="flex min-h-12 items-center gap-x-2.5 rounded-md border border-amber-500/40 bg-background py-1.5 pr-1.5 pl-3 md:gap-x-3">
       <span className="shrink-0 text-xxs font-semibold tracking-widest text-amber-700 uppercase md:w-16 dark:text-amber-400">
         {m.listing_detail_kind_payment()}
       </span>
-      <AmountField
+      <RowAmount
         {...props}
-        aria-label={m.listing_composer_payment_amount()}
+        label={m.listing_composer_payment_amount()}
+        suffix={m.listing_detail_payment_each()}
       />
-      <span className="shrink-0 text-sm whitespace-nowrap text-muted-foreground">
-        {m.listing_detail_payment_each()}
-      </span>
       <RemoveButton
         label={m.listing_composer_payment_remove()}
         onRemove={props.onRemove}
@@ -133,12 +160,13 @@ export function ComposerOfferedPaymentButton({
 
 /**
  * The poster's payment, once added: on top of their objekts, or alone
- * (`paying`), when the listing buys.
+ * (`paying`), when the listing buys and its amount may be left empty to
+ * take offers.
  */
 export function ComposerOfferedPayment({
   paying,
   ...payment
-}: AmountProps & { paying: boolean }) {
+}: RowProps & { paying: boolean }) {
   return (
     <div className="flex items-center gap-x-2.5 rounded-md border border-teal-500/35 bg-teal-500/5 py-1.5 pr-1.5 pl-3">
       <span className="shrink-0 text-xxs font-semibold tracking-widest text-teal-700 uppercase dark:text-teal-400">
@@ -146,15 +174,15 @@ export function ComposerOfferedPayment({
           ? m.listing_composer_payment_paying()
           : m.listing_composer_payment_and()}
       </span>
-      <AmountField
+      <RowAmount
         {...payment}
-        aria-label={m.listing_composer_payment_amount_yours()}
+        label={m.listing_composer_payment_amount_yours()}
+        suffix={
+          paying
+            ? m.listing_payment_each_unit()
+            : m.listing_composer_payment_on_top()
+        }
       />
-      <span className="shrink-0 text-sm whitespace-nowrap text-muted-foreground">
-        {paying
-          ? m.listing_payment_each_unit()
-          : m.listing_composer_payment_on_top()}
-      </span>
       <RemoveButton
         label={m.listing_composer_payment_remove()}
         onRemove={payment.onRemove}
@@ -165,9 +193,9 @@ export function ComposerOfferedPayment({
 
 /**
  * The listing's payment terms, shown once either side has a payment: its
- * currency, whether the claimer's payment is open to offers, and the
- * methods it may arrive by, Other included. Handles are swapped in the
- * trade chat, so the listing holds none. The poster's own payment is a
+ * currency, whether the payment is open to offers, and the methods it may
+ * arrive by, Other included. Handles are swapped in the trade chat, so the
+ * listing holds none. The poster's payment on top of their objekts is a
  * fixed price, so it has no offers control.
  */
 export function ComposerPaymentStrip({

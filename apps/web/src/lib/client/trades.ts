@@ -28,18 +28,23 @@ export function offerRoles(trade: Pick<TradeView, "proposedBy" | "parties">) {
 }
 
 /**
- * What a side's party is to the trade: a listing's poster or claimer, or a
- * direct offer's sender or recipient. A direct offer has no listing.
+ * What a side's party is to the trade: a listing's poster, or its claimer,
+ * who accepted it or made an offer on it, or a direct offer's sender or
+ * recipient. A direct offer has no listing.
  */
-export function partyRole(side: TradeSide, listingId: string | null) {
+export function partyRole(
+  side: TradeSide,
+  { listingId, proposedBy }: Pick<TradeView, "listingId" | "proposedBy">,
+) {
   if (listingId === null) {
     return side === "from"
       ? m.trade_page_role_sender()
       : m.trade_page_role_recipient();
   }
-  return side === "from"
-    ? m.trade_page_role_poster()
-    : m.trade_page_role_claimer();
+  if (side === "from") return m.trade_page_role_poster();
+  return proposedBy === null
+    ? m.trade_page_role_claimer()
+    : m.trade_page_role_offerer();
 }
 
 /**
@@ -116,9 +121,10 @@ export function formatOfferError(
 /**
  * What accepting an offer asks of each side when it carries a payment: the
  * other side pays and sends nothing else (`paid_only`), pays beside their
- * objekts (`paid`), or the viewer pays (`paying`).
+ * objekts (`paid`), or the viewer pays and sends nothing else
+ * (`paying_only`) or pays beside their objekts (`paying`).
  */
-export type AcceptPayment = "paid_only" | "paid" | "paying";
+export type AcceptPayment = "paid_only" | "paid" | "paying_only" | "paying";
 
 const acceptPayments = {
   send: null,
@@ -134,5 +140,6 @@ export function acceptPayment(
   you: TradePart,
   them: TradePart,
 ): AcceptPayment | null {
-  return you === "send" ? acceptPayments[them] : "paying";
+  if (you === "send") return acceptPayments[them];
+  return you === "pay" ? "paying_only" : "paying";
 }

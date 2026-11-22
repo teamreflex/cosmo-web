@@ -17,8 +17,9 @@ type Props = {
 
 /**
  * The payment's sender marks it paid behind its Mark paid button. It can't
- * be taken back, so it asks first; once it lands the page refetches with
- * the row marked paid, which drops the button.
+ * be taken back and stops a cancel, so it asks first; once it lands the
+ * page refetches with the row marked paid, which drops the button and
+ * Cancel.
  */
 export default function MarkPaidDialog({ tradeId, listingId, payment }: Props) {
   const invalidateTrade = useInvalidateTrade(listingId);
@@ -39,6 +40,7 @@ export default function MarkPaidDialog({ tradeId, listingId, payment }: Props) {
       title={m.trade_page_payment_mark_paid_title({
         amount: formatAmount(payment.amount, payment.currency),
       })}
+      description={m.trade_page_payment_mark_paid_description()}
       confirmLabel={m.trade_page_payment_mark_paid()}
       buttonClassName="max-sm:h-11"
       mutation={mutation}

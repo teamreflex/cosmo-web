@@ -419,7 +419,7 @@ describe("transition: payments", () => {
     ).toBe("disputed");
   });
 
-  test("the payer may cancel until the payment is confirmed", () => {
+  test("the payer may cancel until the payment is marked paid or confirmed", () => {
     expect(
       statusAfter(trade("accepted", sale(false, true)), {
         type: "cancel",
@@ -546,9 +546,11 @@ describe("transition: marking paid", () => {
     ).toBe("completed");
   });
 
-  test("leaves cancelling as it was", () => {
+  test("stops the payer cancelling, and the recipient still can't", () => {
     const marked = trade("accepted", sale(false, false, true));
-    expect(statusAfter(marked, { type: "cancel", by: "to" })).toBe("cancelled");
+    expect(statusAfter(marked, { type: "cancel", by: "to" })).toBe(
+      "already_started",
+    );
     expect(statusAfter(marked, { type: "cancel", by: "from" })).toBe(
       "payment_due",
     );
@@ -1218,6 +1220,27 @@ describe("claimTerms", () => {
                   } satisfies TradePayment),
           },
     );
+  });
+
+  test("an offer on a buy listing records the payment the poster sends", () => {
+    expect(
+      claimTerms(
+        {
+          wants: [{ kind: "exact" }],
+          payment: {
+            side: "from",
+            currency: "USD",
+            methods: ["wise"],
+            mode: "offer_only",
+            amount: null,
+          },
+        },
+        250,
+      ),
+    ).toEqual({
+      kind: "offer",
+      payment: { sender: "from", currency: "USD", amount: 250 },
+    });
   });
 });
 

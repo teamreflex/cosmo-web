@@ -5,9 +5,15 @@ import {
   marketActivityTradeStatuses,
   marketSnapshot,
 } from "../src/lib/universal/market-activity";
+import type { MyTradeSide } from "../src/lib/universal/trades";
 
 const nobody = { user: null, cosmoUsername: null };
-const nothing = { items: [], sent: 0, part: "send", payment: null } as const;
+const nothing: MyTradeSide = {
+  items: [],
+  sent: 0,
+  part: "send",
+  payment: null,
+};
 
 function row(id: string, updatedAt: number): MarketActivityRow {
   return {

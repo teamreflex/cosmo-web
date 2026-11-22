@@ -9,7 +9,7 @@
 | `pending`                                                | a direct offer, a counter, an offer on a listing ([offers.md](offers.md))                                                         |
 | `accepted`                                               | a claim, an accepted offer, a staff extend                                                                                        |
 | `completed`                                              | every item done: a token's arrival (drain) or a payment's confirmation, a staff complete, a staff extend                          |
-| `cancelled`                                              | a party while nothing is sent (`cancelled_by` names them), or staff                                                               |
+| `cancelled`                                              | a party while nobody has acted: nothing sent, no payment marked paid or confirmed (`cancelled_by` names them), or staff           |
 | `timed_out`                                              | the deadline passed the watermark with nothing done: no token arrived, no payment confirmed or marked paid                        |
 | `disputed`                                               | a party's dispute, a ban (`party_banned`), the deadline with something done or marked paid and something owed (`deadline_passed`) |
 | `declined`, `withdrawn`, `countered`, `expired`, `stale` | the ways a pending offer ends                                                                                                     |
@@ -23,7 +23,7 @@
 | ------------------------ | ----------------------------------------------- | --------------------------------------- | -------------------------------------------------- |
 | `accepted`               | every item sent                                 | drain                                   | `completed`                                        |
 | `accepted`               | the last item done is a payment confirmation    | the payment's recipient                 | `completed`                                        |
-| `accepted`               | `cancel`, nothing sent or arrived               | a party not owed an unconfirmed payment | `cancelled`                                        |
+| `accepted`               | `cancel`, nothing sent, arrived or marked paid  | a party not owed an unconfirmed payment | `cancelled`                                        |
 | `accepted`               | `dispute`, before the deadline                  | a party, or a ban                       | `disputed`                                         |
 | `accepted`               | `time_out`, deadline at or before the watermark | `trade-timers`                          | `timed_out` or `disputed`                          |
 | `accepted` or `disputed` | `staff_cancel`                                  | staff with `trade: ["cancel-any"]`      | `cancelled`                                        |
@@ -37,7 +37,7 @@
 1. `trade_status_changed` when the trade is no longer accepted.
 2. `trade_deadline_passed` once `deadline_at <= watermark`, since `trade-timers` owns the trade from then.
 3. A cancel: `trade_cancel_payment_due` from the recipient of an unconfirmed payment, because Apollo can't see whether the money already reached them; they dispute instead, or let the deadline pass.
-4. A cancel: `trade_cancel_started` once anything is sent or a payment confirmed, including a token the indexer shows at its receiver before the drain recorded it (`itemStatus() === "arrived"`).
+4. A cancel: `trade_cancel_started` once anything is sent or a payment marked paid or confirmed (`isDelivered()`), including a token the indexer shows at its receiver before the drain recorded it (`itemStatus() === "arrived"`). A payer who marked paid says the money left them, so they dispute instead.
 
 - A dispute files a `trade` report, sets `dispute_report_id`, freezes the trade and notifies the other party.
 - A cancel notifies the other party and changes nothing on the listing's pool, since the picks never left it.
@@ -46,13 +46,13 @@
 
 `$confirmPayment` (`lib/functions/trades.ts`) is the payment's recipient saying it arrived, and by which of the listing's methods; `$markPaid` is its sender saying they paid.
 
-- Only the recipient's confirmation settles a payment. `isDone()`, completion and the cancel rules ignore the paid mark, so a payer who marked paid can still cancel while nothing arrived and nothing is confirmed.
-- The paid mark counts once, at the deadline: a payment marked paid and not confirmed disputes the trade instead of timing it out, because the payer says they are out of pocket.
+- Only the recipient's confirmation settles a payment: `isDone()` and completion ignore the paid mark.
+- The paid mark counts wherever the payer could be out of pocket (`isDelivered()`): it stops a cancel, and a payment marked paid and not confirmed disputes the trade at its deadline instead of timing it out.
 - `$markPaid` passes the same gate as a confirmation, then is refused `trade_status_changed` from anyone but the sender, a second time, or once the payment is confirmed. It stamps `marked_paid_at`, writes a `marked_paid` event and notifies nobody.
 - `$confirmPayment` goes through `partyAction()` like a cancel: `trade_status_changed` when the trade is neither accepted nor disputed, then `trade_deadline_passed` on an accepted trade past its deadline, whoever calls, then `trade_status_changed` when the caller sends the payment rather than receives it, then `payment_method_unaccepted` for a method outside the trade's `payment_methods`, which the claim copied from the listing.
 - A disputed trade records the confirmation, since its clock is stopped, and stays disputed for staff.
 - It stamps `confirmed_at` and `method` and writes a `payment_confirmed` event. When that settles an accepted trade it ends it here with `endTrade()`, a `completed` event (`by: null`) and `trade_completed` to both parties, as the drain does for a last token; otherwise it notifies nobody.
-- Until it is confirmed a payment is owed and not started: the party who pays can still cancel while nothing else has started, its recipient can't, and a deadline with nothing sent and the payment neither confirmed nor marked paid times the trade out. A deadline with an objekt sent, a payment confirmed or a payment marked paid, and something still owed, disputes it.
+- Until it is confirmed a payment is owed: the party who pays can cancel until they mark it paid or anything else starts, its recipient can't cancel at all, and a deadline with nothing sent and the payment neither confirmed nor marked paid times the trade out. A deadline with an objekt sent, a payment confirmed or a payment marked paid, and something still owed, disputes it.
 
 ## Ending a trade
 

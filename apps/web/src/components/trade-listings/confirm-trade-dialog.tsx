@@ -255,8 +255,9 @@ export default function ConfirmTradeDialog({
                     tokens={give[index] ?? []}
                   />
                 ))}
-                <ClaimerPayment
+                <ProposedPayment
                   listing={listing}
+                  sender="to"
                   units={snapshot?.units ?? 1}
                   proposing={proposing}
                   amount={amount}
@@ -278,10 +279,14 @@ export default function ConfirmTradeDialog({
                     <Group tokens={get} />
                   </>
                 )}
-                <PaymentGroup
+                <ProposedPayment
                   listing={listing}
                   sender="from"
                   units={snapshot?.units ?? 1}
+                  proposing={proposing}
+                  amount={amount}
+                  invalid={invalid}
+                  onAmount={setAmount}
                 />
               </section>
 
@@ -414,13 +419,9 @@ function useOfferTerms(
   };
 }
 
-// whether the claimer names their own amount: the listing takes offers on the payment they send
+// whether the claimer names the amount: the listing takes offers on its payment, theirs or a buy listing's
 function takesAmount(listing: ListingAt) {
-  return (
-    listing.payment !== null &&
-    listing.payment.side === "to" &&
-    listing.payment.mode !== "price_only"
-  );
+  return listing.payment !== null && listing.payment.mode !== "price_only";
 }
 
 // whether an empty amount offers the asking price: a range row beside an asking price
@@ -636,38 +637,14 @@ function groupHead({ want }: PickerRow, count: number) {
 }
 
 /**
- * The payment the trade records for the units claimed, in its own
- * currency, under the side that sends it: `to` the claimer, `from` the
- * poster. Nothing on the other side, or without a payment.
+ * The payment `sender` sends, `to` the claimer or `from` the poster: the
+ * amount the claimer offers when the listing takes offers on its payment,
+ * else the payment the trade records for the units claimed, in its own
+ * currency. Nothing on the other side, or without a payment.
  */
-function PaymentGroup({
+function ProposedPayment({
   listing,
   sender,
-  units,
-}: {
-  listing: ListingAt;
-  sender: TradeSide;
-  units: number;
-}) {
-  return (
-    listing.payment?.side === sender && (
-      <PaymentBox
-        payment={listing.payment}
-        units={units}
-        perUnit={listing.units.kind === "buy"}
-        accepting
-        className="px-3 py-2.5"
-      />
-    )
-  );
-}
-
-/**
- * What the claimer pays: the amount they offer when the listing takes
- * offers on its payment, else the listing's payment, if they send it.
- */
-function ClaimerPayment({
-  listing,
   units,
   proposing,
   amount,
@@ -675,13 +652,15 @@ function ClaimerPayment({
   onAmount,
 }: {
   listing: ListingAt;
+  sender: TradeSide;
   units: number;
   proposing: boolean;
   amount: string;
   invalid: "amount" | "capped" | null;
   onAmount: (amount: string) => void;
 }) {
-  return proposing && listing.payment !== null ? (
+  if (listing.payment?.side !== sender) return null;
+  return proposing ? (
     <OfferAmount
       payment={listing.payment}
       units={units}
@@ -690,7 +669,13 @@ function ClaimerPayment({
       onChange={onAmount}
     />
   ) : (
-    <PaymentGroup listing={listing} sender="to" units={units} />
+    <PaymentBox
+      payment={listing.payment}
+      units={units}
+      perUnit={listing.units.kind === "buy"}
+      accepting
+      className="px-3 py-2.5"
+    />
   );
 }
 

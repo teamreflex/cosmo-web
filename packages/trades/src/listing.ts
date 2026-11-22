@@ -220,8 +220,10 @@ const listingFields = {
         }
       });
     }),
-  // what the poster pays on top of their objekts for each unit, whichever option is given
-  offeredPayment: amountSchema.optional(),
+  // what the poster pays for each unit, whichever option is given, left out when it only takes offers
+  offeredPayment: z
+    .strictObject({ amount: amountSchema.optional() })
+    .optional(),
   // the currency, methods and offer mode of the listing's payment, on either side
   payment: z
     .strictObject({
@@ -264,7 +266,8 @@ type ListingTerms = {
 
 type PaymentFields = {
   options: readonly (readonly OptionWant[])[];
-  offeredPayment?: number | undefined;
+  maxUnits?: number | undefined;
+  offeredPayment?: { amount?: number | undefined } | undefined;
   payment?:
     | {
         currency: string;
@@ -285,23 +288,40 @@ export type ListingOptionTerms = {
 };
 
 /**
+ * Whether the listing's payment can take offers: the claimer's always, and
+ * the poster's only when it buys, since a payment on top of their objekts
+ * is a fixed price.
+ */
+export function paymentTakesOffers({
+  offeredPayment,
+  maxUnits,
+}: {
+  offeredPayment?: { amount?: unknown } | undefined;
+  maxUnits?: number | undefined;
+}) {
+  return offeredPayment === undefined || maxUnits !== undefined;
+}
+
+/**
  * Splits a listing's payment out of its options' want rows. A listing has
  * at most one payment, on one side: payment rows the claimer sends, at
  * most one per option, so options may differ in whether they ask for one
- * and for how much, or `offeredPayment` the poster sends on top of their
- * objekts whichever option is given. A payment needs its currency and
- * methods, and only a payment takes them. Only the claimer's payment
- * takes offers, and each of its rows has an asking price unless it only
- * takes offers; the poster's is a fixed price.
+ * and for how much, or `offeredPayment` the poster sends whichever option
+ * is given. A payment needs its currency and methods, and only a payment
+ * takes them. The claimer's payment and a buy listing's take offers, and
+ * each priced row has an asking price unless the listing only takes
+ * offers; the poster's payment on top of their objekts is a fixed price.
  */
 function withPaymentRules<TSchema extends z.ZodType<PaymentFields>>(
   schema: TSchema,
 ) {
   return schema
-    .superRefine(({ options, offeredPayment, payment }, ctx) => {
+    .superRefine(({ options, maxUnits, offeredPayment, payment }, ctx) => {
       const rows = options.flatMap((wants, option) =>
         wants.flatMap((want) =>
-          want.kind === "payment" ? [{ option, amount: want.amount }] : [],
+          want.kind === "payment"
+            ? [{ path: ["options", option], amount: want.amount }]
+            : [],
         ),
       );
       if (rows.length > 0 && offeredPayment !== undefined) {
@@ -325,14 +345,21 @@ function withPaymentRules<TSchema extends z.ZodType<PaymentFields>>(
         });
       }
       if (payment === undefined) return;
-      if (rows.length === 0 && payment.mode !== "price_only") {
+      if (
+        !paymentTakesOffers({ offeredPayment, maxUnits }) &&
+        payment.mode !== "price_only"
+      ) {
         ctx.addIssue({
           code: "custom",
           message: "A payment you add on top has a fixed price",
           path: ["payment", "mode"],
         });
       }
-      for (const row of rows) {
+      const priced =
+        offeredPayment === undefined
+          ? rows
+          : [{ path: ["offeredPayment"], amount: offeredPayment.amount }];
+      for (const row of priced) {
         if ((row.amount === undefined) !== (payment.mode === "offer_only")) {
           ctx.addIssue({
             code: "custom",
@@ -340,7 +367,7 @@ function withPaymentRules<TSchema extends z.ZodType<PaymentFields>>(
               payment.mode === "offer_only"
                 ? "A listing that only takes offers has no asking price"
                 : "Enter an amount",
-            path: ["options", row.option],
+            path: row.path,
           });
         }
       }
@@ -373,7 +400,7 @@ function withPaymentRules<TSchema extends z.ZodType<PaymentFields>>(
             ),
             payment:
               side === "from"
-                ? priced(offeredPayment)
+                ? priced(offeredPayment?.amount)
                 : row === undefined
                   ? null
                   : priced(row.amount),
@@ -506,7 +533,7 @@ export const claimListingInputSchema = z
       .min(0)
       .max(MAX_LISTING_OPTIONS - 1),
     units: z.int().min(1).max(MAX_TOTAL_WANTED),
-    // the payment per unit the claimer offers, on a listing that takes offers on it
+    // the payment per unit the claimer proposes, sent by whichever side pays, on a listing that takes offers on it
     amount: amountSchema.optional(),
     // none on a buy listing, which has no pool
     picked: z.array(tokenIdSchema).max(MAX_OFFERED),

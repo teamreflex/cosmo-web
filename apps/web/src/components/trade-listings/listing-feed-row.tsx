@@ -4,6 +4,7 @@ import {
   askingPriceText,
   askingTitle,
   buyingText,
+  formatAmount,
   joinOptions,
   listingTypeLabels,
   listingTypesOfListing,
@@ -192,11 +193,11 @@ function OfferingHalf({
         }
         className={className}
       >
-        <SlipTitle>
-          {m.listing_payment_per_unit({ amount: askingPriceText(payment) })}
-        </SlipTitle>
+        <SlipTitle>{perUnitPriceText(payment)}</SlipTitle>
         <SlipDetail>
-          {`${buyingText(row.units)} · ${paymentMethodsText(payment.methods)}`}
+          {[buyingText(row.units), paymentMethodsText(payment.methods)]
+            .filter((part) => part !== undefined)
+            .join(" · ")}
         </SlipDetail>
       </Half>
     );
@@ -224,6 +225,20 @@ function OfferingHalf({
       )}
     </Half>
   );
+}
+
+/**
+ * A buy listing's price for each unit, "$3.00 each", with whether it takes
+ * offers, or "Make an offer" with no asking price.
+ */
+function perUnitPriceText(payment: ListingPayment) {
+  if (payment.amount === null) return askingPriceText(payment);
+  const price = m.listing_payment_per_unit({
+    amount: formatAmount(payment.amount, payment.currency),
+  });
+  return payment.mode === "price_or_offer"
+    ? `${price} · ${m.listing_payment_open_to_offers_tag()}`
+    : price;
 }
 
 /**

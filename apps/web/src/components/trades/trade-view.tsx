@@ -524,7 +524,7 @@ function TradeLayout({
                 <PartyCard
                   key={party}
                   party={trade.parties[party]}
-                  role={partyRole(party, trade.listingId)}
+                  role={partyRole(party, trade)}
                 />
               ))}
               {side !== null && <TradeFeedback trade={trade} side={side} />}

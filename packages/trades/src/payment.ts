@@ -31,10 +31,11 @@ export type PaymentPrice =
   | { mode: "offer_only"; amount: null };
 
 /**
- * A listing's payment: who sends it (`to` the claimer, or `from` the poster
- * on top of their objekts), how it is priced, its currency and the methods
- * it may arrive by. Only a claimer's payment takes offers; the poster's is
- * always a fixed price.
+ * A listing's payment: who sends it (`to` the claimer, or `from` the poster,
+ * on top of their objekts or alone on a buy listing), how it is priced, its
+ * currency and the methods it may arrive by. The claimer's payment and a
+ * buy listing's take offers; the poster's on top of objekts is always a
+ * fixed price.
  */
 export type ListingPayment = {
   side: TradeSide;

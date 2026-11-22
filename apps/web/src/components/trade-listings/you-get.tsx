@@ -153,7 +153,8 @@ function PosterPayment({
 /**
  * A buy listing's side, which is its payment alone: "You get" it for the
  * units a picking viewer takes, "You pay" it for its poster, "Paying" for
- * anyone else, with how many units it has left.
+ * anyone else, with how many units it has left, or "All bought" once it
+ * filled.
  */
 function BuyingSide({
   listing,
@@ -181,7 +182,9 @@ function BuyingSide({
         summary={
           heading === "you_get"
             ? m.listing_detail_you_get_summary({ poster: posterName(listing) })
-            : buyingText(units)
+            : listing.state.status === "filled"
+              ? m.market_listings_buying_all_bought()
+              : buyingText(units)
         }
       />
       {payment?.side === "from" && (
@@ -189,6 +192,7 @@ function BuyingSide({
           payment={payment}
           units={heading === "you_get" ? picked : 1}
           perUnit
+          closed={listing.state.status !== "open"}
         />
       )}
     </section>

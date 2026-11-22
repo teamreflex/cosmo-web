@@ -66,18 +66,23 @@ export function formatAmount(amount: number, currency: string) {
 }
 
 /**
- * A listing's payment as one phrase in its own currency: its price for
- * `units` units, "$3.00", the price and that it takes offers, "$3.00 ·
- * offers", or "Make an offer" when it has no asking price.
+ * A listing's payment as one phrase in its own currency: its price,
+ * "$3.00", the price and that it takes offers, "$3.00 · open to offers",
+ * or "Make an offer" when it has no asking price. A `closed` listing takes
+ * no more offers, so it reads its price alone, or "No asking price".
  */
 export function askingPriceText(
   payment: Pick<ListingPayment, "mode" | "amount" | "currency">,
-  units = 1,
+  closed = false,
 ) {
-  if (payment.amount === null) return m.listing_payment_offer_only();
-  const price = formatAmount(payment.amount * units, payment.currency);
-  return payment.mode === "price_or_offer"
-    ? m.listing_payment_open_to_offers({ price })
+  if (payment.amount === null) {
+    return closed
+      ? m.listing_payment_no_asking_price()
+      : m.listing_payment_offer_only();
+  }
+  const price = formatAmount(payment.amount, payment.currency);
+  return payment.mode === "price_or_offer" && !closed
+    ? `${price} · ${m.listing_payment_open_to_offers_tag()}`
     : price;
 }
 
@@ -284,29 +289,35 @@ type OptionShown = {
   payment: ListingPayment | null;
 };
 
-// the claimer's payment beside an option's rows: its price, or "your offer" with no asking price
-function priceBeside(payment: ListingPayment | null) {
+// the claimer's payment beside an option's rows: its price, or "your offer" with no asking price, which a closed listing leaves out
+function priceBeside(payment: ListingPayment | null, closed: boolean) {
   if (payment?.side !== "to") return null;
-  return payment.amount === null
-    ? m.listing_payment_your_offer()
-    : askingPriceText(payment);
+  if (payment.amount !== null) return askingPriceText(payment, closed);
+  return closed ? null : m.listing_payment_your_offer();
 }
 
 /**
  * One of a listing's options as a short phrase: its objekt rows as
  * askingTitle() reads them, the claimer's payment added, "1 objekt +
  * $1.00" or, with no asking price, "1 objekt + your offer", or the payment
- * alone, "$3.00".
+ * alone, "$3.00". A `closed` listing words its payment as askingPriceText()
+ * does for one.
  */
-export function optionTitle(option: OptionShown) {
+export function optionTitle(option: OptionShown, closed = false) {
   if (option.wants.length === 0) {
-    return option.payment?.side === "to" ? askingPriceText(option.payment) : "";
+    return option.payment?.side === "to"
+      ? askingPriceText(option.payment, closed)
+      : "";
   }
-  return withPriceBeside(askingTitle(option.wants), option.payment);
+  return withPriceBeside(askingTitle(option.wants), option.payment, closed);
 }
 
-function withPriceBeside(rows: string, payment: ListingPayment | null) {
-  const price = priceBeside(payment);
+function withPriceBeside(
+  rows: string,
+  payment: ListingPayment | null,
+  closed: boolean,
+) {
+  const price = priceBeside(payment, closed);
   return price === null ? rows : withPayment(rows, price);
 }
 
@@ -320,14 +331,14 @@ export function withPayment(text: string, price: string) {
  * options whose titles read alike, "6 objekts" twice, name their rows
  * instead (wantsSummary()).
  */
-export function optionTitles(options: readonly OptionShown[]) {
-  const titles = options.map(optionTitle);
+export function optionTitles(options: readonly OptionShown[], closed = false) {
+  const titles = options.map((option) => optionTitle(option, closed));
   return options.map((option, index) => {
     const title = titles[index] ?? "";
     return titles.indexOf(title) === titles.lastIndexOf(title) ||
       option.wants.length === 0
       ? title
-      : withPriceBeside(wantsSummary(option.wants), option.payment);
+      : withPriceBeside(wantsSummary(option.wants), option.payment, closed);
   });
 }
 
@@ -561,15 +572,17 @@ export function pillRatio(
 
 /**
  * What a buy listing has left to buy: "Up to 3" until a trade holds some
- * of its units, then "2 of 3 left".
+ * of its units, then "2 of 3 left". Nothing once its live trades hold the
+ * rest, since the listing page says why nobody can take it.
  */
 export function buyingText(units: Extract<ListingSize, { kind: "buy" }>) {
-  return units.taken === 0
-    ? m.market_listings_buying_up_to({ count: units.maxUnits })
-    : m.market_listings_buying_left({
-        left: Math.max(units.maxUnits - units.taken, 0),
-        max: units.maxUnits,
-      });
+  if (units.taken === 0) {
+    return m.market_listings_buying_up_to({ count: units.maxUnits });
+  }
+  const left = units.maxUnits - units.taken;
+  return left > 0
+    ? m.market_listings_buying_left({ left, max: units.maxUnits })
+    : undefined;
 }
 
 /**

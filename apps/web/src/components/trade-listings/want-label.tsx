@@ -52,14 +52,15 @@ export default function WantLabel({ want }: Props) {
  * A listing's payment behind its badge, in its own currency: what one
  * trade pays (one unit's, on a buy listing), or with `units` what this many
  * units pay in all, and whether it takes offers unless it is being
- * accepted, over the methods it may arrive by. A payment with no
- * asking price reads "Make an offer".
+ * accepted or its listing is `closed`, over the methods it may arrive by.
+ * A payment with no asking price reads as askingPriceText() words it.
  */
 export function PaymentLabel({
   payment,
   units = 1,
   perUnit = false,
   accepting = false,
+  closed = false,
 }: {
   payment: ListingPayment;
   units?: number;
@@ -67,6 +68,8 @@ export function PaymentLabel({
   perUnit?: boolean;
   /** the price a trade being accepted pays, so whether the listing takes offers doesn't show */
   accepting?: boolean;
+  /** the listing takes no more offers */
+  closed?: boolean;
 }) {
   return (
     <span className="flex min-w-0 flex-col gap-1 leading-relaxed">
@@ -76,7 +79,7 @@ export function PaymentLabel({
         </Badge>
         {payment.amount === null ? (
           <span className="font-semibold">
-            {m.listing_payment_offer_only()}
+            {askingPriceText(payment, closed)}
           </span>
         ) : (
           <>
@@ -94,6 +97,7 @@ export function PaymentLabel({
                   })}
               {payment.mode === "price_or_offer" &&
                 !accepting &&
+                !closed &&
                 ` · ${m.listing_payment_open_to_offers_tag()}`}
             </span>
           </>
@@ -142,17 +146,19 @@ function WantCount({ count }: { count: number }) {
  * sums the rows up unless the page says otherwise. A listing with several
  * options heads how many it has over each option in its own box, an "or"
  * between them, since the claimer gives one. Any note the page adds goes
- * under them.
+ * under them. A `closed` listing's payments read as it took no more offers.
  */
 export function WantList({
   options,
   heading = "looking_for",
   summary,
+  closed = false,
   children,
 }: {
   options: ListingOption<ListingFeedWant>[];
   heading?: WantsHeading;
   summary?: string;
+  closed?: boolean;
   children?: ReactNode;
 }) {
   const [only, ...others] = options;
@@ -170,12 +176,12 @@ export function WantList({
             // a sale asks for its price alone
             count:
               only.wants.length === 0 && paid !== null
-                ? askingPriceText(paid)
+                ? askingPriceText(paid, closed)
                 : totalWanted(only.wants),
           })}
           summary={summary ?? wantKindsSummary(only.wants, only.payment)}
         />
-        <WantRows wants={only.wants} payment={paid} />
+        <WantRows wants={only.wants} payment={paid} closed={closed} />
         {children}
       </section>
     );
@@ -187,16 +193,17 @@ export function WantList({
         title={title({
           count: m.listing_options_count({ count: options.length }),
         })}
-        summary={summary ?? joinOptions(optionTitles(options))}
+        summary={summary ?? joinOptions(optionTitles(options, closed))}
       />
       {options.map((option, index) => (
         <Fragment key={index}>
           {index > 0 && <OrDivider />}
           <div className="flex min-w-0 flex-col gap-3 rounded-lg border border-border bg-muted/40 p-3">
-            <OptionHeading number={index + 1} option={option} />
+            <OptionHeading number={index + 1} option={option} closed={closed} />
             <WantRows
               wants={option.wants}
               payment={option.payment?.side === "to" ? option.payment : null}
+              closed={closed}
             />
           </div>
         </Fragment>
@@ -213,13 +220,15 @@ export function WantList({
 function OptionHeading({
   number,
   option,
+  closed,
 }: {
   number: number;
   option: ListingOption<ListingFeedWant>;
+  closed: boolean;
 }) {
   return (
     <span className="text-xxs font-medium tracking-widest text-muted-foreground uppercase">
-      {`${m.listing_option_label({ number })} · ${optionTitle(option)}`}
+      {`${m.listing_option_label({ number })} · ${optionTitle(option, closed)}`}
     </span>
   );
 }
@@ -247,9 +256,11 @@ export function OrDivider() {
 function WantRows({
   wants,
   payment,
+  closed,
 }: {
   wants: ListingFeedWant[];
   payment: ListingPayment | null;
+  closed: boolean;
 }) {
   const ranges = wants.flatMap((want) => (want.kind === "range" ? [want] : []));
   const exact = wants.flatMap((want) => (want.kind === "exact" ? [want] : []));
@@ -300,7 +311,7 @@ function WantRows({
         </div>
       ))}
       {/* the payment comes last, as the composer keeps it */}
-      {payment !== null && <PaymentBox payment={payment} />}
+      {payment !== null && <PaymentBox payment={payment} closed={closed} />}
     </>
   );
 }

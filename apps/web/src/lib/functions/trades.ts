@@ -371,7 +371,7 @@ export const $cancelTrade = createServerFn({ method: "POST" })
         },
       );
       if (!result.ok) {
-        // a payment's confirmation starts a trade too, which a payment trade's refusal says
+        // a payment marked paid or confirmed starts a trade too, which a payment trade's refusal says
         refuseTrade(
           result.reason === "already_started" &&
             trade.items.some((item) => item.kind === "payment")

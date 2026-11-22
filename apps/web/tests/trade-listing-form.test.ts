@@ -12,7 +12,6 @@ import { MAX_RANGE_VALUES } from "@apollo/trades/range";
 import { describe, expect, test } from "bun:test";
 import {
   applyChipUpdate,
-  claimerPaymentTerms,
   composerBlock,
   emptyListingForm,
   followMaxUnits,
@@ -20,6 +19,7 @@ import {
   formValuesToInput,
   type ListingFormValues,
   listingToFormValues,
+  paymentPricing,
   type RangeFormFilter,
   rangeToChipFilters,
   stepUnitSize,
@@ -517,7 +517,7 @@ describe("payments in the composer", () => {
     (string | undefined)[],
     ListingOfferMode,
   ][])("%s", (_, typed, open, amounts, mode) => {
-    expect(claimerPaymentTerms(typed, open)).toEqual({ amounts, mode });
+    expect(paymentPricing(typed, open)).toEqual({ amounts, mode });
   });
 
   test("the poster's payment on top prefills as offeredPayment", () => {
@@ -532,7 +532,7 @@ describe("payments in the composer", () => {
         })),
       ],
     });
-    expect(values.offeredPayment).toBe("3.00");
+    expect(values.offeredPayment).toEqual({ amount: "3.00" });
     expect(values.options.flat().some((want) => want.kind === "payment")).toBe(
       false,
     );
@@ -678,7 +678,7 @@ describe("buy listings in the composer", () => {
       offered: [],
       unitSize: undefined,
       maxUnits: 3,
-      offeredPayment: "3.00",
+      offeredPayment: { amount: "3.00" },
       options: [[{ kind: "exact", slug: "atom02-kimlip-201z", count: 1 }]],
     });
     const submission = formValuesToInput(
@@ -689,7 +689,7 @@ describe("buy listings in the composer", () => {
     expect(submission.data).toMatchObject({
       offered: [],
       maxUnits: 3,
-      offeredPayment: "3.00",
+      offeredPayment: { amount: "3.00" },
     });
     expect(submission.data).not.toHaveProperty("unitSize");
     expect(editListingInputSchema.parse(submission.data).units).toEqual({
@@ -698,13 +698,53 @@ describe("buy listings in the composer", () => {
     });
   });
 
+  test("a buy listing with no asking price keeps none through an edit", () => {
+    const offers = {
+      ...buy,
+      options: [
+        {
+          wants: [kimlip],
+          payment: { ...paying, mode: "offer_only", amount: null },
+        },
+      ],
+    } satisfies Pick<
+      TradeListing,
+      "id" | "items" | "options" | "note" | "units"
+    >;
+    const values = listingToFormValues(offers);
+    expect(values).toMatchObject({
+      maxUnits: 3,
+      offeredPayment: {},
+      payment: { mode: "offer_only" },
+    });
+    const parsed = listingInputSchema.parse(values);
+    expect(parsed.options[0]?.payment).toEqual({
+      ...paying,
+      mode: "offer_only",
+      amount: null,
+    });
+    const submission = formValuesToInput(
+      parsed,
+      { kind: "edit", listing: { ...offers, ...fillers } },
+      rosters,
+    );
+    expect(submission.data.offeredPayment).toEqual({});
+  });
+
   test.each([
-    ["a payment with no objekts buys from one", [], "3", undefined, 1],
-    ["it keeps the units it had", [], "3", 4, 4],
+    [
+      "a payment with no objekts buys from one",
+      [],
+      { amount: "3" },
+      undefined,
+      1,
+    ],
+    ["it keeps the units it had", [], { amount: "3" }, 4, 4],
+    ["a payment with no asking price buys too", [], {}, undefined, 1],
     [
       "objekts beside the payment buy nothing",
       [{ tokenId: 1 }],
-      "3",
+      { amount: "3" },
       4,
       undefined,
     ],
@@ -712,7 +752,7 @@ describe("buy listings in the composer", () => {
   ] satisfies [
     string,
     { tokenId: number }[],
-    string | undefined,
+    ListingFormValues["offeredPayment"],
     number | undefined,
     number | undefined,
   ][])("%s", (_, offeredTokens, offeredPayment, maxUnits, expected) => {
@@ -728,8 +768,18 @@ describe("buy listings in the composer", () => {
         unitSize: undefined,
         maxUnits: 3,
         options: [[{ kind: "exact", slug: "a", count: 1 }]],
-        offeredPayment: "3",
+        offeredPayment: { amount: "3" },
         payment: { currency: "USD", methods: ["wise"] },
+      }),
+    ).toBeNull();
+    expect(
+      block({
+        offered: [],
+        unitSize: undefined,
+        maxUnits: 3,
+        options: [[{ kind: "exact", slug: "a", count: 1 }]],
+        offeredPayment: {},
+        payment: { currency: "USD", methods: ["wise"], mode: "offer_only" },
       }),
     ).toBeNull();
     expect(

@@ -27,6 +27,7 @@ import {
   listingTypesOf,
   offeredTokensInputSchema,
   offerInputSchema,
+  paymentTakesOffers,
 } from "../src/listing";
 import {
   MAX_NUMERIC_AMOUNT,
@@ -294,7 +295,12 @@ const refused = [
   ],
   [
     "a payment on both sides",
-    { offered, wants: [pay("3")], offeredPayment: "2", payment: usd },
+    {
+      offered,
+      wants: [pay("3")],
+      offeredPayment: { amount: "2" },
+      payment: usd,
+    },
     "offeredPayment: A payment can only be on one side",
   ],
   [
@@ -321,7 +327,7 @@ const refused = [
     {
       offered,
       wants,
-      offeredPayment: "2",
+      offeredPayment: { amount: "2" },
       payment: { ...usd, mode: "price_or_offer" },
     },
     "payment.mode: A payment you add on top has a fixed price",
@@ -450,7 +456,7 @@ const accepted: [
       | ReturnType<typeof pay>
       | typeof askNothing
     )[];
-    offeredPayment?: string;
+    offeredPayment?: { amount?: string };
     payment?: {
       currency: string;
       methods: PaymentMethod[];
@@ -719,7 +725,7 @@ const accepted: [
     {
       offered,
       wants,
-      offeredPayment: "2.5",
+      offeredPayment: { amount: "2.5" },
       payment: { currency: "KRW", methods: ["other"] },
     },
     {
@@ -840,7 +846,7 @@ describe("listingInputSchema options", () => {
       listingInputSchema.safeParse({
         offered,
         options: [wants, [pay("3")]],
-        offeredPayment: "2",
+        offeredPayment: { amount: "2" },
         payment: usd,
       }),
       "offeredPayment: A payment can only be on one side",
@@ -890,7 +896,7 @@ describe("listingInputSchema options", () => {
     const parsed = listingInputSchema.parse({
       offered,
       options: [wants, [special]],
-      offeredPayment: "2",
+      offeredPayment: { amount: "2" },
       payment: usd,
     });
     expect(parsed.payment?.side).toBe("from");
@@ -921,9 +927,22 @@ describe("buy listings", () => {
     offered: [],
     maxUnits: 3,
     options: [[anyOf]],
-    offeredPayment: "3",
+    offeredPayment: { amount: "3" },
     payment: usd,
   };
+
+  test.each([
+    ["a buy listing's payment takes offers", { amount: 3 }, 3, true],
+    ["a payment on top of objekts doesn't", { amount: 3 }, undefined, false],
+    ["the claimer's payment takes offers", undefined, undefined, true],
+  ] satisfies [
+    string,
+    { amount: number } | undefined,
+    number | undefined,
+    boolean,
+  ][])("%s", (_, offeredPayment, maxUnits, expected) => {
+    expect(paymentTakesOffers({ offeredPayment, maxUnits })).toBe(expected);
+  });
 
   test("parses into the poster's payment for up to its most units", () => {
     expect(listingInputSchema.parse(buy)).toEqual({
@@ -938,6 +957,31 @@ describe("buy listings", () => {
         },
       ],
     });
+  });
+
+  test("takes offers beside its asking price", () => {
+    expect(
+      listingInputSchema.parse({
+        ...buy,
+        payment: { ...usd, mode: "price_or_offer" },
+      }).options[0]?.payment,
+    ).toEqual({ side: "from", mode: "price_or_offer", amount: 300, ...usd });
+  });
+
+  test("takes only offers with no asking price", () => {
+    expect(
+      listingInputSchema
+        .parse({
+          ...buy,
+          options: [[anyOf], [exact(KIMLIP)]],
+          offeredPayment: {},
+          payment: { ...usd, mode: "offer_only" },
+        })
+        .options.map((option) => option.payment),
+    ).toEqual([
+      { side: "from", mode: "offer_only", amount: null, ...usd },
+      { side: "from", mode: "offer_only", amount: null, ...usd },
+    ]);
   });
 
   test("takes several options, each asking for objekts", () => {
@@ -995,12 +1039,22 @@ describe("buy listings", () => {
       "offeredPayment: A payment can only be on one side",
     ],
     [
-      "a price open to offers",
-      { payment: { ...usd, mode: "price_or_offer" } },
-      "payment.mode: A payment you add on top has a fixed price",
+      "an asking price on a listing that only takes offers",
+      { payment: { ...usd, mode: "offer_only" } },
+      "offeredPayment: A listing that only takes offers has no asking price",
     ],
     [
-      "no asking price",
+      "no asking price at a fixed price",
+      { offeredPayment: {} },
+      "offeredPayment: Enter an amount",
+    ],
+    [
+      "no asking price on a listing open to offers",
+      { offeredPayment: {}, payment: { ...usd, mode: "price_or_offer" } },
+      "offeredPayment: Enter an amount",
+    ],
+    [
+      "an offer mode with no payment",
       { offeredPayment: undefined, payment: { ...usd, mode: "offer_only" } },
       "payment: Only a listing with a payment takes payment methods",
     ],
@@ -1023,7 +1077,7 @@ describe("buy listings", () => {
       listingInputSchema.safeParse({
         ...buy,
         maxUnits: MAX_BUY_UNITS,
-        offeredPayment: toNumeric(MAX_PAYMENT_AMOUNT),
+        offeredPayment: { amount: toNumeric(MAX_PAYMENT_AMOUNT) },
       }).success,
     ).toBe(true);
   });

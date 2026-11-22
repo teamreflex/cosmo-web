@@ -16,6 +16,7 @@ export type OfferAction = "accept" | "decline" | "withdraw";
 const acceptDescriptions = {
   paid_only: m.trade_page_offer_accept_description_paid_only,
   paid: m.trade_page_offer_accept_description_paid,
+  paying_only: m.trade_page_offer_accept_description_paying_only,
   paying: m.trade_page_offer_accept_description_paying,
 } satisfies Record<
   AcceptPayment,

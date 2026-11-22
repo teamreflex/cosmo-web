@@ -5,6 +5,7 @@ import {
   dirtyOptions,
   type ListingFormValues,
   type ListingFormWant,
+  offersOpen,
 } from "@/lib/universal/trade-listing-form";
 import { MAX_LISTING_OPTIONS } from "@apollo/trades/caps";
 import {
@@ -253,11 +254,7 @@ function OptionRows({
               key={field.id}
               currency={currency}
               amount={want.amount ?? ""}
-              placeholder={
-                (mode ?? "price_only") !== "price_only"
-                  ? m.listing_composer_payment_no_price()
-                  : undefined
-              }
+              offers={offersOpen(mode)}
               onChange={(amount) => onPaymentAmount(option, amount)}
               onRemove={() => {
                 remove(index);

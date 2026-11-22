@@ -316,7 +316,9 @@ function ListingWants({
   role: ListingRole;
 }) {
   if (role.role !== "poster") {
-    return <WantList options={listing.options} />;
+    return (
+      <WantList options={listing.options} closed={role.role === "closed"} />
+    );
   }
   return (
     <WantList

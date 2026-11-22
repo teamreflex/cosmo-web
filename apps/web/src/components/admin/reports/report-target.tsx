@@ -187,11 +187,8 @@ function TradeTarget({ trade }: { trade: ReportTargetTrade | null }) {
         <OpenTradeLink tradeId={view.id} />
       </div>
       <div className="grid gap-2 sm:grid-cols-2">
-        <TradeParty
-          party={trade.from}
-          role={partyRole("from", view.listingId)}
-        />
-        <TradeParty party={trade.to} role={partyRole("to", view.listingId)} />
+        <TradeParty party={trade.from} role={partyRole("from", view)} />
+        <TradeParty party={trade.to} role={partyRole("to", view)} />
       </div>
       <TransferRows trade={view} side={null} />
     </div>

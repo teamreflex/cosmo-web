@@ -87,7 +87,7 @@ export function dirtyOptions(form: { formState: { isSubmitted: boolean } }) {
 }
 
 /**
- * A listing's current terms as the composer's starting values: its pool, not the objekts that left it, its options' rows, and its unit size if it has a ratio (hasRatio(), against everything it has offered), else none, so a bundle stays a bundle, or a buy listing's most units. The unit size isn't held to the pool: tokens sent in a live trade leave the pool while that trade keeps the listing open, which can leave fewer than a trade takes, and Save waits for the poster to lower the ratio or add objekts (composerBlock()). The claimer's payment comes back as the last want row of each option that asks for it, and the poster's as `offeredPayment`.
+ * A listing's current terms as the composer's starting values: its pool, not the objekts that left it, its options' rows, and its unit size if it has a ratio (hasRatio(), against everything it has offered), else none, so a bundle stays a bundle, or a buy listing's most units. The unit size isn't held to the pool: tokens sent in a live trade leave the pool while that trade keeps the listing open, which can leave fewer than a trade takes, and Save waits for the poster to lower the ratio or add objekts (composerBlock()). The claimer's payment comes back as the last want row of each option that asks for it, and the poster's as `offeredPayment`, with no amount when it only takes offers.
  */
 export function listingToFormValues(
   listing: Pick<TradeListing, "items" | "options" | "note" | "units">,
@@ -128,7 +128,7 @@ export function listingToFormValues(
 }
 
 /**
- * The options and payment as the form holds them: each option's objekt rows as `objektRows` turns them, then the claimer's payment row when the option asks for it, the poster's amount as `offeredPayment` from the first option, which carries it on every option, and the terms the payment strip edits.
+ * The options and payment as the form holds them: each option's objekt rows as `objektRows` turns them, then the claimer's payment row when the option asks for it, the poster's as `offeredPayment` from the first option, which carries it on every option, and the terms the payment strip edits.
  */
 function paymentFormFields<TOption extends { payment: ListingPayment | null }>(
   options: readonly TOption[],
@@ -144,8 +144,10 @@ function paymentFormFields<TOption extends { payment: ListingPayment | null }>(
         : []),
     ]),
     offeredPayment:
-      onTop?.side === "from" && onTop.amount !== null
-        ? toNumeric(onTop.amount)
+      onTop?.side === "from"
+        ? onTop.amount === null
+          ? {}
+          : { amount: toNumeric(onTop.amount) }
         : undefined,
     payment:
       terms === null
@@ -191,28 +193,33 @@ export function hasFormPayment(
   );
 }
 
-// the claimer's payment rows' amounts as the form holds them, and the listing's offer mode
-type ClaimerPaymentTerms = {
+// the payment's amounts as the form holds them, and the listing's offer mode
+type PaymentPricing = {
   amounts: (string | undefined)[];
   mode: ListingOfferMode;
 };
 
 /**
- * The claimer's amounts, one per option asking for the payment, and the
- * listing's offer mode once an amount or "Open to offers" changes: closed,
- * each amount is a fixed price; open, each is an asking price, and when
- * every one is empty there is no asking price, so the listing only takes
- * offers. An empty amount beside a typed one stays empty, which Post
- * refuses until it reads.
+ * The payment's amounts, one per option asking for the claimer's payment or
+ * the poster's one, and the listing's offer mode once an amount or "Open to
+ * offers" changes: closed, each amount is a fixed price; open, each is an
+ * asking price, and when every one is empty there is no asking price, so
+ * the listing only takes offers. An empty amount beside a typed one stays
+ * empty, which Post refuses until it reads.
  */
-export function claimerPaymentTerms(
+export function paymentPricing(
   amounts: readonly string[],
   openToOffers: boolean,
-): ClaimerPaymentTerms {
+): PaymentPricing {
   if (!openToOffers) return { amounts: [...amounts], mode: "price_only" };
   return amounts.every((amount) => amount.trim() === "")
     ? { amounts: amounts.map(() => undefined), mode: "offer_only" }
     : { amounts: [...amounts], mode: "price_or_offer" };
+}
+
+// whether the form's offer mode takes offers: a payment starts at a fixed price, with no mode yet
+export function offersOpen(mode: ListingOfferMode | undefined) {
+  return (mode ?? "price_only") !== "price_only";
 }
 
 /**
@@ -389,7 +396,7 @@ function collapseRanges(
  * Why a payment on either side holds Post back: an amount the schema
  * refuses, among the claimer's rows or the poster's, or no method picked.
  * Null without a payment. A listing that only takes offers has no amounts
- * to check, and only it leaves a row's amount out (claimerPaymentTerms()).
+ * to check, and only it leaves an amount out (paymentPricing()).
  */
 function paymentBlock(
   values: Pick<ListingFormValues, "options" | "offeredPayment" | "payment">,
@@ -397,7 +404,9 @@ function paymentBlock(
   if (!hasFormPayment(values)) return null;
   const amounts = [
     ...claimerAmounts(values.options),
-    ...(values.offeredPayment === undefined ? [] : [values.offeredPayment]),
+    ...(values.offeredPayment === undefined
+      ? []
+      : [values.offeredPayment.amount]),
   ];
   if (
     amounts.some((amount) =>
