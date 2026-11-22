@@ -168,6 +168,7 @@ async function fetchImages(cardObjekts: ProfileCardObjekt[]) {
   const results = await Promise.allSettled(
     [...new Set(cardObjekts.map((objekt) => objekt.image))].map(async (src) => {
       const response = await fetch(src, {
+        headers: { "User-Agent": "apollo.cafe (internal)" },
         signal: AbortSignal.timeout(5000),
       });
       if (!response.ok) throw new Error(`${response.status} ${src}`);

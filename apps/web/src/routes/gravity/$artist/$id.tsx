@@ -15,7 +15,8 @@ import {
 import { IconAlertTriangle, IconHeartBroken } from "@tabler/icons-react";
 import { noop } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
-import { Suspense } from "react";
+import { type ComponentProps, Suspense, use } from "react";
+import { browser } from "react-dom";
 import { ErrorBoundary } from "react-error-boundary";
 import * as z from "zod";
 
@@ -23,6 +24,17 @@ import * as z from "zod";
 const GravityLiveChart = lazyWithPreload(
   () => import("@/components/gravity/gravity-live-chart"),
 );
+
+/**
+ * The server never renders the chart, so its vote data query runs only in
+ * the browser instead of during SSR, where it would be streamed into the HTML.
+ */
+function BrowserGravityLiveChart(
+  props: ComponentProps<typeof GravityLiveChart>,
+) {
+  use(browser("Vote data can be huge, so the browser fetches it."));
+  return <GravityLiveChart {...props} />;
+}
 
 const gravitySearchSchema = z.object({
   // COSMO poll id, selecting one day of a multi-poll gravity
@@ -110,7 +122,7 @@ function RouteComponent() {
               </div>
             }
           >
-            <GravityLiveChart
+            <BrowserGravityLiveChart
               artist={artist}
               gravity={gravity}
               pollId={pollId}
