@@ -2,6 +2,10 @@ import { disputeReasons, paymentMethods } from "@apollo/database/web/types";
 import { pgText } from "@apollo/trades/range";
 import { EXTEND_HOURS } from "@apollo/trades/timers";
 import * as z from "zod";
+import {
+  marketActivityStatuses,
+  marketActivityViews,
+} from "../market-activity";
 import { myTradesTabs } from "../trades";
 
 const tradeNoteSchema = pgText()
@@ -62,6 +66,24 @@ export const myTradesInputSchema = z.strictObject({
   tab: z.enum(myTradesTabs),
   cursor: myTradesCursorSchema.optional(),
 });
+
+// the admin Market activity feed's Kind and Status filters
+export const marketActivityFiltersSchema = z.strictObject({
+  view: z.enum(marketActivityViews),
+  status: z.enum(marketActivityStatuses).optional(),
+});
+
+// the feed is keyset-paged by each trade's latest change
+export const marketActivityCursorSchema = z.strictObject({
+  at: z.iso.datetime(),
+  id: z.uuid(),
+});
+
+export const marketActivityInputSchema = marketActivityFiltersSchema.extend({
+  cursor: marketActivityCursorSchema.optional(),
+});
+
+export type MarketActivityInput = z.infer<typeof marketActivityInputSchema>;
 
 // the most collections a side of one offer's serials are read for
 export const MAX_OFFER_SERIAL_SLUGS = 200;

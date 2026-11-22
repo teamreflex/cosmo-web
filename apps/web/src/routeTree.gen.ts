@@ -31,6 +31,7 @@ import { Route as AdminCacheRouteImport } from './routes/admin/cache'
 import { Route as AdminCollectionsRouteImport } from './routes/admin/collections'
 import { Route as AdminErasRouteImport } from './routes/admin/eras'
 import { Route as AdminEventsRouteImport } from './routes/admin/events'
+import { Route as AdminMarketRouteImport } from './routes/admin/market'
 import { Route as AdminNoticeRouteImport } from './routes/admin/notice'
 import { Route as AdminReportsRouteImport } from './routes/admin/reports'
 import { Route as AdminSerialsRouteImport } from './routes/admin/serials'
@@ -178,6 +179,11 @@ const AdminErasRoute = AdminErasRouteImport.update({
 const AdminEventsRoute = AdminEventsRouteImport.update({
   id: '/events',
   path: '/events',
+  getParentRoute: () => AdminRouteRoute,
+} as any)
+const AdminMarketRoute = AdminMarketRouteImport.update({
+  id: '/market',
+  path: '/market',
   getParentRoute: () => AdminRouteRoute,
 } as any)
 const AdminNoticeRoute = AdminNoticeRouteImport.update({
@@ -365,6 +371,7 @@ export interface FileRoutesByFullPath {
   '/admin/collections': typeof AdminCollectionsRoute
   '/admin/eras': typeof AdminErasRoute
   '/admin/events': typeof AdminEventsRoute
+  '/admin/market': typeof AdminMarketRoute
   '/admin/notice': typeof AdminNoticeRoute
   '/admin/reports': typeof AdminReportsRoute
   '/admin/serials': typeof AdminSerialsRoute
@@ -417,6 +424,7 @@ export interface FileRoutesByTo {
   '/admin/collections': typeof AdminCollectionsRoute
   '/admin/eras': typeof AdminErasRoute
   '/admin/events': typeof AdminEventsRoute
+  '/admin/market': typeof AdminMarketRoute
   '/admin/notice': typeof AdminNoticeRoute
   '/admin/reports': typeof AdminReportsRoute
   '/admin/serials': typeof AdminSerialsRoute
@@ -473,6 +481,7 @@ export interface FileRoutesById {
   '/admin/collections': typeof AdminCollectionsRoute
   '/admin/eras': typeof AdminErasRoute
   '/admin/events': typeof AdminEventsRoute
+  '/admin/market': typeof AdminMarketRoute
   '/admin/notice': typeof AdminNoticeRoute
   '/admin/reports': typeof AdminReportsRoute
   '/admin/serials': typeof AdminSerialsRoute
@@ -530,6 +539,7 @@ export interface FileRouteTypes {
     | '/admin/collections'
     | '/admin/eras'
     | '/admin/events'
+    | '/admin/market'
     | '/admin/notice'
     | '/admin/reports'
     | '/admin/serials'
@@ -582,6 +592,7 @@ export interface FileRouteTypes {
     | '/admin/collections'
     | '/admin/eras'
     | '/admin/events'
+    | '/admin/market'
     | '/admin/notice'
     | '/admin/reports'
     | '/admin/serials'
@@ -637,6 +648,7 @@ export interface FileRouteTypes {
     | '/admin/collections'
     | '/admin/eras'
     | '/admin/events'
+    | '/admin/market'
     | '/admin/notice'
     | '/admin/reports'
     | '/admin/serials'
@@ -858,6 +870,13 @@ declare module '@tanstack/react-router' {
       path: '/events'
       fullPath: '/admin/events'
       preLoaderRoute: typeof AdminEventsRouteImport
+      parentRoute: typeof AdminRouteRoute
+    }
+    '/admin/market': {
+      id: '/admin/market'
+      path: '/market'
+      fullPath: '/admin/market'
+      preLoaderRoute: typeof AdminMarketRouteImport
       parentRoute: typeof AdminRouteRoute
     }
     '/admin/notice': {
@@ -1121,6 +1140,7 @@ interface AdminRouteRouteChildren {
   AdminCollectionsRoute: typeof AdminCollectionsRoute
   AdminErasRoute: typeof AdminErasRoute
   AdminEventsRoute: typeof AdminEventsRoute
+  AdminMarketRoute: typeof AdminMarketRoute
   AdminNoticeRoute: typeof AdminNoticeRoute
   AdminReportsRoute: typeof AdminReportsRoute
   AdminSerialsRoute: typeof AdminSerialsRoute
@@ -1136,6 +1156,7 @@ const AdminRouteRouteChildren: AdminRouteRouteChildren = {
   AdminCollectionsRoute: AdminCollectionsRoute,
   AdminErasRoute: AdminErasRoute,
   AdminEventsRoute: AdminEventsRoute,
+  AdminMarketRoute: AdminMarketRoute,
   AdminNoticeRoute: AdminNoticeRoute,
   AdminReportsRoute: AdminReportsRoute,
   AdminSerialsRoute: AdminSerialsRoute,

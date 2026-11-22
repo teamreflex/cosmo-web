@@ -1,3 +1,4 @@
+import { idLink, logTimeFormat, shortId } from "@/components/admin/common";
 import StaffUserName from "@/components/admin/staff-user-name";
 import StatusPill from "@/components/objekt/detail/status-pill";
 import UserAvatar from "@/components/profile/user-avatar";
@@ -147,20 +148,11 @@ export default function AuditRow({ row }: Props) {
         role="cell"
         className="font-mono text-xs whitespace-nowrap text-muted-foreground tabular-nums [grid-area:when] @md:pt-0.5 @4xl:pt-0"
       >
-        <Timestamp date={row.createdAt} format={auditTimeFormat} />
+        <Timestamp date={row.createdAt} format={logTimeFormat} />
       </div>
     </div>
   );
 }
-
-// a day and a 24-hour time, short enough for the row's last column
-const auditTimeFormat = {
-  month: "short",
-  day: "numeric",
-  hour: "2-digit",
-  minute: "2-digit",
-  hourCycle: "h23",
-} satisfies Intl.DateTimeFormatOptions;
 
 function AuditTarget({ row }: Props) {
   switch (row.target.type) {
@@ -203,7 +195,7 @@ function AuditTarget({ row }: Props) {
             <Link
               to="/admin/reports"
               search={{ status: row.report.status, report: row.report.id }}
-              className="font-mono text-xs text-cosmo hover:underline dark:text-cosmo-text"
+              className={idLink}
             >
               #{shortId(row.report.id)}
             </Link>
@@ -264,7 +256,7 @@ function AuditTarget({ row }: Props) {
           <Link
             to="/trade/$id"
             params={{ id: row.target.id }}
-            className="font-mono text-xs text-cosmo hover:underline dark:text-cosmo-text"
+            className={idLink}
           >
             {shortId(row.target.id)}
           </Link>
@@ -358,15 +350,8 @@ function detailNote(detail: AdminAuditDetail) {
         <>
           {m.admin_audit_note_trade_extend({ hours: detail.hours })}
           {" → "}
-          <Timestamp date={detail.deadlineAt} format={auditTimeFormat} />
+          <Timestamp date={detail.deadlineAt} format={logTimeFormat} />
         </>
       );
   }
-}
-
-/**
- * Enough of an id to tell rows apart at a glance.
- */
-function shortId(id: string) {
-  return id.slice(0, 8);
 }

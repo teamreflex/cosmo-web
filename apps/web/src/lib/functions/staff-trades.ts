@@ -1,6 +1,10 @@
 import { staffMiddleware } from "@/lib/server/middlewares";
 import { actOnTrade, completeAsStaff } from "@/lib/server/staff-trades.server";
 import {
+  fetchMarketActivity,
+  fetchMarketSummary,
+} from "@/lib/server/trades/market-activity.server";
+import {
   endTrade,
   insertTradeEvent,
   notifyUsers,
@@ -8,6 +12,7 @@ import {
   updateLockedTrade,
 } from "@/lib/server/trades/trade.server";
 import {
+  marketActivityInputSchema,
   staffExtendTradeInputSchema,
   staffTradeInputSchema,
 } from "@/lib/universal/schema/trades";
@@ -16,6 +21,22 @@ import { tradeMessages } from "@apollo/database/web/schema";
 import { extendedDeadline } from "@apollo/trades/timers";
 import { createServerFn } from "@tanstack/react-start";
 import { and, desc, eq, sql } from "drizzle-orm";
+
+/**
+ * One page of the admin Market activity feed: every trade and offer by its
+ * latest change.
+ */
+export const $fetchMarketActivity = createServerFn({ method: "GET" })
+  .middleware([staffMiddleware({ trade: ["read-any"] })])
+  .validator(marketActivityInputSchema)
+  .handler(({ data }) => fetchMarketActivity(data));
+
+/**
+ * The market's last 24 hours in counts, for the Market activity page.
+ */
+export const $fetchMarketSummary = createServerFn({ method: "GET" })
+  .middleware([staffMiddleware({ trade: ["read-any"] })])
+  .handler(() => fetchMarketSummary());
 
 /**
  * Complete a disputed trade, whatever its items have done.

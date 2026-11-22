@@ -254,7 +254,7 @@ const paymentCaptions = {
 >;
 
 // the payment a side sends, in its own currency, and whether it was confirmed received or marked paid
-function PaymentCaption({ side }: { side: MyTradeSide }) {
+export function PaymentCaption({ side }: { side: MyTradeSide }) {
   if (side.part === "send") return null;
   const { payment } = side;
   return (

@@ -2,6 +2,7 @@ import { m } from "@/i18n/messages";
 import type { Permissions } from "@apollo/auth";
 import {
   IconAlertTriangle,
+  IconArrowsExchange,
   IconCalendarEvent,
   IconCards,
   IconDatabase,
@@ -44,6 +45,12 @@ export function getAdminItems(): AdminItem[] {
       url: "/admin/audit",
       icon: IconHistory,
       permissions: [{ audit: ["read"] }],
+    },
+    {
+      title: m.admin_market_nav(),
+      url: "/admin/market",
+      icon: IconArrowsExchange,
+      permissions: [{ trade: ["read-any"] }],
     },
     {
       title: m.admin_accounts_title(),
@@ -100,4 +107,24 @@ export function getAdminItems(): AdminItem[] {
       permissions: [{ site: ["manage"] }],
     },
   ];
+}
+
+// a link to the record an id names, in an admin log row
+export const idLink =
+  "font-mono text-xs text-cosmo hover:underline dark:text-cosmo-text";
+
+// a day and a 24-hour time, short enough for a log row's last column
+export const logTimeFormat = {
+  month: "short",
+  day: "numeric",
+  hour: "2-digit",
+  minute: "2-digit",
+  hourCycle: "h23",
+} satisfies Intl.DateTimeFormatOptions;
+
+/**
+ * Enough of an id to tell rows apart at a glance.
+ */
+export function shortId(id: string) {
+  return id.slice(0, 8);
 }

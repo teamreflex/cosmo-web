@@ -3,7 +3,11 @@ import { alertDispute } from "@/lib/server/discord.server";
 import { authenticatedMiddleware } from "@/lib/server/middlewares";
 import { consumeRateLimit } from "@/lib/server/rate-limit.server";
 import { publishTradeUpdates } from "@/lib/server/trade-events.server";
-import { feedItem, readIndexed } from "@/lib/server/trades/feed.server";
+import {
+  foldTradeItems,
+  readIndexed,
+  tradeSideSummary,
+} from "@/lib/server/trades/feed.server";
 import { readIndexerTokens } from "@/lib/server/trades/holdings.server";
 import {
   deadlinePassed,
@@ -30,9 +34,7 @@ import {
   openDisputeInputSchema,
   tradeIdInputSchema,
 } from "@/lib/universal/schema/trades";
-import { storedObjektItemSchema } from "@/lib/universal/trade-listings";
 import {
-  type MyTradeSide,
   type MyTradesPage,
   offerCloser,
   type TradeView,
@@ -56,11 +58,9 @@ import {
   otherSide,
   partyAction,
   tradeListingId,
-  type TradePart,
   tradeParts,
   tradeState,
 } from "@apollo/trades/lifecycle";
-import { parsePaymentItem } from "@apollo/trades/payment";
 import { itemStatus } from "@apollo/trades/transfers";
 import { createServerFn } from "@tanstack/react-start";
 import {
@@ -265,69 +265,20 @@ export const $fetchMyTrades = createServerFn({ method: "GET" })
       .leftJoinLateral(halt, sql`true`)
       .orderBy(...order(page), asc(tradeOfferItems.id));
 
-    type Row = (typeof rows)[number];
-    const grouped = new Map<string, { row: Row; items: Row["item"][] }>();
-
-    // fold the item rows back into one entry per trade, in page order
-    for (const row of rows) {
-      const trade = grouped.get(row.trade.id);
-      if (trade === undefined) {
-        grouped.set(row.trade.id, { row, items: [row.item] });
-      } else {
-        trade.items.push(row.item);
-      }
-    }
-
-    // drop the lookahead trade and split each trade's objekts and payment by who sends them
-    const all = [...grouped.values()];
-    const pageTrades = all.slice(0, PAGE_SIZE);
-    const trades = pageTrades.map(({ row, items }) => {
-      const side: TradeSide = row.trade.fromUserId === userId ? "from" : "to";
-      const objekts = items.flatMap((item) =>
-        item.kind === "objekt"
-          ? [{ item, ...storedObjektItemSchema.parse(item) }]
-          : [],
-      );
-      const payment = items.find((item) => item.kind === "payment");
-      return {
-        row,
-        items,
-        side,
-        payment: payment && parsePaymentItem(payment),
-        send: objekts.filter(({ item }) => item.sender === side),
-        get: objekts.filter(({ item }) => item.sender !== side),
-      };
-    });
+    // drop the lookahead trade and gather each trade's objekts and payment
+    const { trades, hasMore } = foldTradeItems(rows, PAGE_SIZE);
 
     // fetch collections from the indexer
-    const objekts = trades.flatMap(({ send, get }) => [...send, ...get]);
+    const pageObjekts = trades.flatMap(({ objekts }) => objekts);
     const indexed = await readIndexed(
-      [...new Set(objekts.map(({ attributes }) => attributes.slug))],
-      objekts.map(({ tokenId }) => tokenId),
+      [...new Set(pageObjekts.map(({ attributes }) => attributes.slug))],
+      pageObjekts.map(({ tokenId }) => tokenId),
     );
 
-    /**
-     * One side of a row: its objekts as feed items, how many have arrived,
-     * and its part with its payment. tradeParts() gives a side a part that
-     * pays only when it sends the payment item.
-     */
-    const summary = (
-      items: typeof objekts,
-      part: TradePart,
-      payment: MyTradeSide["payment"],
-    ): MyTradeSide => {
-      const shown = {
-        items: items.map((item) => feedItem(item, indexed)),
-        sent: items.filter(({ item }) => item.transferredAt !== null).length,
-      };
-      if (part === "send") return { ...shown, part, payment: null };
-      if (payment === null) throw new Error("a paying side without a payment");
-      return { ...shown, part, payment };
-    };
-
     // each trade as a My trades row from the caller's side
-    const mapped = trades.map(({ row, items, side, payment, send, get }) => {
+    const mapped = trades.map(({ row, items, objekts, payment }) => {
       const { trade } = row;
+      const side: TradeSide = trade.fromUserId === userId ? "from" : "to";
       // a trade has a deadline once accepted, and an offer expires until then
       const dueAt = trade.deadlineAt ?? trade.expiresAt;
       if (dueAt === null) {
@@ -348,15 +299,13 @@ export const $fetchMyTrades = createServerFn({ method: "GET" })
           row.counterparty,
           row.cosmo,
         ),
-        send: summary(
-          send,
-          parts[side],
-          payment?.sender === side ? payment : null,
-        ),
-        get: summary(
-          get,
-          parts[otherSide(side)],
-          payment !== undefined && payment.sender !== side ? payment : null,
+        send: tradeSideSummary(side, objekts, parts, payment, indexed),
+        get: tradeSideSummary(
+          otherSide(side),
+          objekts,
+          parts,
+          payment,
+          indexed,
         ),
         nextStep: nextStep(state, side, {
           deadlinePassed: deadlinePassed(state, dueAt, row.watermark),
@@ -364,11 +313,11 @@ export const $fetchMyTrades = createServerFn({ method: "GET" })
       };
     });
 
-    const last = pageTrades.at(-1)?.row.trade;
+    const last = trades.at(-1)?.row.trade;
     return {
       rows: mapped,
       nextCursor:
-        all.length > pageTrades.length && last !== undefined
+        hasMore && last !== undefined
           ? { at: last.cursorAt, id: last.id }
           : undefined,
     };

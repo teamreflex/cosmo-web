@@ -17,6 +17,8 @@ import type {
   TradeSide,
 } from "@apollo/database/web/types";
 import type { TokenFlags } from "@apollo/trades/holdings";
+import type { TradeParts } from "@apollo/trades/lifecycle";
+import { parsePaymentItem, type PaymentItem } from "@apollo/trades/payment";
 import {
   and,
   type AnyColumn,
@@ -47,6 +49,7 @@ import {
   listingOptions,
   storedObjektItemSchema,
 } from "../../universal/trade-listings";
+import type { MyTradeSide } from "../../universal/trades";
 import { indexer } from "../db/indexer";
 import { type TokenState, toTokenStates } from "./holdings.server";
 
@@ -480,6 +483,69 @@ export function feedItem(
     serial: state?.kind === "found" ? state.serial : null,
     collection: indexed.collections.get(item.attributes.slug) ?? null,
   };
+}
+
+/**
+ * A page's item rows folded back into one entry per trade, in row order,
+ * each with its objekt items parsed and its payment. Keeps `pageSize`
+ * trades; `hasMore` says the rows held a lookahead trade past them.
+ */
+export function foldTradeItems<
+  Row extends { trade: { id: string }; item: TradeOfferItem },
+>(rows: Row[], pageSize: number) {
+  const grouped = new Map<string, { row: Row; items: TradeOfferItem[] }>();
+  for (const row of rows) {
+    const trade = grouped.get(row.trade.id);
+    if (trade === undefined) {
+      grouped.set(row.trade.id, { row, items: [row.item] });
+    } else {
+      trade.items.push(row.item);
+    }
+  }
+
+  return {
+    hasMore: grouped.size > pageSize,
+    trades: [...grouped.values()].slice(0, pageSize).map(({ row, items }) => {
+      const payment = items.find((item) => item.kind === "payment");
+      return {
+        row,
+        items,
+        objekts: items.flatMap((item) =>
+          item.kind === "objekt"
+            ? [{ item, ...storedObjektItemSchema.parse(item) }]
+            : [],
+        ),
+        payment: payment && parsePaymentItem(payment),
+      };
+    }),
+  };
+}
+
+/**
+ * One side of a trade as its lists show it: the objekts it sends as feed
+ * items, how many have arrived, and its part with its payment. tradeParts()
+ * gives a side a part that pays only when it sends the payment item.
+ */
+export function tradeSideSummary(
+  sender: TradeSide,
+  objekts: (Pick<ListingFeedItem, "tokenId" | "attributes"> & {
+    item: Pick<TradeOfferItem, "sender" | "transferredAt">;
+  })[],
+  parts: TradeParts,
+  payment: PaymentItem | undefined,
+  indexed: Awaited<ReturnType<typeof readIndexed>>,
+): MyTradeSide {
+  const sends = objekts.filter(({ item }) => item.sender === sender);
+  const shown = {
+    items: sends.map((objekt) => feedItem(objekt, indexed)),
+    sent: sends.filter(({ item }) => item.transferredAt !== null).length,
+  };
+  const part = parts[sender];
+  if (part === "send") return { ...shown, part, payment: null };
+  if (payment?.sender !== sender) {
+    throw new Error("a paying side without a payment");
+  }
+  return { ...shown, part, payment };
 }
 
 /**
