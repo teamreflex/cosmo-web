@@ -53,7 +53,7 @@ const journal = simulateSchema.table("journal", {
   tokenId: text("token_id").notNull(),
   prevOwner: text("prev_owner").notNull(),
   prevReceivedAt: timestamp("prev_received_at", {
-    mode: "string",
+    mode: "date",
     withTimezone: true,
   }).notNull(),
   prevTransferable: boolean("prev_transferable").notNull(),
@@ -187,7 +187,6 @@ const simulateTransfer = (command: Extract<Command, { type: "transfer" }>) =>
   Effect.gen(function* () {
     const indexer = yield* DatabaseIndexer;
     const hash = randomHash();
-    const timestamp = command.at.toISOString();
 
     const result = yield* indexer.transaction((tx) =>
       Effect.gen(function* () {
@@ -201,7 +200,7 @@ const simulateTransfer = (command: Extract<Command, { type: "transfer" }>) =>
 
         yield* tx
           .update(objekts)
-          .set({ owner: command.to, receivedAt: timestamp })
+          .set({ owner: command.to, receivedAt: command.at })
           .where(eq(objekts.id, command.tokenId));
 
         const transferId = randomUUID();
@@ -210,7 +209,7 @@ const simulateTransfer = (command: Extract<Command, { type: "transfer" }>) =>
           hash,
           from: objekt.owner,
           to: command.to,
-          timestamp,
+          timestamp: command.at,
           tokenId: Number(command.tokenId),
           objektId: command.tokenId,
           collectionId: objekt.collectionId,
@@ -245,7 +244,7 @@ const simulateTransfer = (command: Extract<Command, { type: "transfer" }>) =>
     );
 
     yield* Effect.logInfo(
-      `transfer: objekt ${command.tokenId} ${result.from} -> ${command.to} at ${timestamp}, outbox id ${result.outboxId}, hash ${hash}`,
+      `transfer: objekt ${command.tokenId} ${result.from} -> ${command.to} at ${command.at.toISOString()}, outbox id ${result.outboxId}, hash ${hash}`,
     );
   });
 
@@ -325,10 +324,10 @@ const init = Effect.gen(function* () {
 const reset = Effect.gen(function* () {
   const indexer = yield* DatabaseIndexer;
 
-  const [exists] = yield* indexer.execute<{ exists: boolean }>(
+  const { rows } = yield* indexer.execute<{ exists: boolean }>(
     sql`select to_regclass('simulate.journal') is not null as exists`,
   );
-  if (exists?.exists !== true) {
+  if (rows[0]?.exists !== true) {
     yield* Effect.logInfo("reset: nothing simulated");
     return;
   }

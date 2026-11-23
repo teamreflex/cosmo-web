@@ -218,7 +218,7 @@ export async function collectionsMintedSince(
   const minted = db
     .selectDistinct({ collectionId: objekts.collectionId })
     .from(objekts)
-    .where(gt(objekts.mintedAt, new Date(cutoff).toISOString()))
+    .where(gt(objekts.mintedAt, new Date(cutoff)))
     .as("minted");
   return db
     .select(collectionColumns)

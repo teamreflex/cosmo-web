@@ -1,14 +1,15 @@
 import * as z from "zod";
 
-// a timestamp as Postgres prints it, then a row id
+// a timestamp as Postgres text or ISO 8601, then a row id
 const cursorSchema = z.tuple([
   z.string().regex(/^\d{4}-\d{2}-\d{2}[ T][\d:.]+([+-][\d:]+|Z)?$/),
   z.guid(),
 ]);
 
 /**
- * Keyset cursors over (timestamp, id), base64-encoded to stay opaque. Pass the
- * timestamp as Postgres text, which keeps the microseconds a JS Date drops. A
+ * Keyset cursors over (timestamp, id), base64-encoded to stay opaque. A column
+ * holding microseconds must pass its timestamp as Postgres text, because a JS
+ * Date drops them; whole-second chain timestamps can pass `toISOString()`. A
  * cursor that doesn't decode to both parts reads as no cursor, so the caller
  * serves its first page.
  */

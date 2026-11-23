@@ -347,9 +347,12 @@ function When({ row, details }: { row: Row; details: DetailTransfer[] }) {
     <div className="order-3 ml-auto flex items-baseline gap-1.5 font-mono text-xs text-muted-foreground lg:order-none lg:col-start-1 lg:row-start-1 lg:ml-0 lg:flex-col lg:items-start lg:justify-center lg:gap-0.5">
       {first && last && details.length > 1 ? (
         <>
-          <time dateTime={row.timestamp} className="whitespace-nowrap">
-            {format(new Date(first.objekt.transfer.timestamp), "h:mm")}–
-            {format(new Date(last.objekt.transfer.timestamp), "h:mm a")}
+          <time
+            dateTime={row.timestamp.toISOString()}
+            className="whitespace-nowrap"
+          >
+            {format(first.objekt.transfer.timestamp, "h:mm")}–
+            {format(last.objekt.transfer.timestamp, "h:mm a")}
           </time>
           <span className="font-sans whitespace-nowrap max-sm:hidden">
             {m.transfer_group_meta({
@@ -364,13 +367,13 @@ function When({ row, details }: { row: Row; details: DetailTransfer[] }) {
       ) : (
         <>
           <Timestamp
-            date={new Date(row.timestamp)}
+            date={row.timestamp}
             format={{ timeStyle: "medium" }}
             className="whitespace-nowrap"
           />
           {row.kind === "spin" && row.outcome === "pending" && (
             <Timestamp
-              date={new Date(row.timestamp)}
+              date={row.timestamp}
               relative="narrow"
               className="font-sans whitespace-nowrap"
             />
@@ -625,7 +628,7 @@ function Details({ transfers }: { transfers: DetailTransfer[] }) {
             )}
           >
             <Timestamp
-              date={new Date(objekt.transfer.timestamp)}
+              date={objekt.transfer.timestamp}
               format={{ timeStyle: "medium" }}
               className="font-mono text-xs whitespace-nowrap text-muted-foreground"
             />

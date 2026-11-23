@@ -124,10 +124,11 @@ Keep these versions in step when bumping Bun, TypeScript or turbo:
 - A service is a `Context.Service` class with a `make` effect and a `static readonly layer = Layer.effect(this, this.make)`, taking its dependencies through `Layer.provide`. An app composes its layers with `Layer.mergeAll`.
 - Read config inside `make` with `Config.*` (`Config.Redacted` for secrets), so a missing variable fails at boot.
 - Give each failure mode its own `Data.TaggedError`. Wrap promise APIs in `Effect.tryPromise` with a typed `catch`.
-- Drizzle queries through `@apollo/drizzle-bun-effect` are effects: yield them and let drizzle's typed errors flow.
+- Drizzle queries through `drizzle-orm/postgres/effect` (`DatabaseWeb`, `DatabaseIndexer`) are effects: yield them and let drizzle's typed errors flow.
+- Interrupting a query effect, by a timeout or a shutdown, doesn't cancel the statement: it runs to the end on its connection and the result is dropped, so a timeout never frees a connection sooner.
 - `DatabaseWeb.layer()` (`@apollo/services/database-web`) builds a new client on every call, and layers memoize by reference, so an app declares its web DB layer once and reuses that value.
 - Provide Redis through the shared `redisLayer` value (`@apollo/services/redis`), not a new `BunRedis` layer, so an app keeps one client.
-- The schedules web client has one connection, so nothing inside its transactions may query through the pool; see [`apps/schedules/CLAUDE.md`](../apps/schedules/CLAUDE.md).
+- A `db` call inside `db.transaction` joins that transaction, because the driver finds it in the fiber's context. What that means for the one-connection schedules clients is in [`apps/schedules/CLAUDE.md`](../apps/schedules/CLAUDE.md).
 - The repo runs Effect v4; finding its docs is in [`docs/libraries.md`](libraries.md).
 
 ## Redis

@@ -217,7 +217,7 @@ function nextCursor(kept: ChainItem[], candidates: ChainItem[], limit: number) {
         : []
   ).at(-1);
   return last
-    ? encodeCursor(last.transfer.timestamp, last.transfer.id)
+    ? encodeCursor(last.transfer.timestamp.toISOString(), last.transfer.id)
     : undefined;
 }
 
@@ -340,8 +340,8 @@ async function fetchNeighbourhood(
         params,
         and(
           eq(column, address),
-          gte(transfers.timestamp, new Date(lo).toISOString()),
-          lte(transfers.timestamp, new Date(hi).toISOString()),
+          gte(transfers.timestamp, new Date(lo)),
+          lte(transfers.timestamp, new Date(hi)),
         ),
       ),
     ),
@@ -524,9 +524,12 @@ async function hydrate(
       : [
           and(
             eq(column, address),
-            inArray(transfers.timestamp, [
-              ...new Set(times.map((t) => t.transfer.timestamp)),
-            ]),
+            inArray(
+              transfers.timestamp,
+              [
+                ...new Set(times.map((t) => t.transfer.timestamp.getTime())),
+              ].map((ms) => new Date(ms)),
+            ),
           ),
         ],
   );
@@ -548,11 +551,7 @@ async function hydrate(
   return rows
     .filter((row) => wanted.has(row.transfer.id))
     .map((row) => ({
-      // the indexer's string timestamps aren't ISO, which older Safari rejects
-      transfer: {
-        ...row.transfer,
-        timestamp: new Date(row.transfer.timestamp).toISOString(),
-      },
+      transfer: row.transfer,
       serial: row.serial,
       collection: row.collection,
     }));

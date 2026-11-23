@@ -40,7 +40,7 @@ export const collections = pgTable("collection", {
   id: uuid("id").primaryKey(),
   contract: varchar("contract", { length: 42 }).notNull(),
   createdAt: timestamp("created_at", {
-    mode: "string",
+    mode: "date",
     withTimezone: true,
   }).notNull(),
   slug: varchar("slug", { length: 255 }).notNull(),
@@ -72,11 +72,11 @@ export const objekts = pgTable("objekt", {
   id: varchar("id").primaryKey(),
   owner: varchar("owner", { length: 42 }).notNull(),
   mintedAt: timestamp("minted_at", {
-    mode: "string",
+    mode: "date",
     withTimezone: true,
   }).notNull(),
   receivedAt: timestamp("received_at", {
-    mode: "string",
+    mode: "date",
     withTimezone: true,
   }).notNull(),
   serial: integer("serial").notNull(),
@@ -92,7 +92,7 @@ export const transfers = pgTable("transfer", {
   from: varchar("from", { length: 42 }).notNull(),
   to: varchar("to", { length: 42 }).notNull(),
   timestamp: timestamp("timestamp", {
-    mode: "string",
+    mode: "date",
     withTimezone: true,
   }).notNull(),
   tokenId: integer("token_id").notNull(),
@@ -151,7 +151,7 @@ export const votes = pgTable("vote", {
   chain: chain("chain").notNull().default("abstract"),
   from: text("from").notNull(),
   createdAt: timestamp("created_at", {
-    mode: "string",
+    mode: "date",
     withTimezone: true,
   }).notNull(),
   tokenId: integer("token_id").notNull(),
@@ -281,7 +281,7 @@ export const serialConfirmations = pgTable("serial_confirmation", {
   // web user id, null when seeded from COSMO's own data
   confirmedBy: text("confirmed_by"),
   confirmedAt: timestamp("confirmed_at", {
-    mode: "string",
+    mode: "date",
     withTimezone: true,
   })
     .notNull()

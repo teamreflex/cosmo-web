@@ -460,9 +460,7 @@ export type TradeNotification = NewTradeNotification & {
 /**
  * Inserts trade and listing notifications inside the caller's transaction,
  * skipping recipients that `lockUsers` didn't return (gone, or never
- * locked) and recipients with an active ban. Never call insertNotifications
- * or the pool here: the web client has one connection, which the
- * transaction holds, so the call would wait forever.
+ * locked) and recipients with an active ban.
  */
 export const insertTradeNotifications = Effect.fn("insertTradeNotifications")(
   function* (

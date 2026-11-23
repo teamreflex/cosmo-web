@@ -38,11 +38,11 @@ type GroupInput = {
   now: number;
 };
 
-export const time = (t: ChainItem) => new Date(t.transfer.timestamp).getTime();
+export const time = (t: ChainItem) => t.transfer.timestamp.getTime();
 
 /**
  * Oldest first by (timestamp, id), the reverse of the list's cursor order.
- * Each timestamp is parsed once.
+ * Each timestamp is read once.
  */
 function ascending<T extends ChainItem>(items: T[]) {
   return items

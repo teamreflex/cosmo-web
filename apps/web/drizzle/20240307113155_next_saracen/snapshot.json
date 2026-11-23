@@ -1,6 +1,6 @@
 {
   "type": "base",
-  "version": "9",
+  "version": "10",
   "dialect": "postgres",
   "id": "f4767a6f-9b99-4b24-b21d-f0a3e481e355",
   "prevIds": [
@@ -621,7 +621,6 @@
       "where": null,
       "with": "",
       "method": "btree",
-      "concurrently": false,
       "entityType": "indexes"
     },
     {
@@ -642,7 +641,6 @@
       "where": null,
       "with": "",
       "method": "btree",
-      "concurrently": false,
       "entityType": "indexes"
     },
     {
@@ -663,7 +661,6 @@
       "where": null,
       "with": "",
       "method": "btree",
-      "concurrently": false,
       "entityType": "indexes"
     },
     {
@@ -691,7 +688,6 @@
       "where": null,
       "with": "",
       "method": "btree",
-      "concurrently": false,
       "entityType": "indexes"
     },
     {
@@ -712,7 +708,6 @@
       "where": null,
       "with": "",
       "method": "btree",
-      "concurrently": false,
       "entityType": "indexes"
     },
     {
@@ -733,7 +728,6 @@
       "where": null,
       "with": "",
       "method": "btree",
-      "concurrently": false,
       "entityType": "indexes"
     },
     {
@@ -754,7 +748,6 @@
       "where": null,
       "with": "",
       "method": "btree",
-      "concurrently": false,
       "entityType": "indexes"
     },
     {
@@ -775,7 +768,6 @@
       "where": null,
       "with": "",
       "method": "btree",
-      "concurrently": false,
       "entityType": "indexes"
     },
     {
@@ -796,7 +788,6 @@
       "where": null,
       "with": "",
       "method": "btree",
-      "concurrently": false,
       "entityType": "indexes"
     },
     {
@@ -817,7 +808,6 @@
       "where": null,
       "with": "",
       "method": "btree",
-      "concurrently": false,
       "entityType": "indexes"
     },
     {
@@ -838,7 +828,6 @@
       "where": null,
       "with": "",
       "method": "btree",
-      "concurrently": false,
       "entityType": "indexes"
     },
     {

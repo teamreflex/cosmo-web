@@ -16,8 +16,8 @@
   },
   "dependencies": {
     "@apollo/database": "workspace:*",
-    "@apollo/drizzle-bun-effect": "workspace:*",
     "@effect/platform-bun": "catalog:",
+    "drizzle-orm": "catalog:",
     "effect": "catalog:"
   },
   "devDependencies": {

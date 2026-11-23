@@ -161,9 +161,9 @@ async function fetchFloors(
 
 /**
  * Fetch one page of list entries from the indexer. Entries live in the web
- * database, so they're passed in as a JSON recordset; the indexer then applies
- * the collection filters, sorts and pages them, and joins the collection and
- * serial for just the page's rows.
+ * database, so they're passed in as one typed array per column that `unnest`
+ * zips back into rows; the indexer then applies the collection filters, sorts
+ * and pages them, and joins the collection and serial for just the page's rows.
  */
 async function fetchListPage(
   entries: Pick<
@@ -174,14 +174,6 @@ async function fetchListPage(
   start: number,
 ) {
   const sort = supportedSort(data.sort, indexSorts);
-  const recordset = JSON.stringify(
-    entries.map((e) => ({
-      entry_id: e.id,
-      slug: e.collectionId,
-      token_id: e.tokenId,
-      created_at: e.createdAt,
-    })),
-  );
   const listEntries = indexer.$with("list_entries").as(
     indexer
       .select({
@@ -191,7 +183,12 @@ async function fetchListPage(
         createdAt: sql<string>`created_at`.as("created_at"),
       })
       .from(
-        sql`jsonb_to_recordset(${recordset}::text::jsonb) as e(entry_id uuid, slug text, token_id text, created_at timestamptz)`,
+        sql`unnest(
+          ${sql.param(entries.map((e) => e.id))}::uuid[],
+          ${sql.param(entries.map((e) => e.collectionId))}::text[],
+          ${sql.param(entries.map((e) => e.tokenId))}::text[],
+          ${sql.param(entries.map((e) => e.createdAt))}::timestamptz[]
+        ) as e(entry_id, slug, token_id, created_at)`,
       ),
   );
 

@@ -293,7 +293,7 @@ export const $fetchRevealedVotes = createServerFn({ method: "GET" })
                 id: vote.id,
                 candidateId: vote.candidateId,
                 amount: vote.amount,
-                createdAt: new Date(vote.createdAt).toISOString(),
+                createdAt: vote.createdAt.toISOString(),
               } satisfies Reveal,
             ],
       ),
@@ -334,7 +334,7 @@ export const $fetchRecentVotes = createServerFn({ method: "GET" })
         return votes.map((vote) => ({
           id: vote.id,
           address: vote.from,
-          createdAt: new Date(vote.createdAt).toISOString(),
+          createdAt: vote.createdAt.toISOString(),
           amount: vote.amount,
           username: addressMap.get(addr(vote.from))?.username,
         }));

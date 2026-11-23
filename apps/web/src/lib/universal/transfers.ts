@@ -42,7 +42,7 @@ export type Counterparty = {
  * a batch sent to (or received from) one user. `id` and `timestamp` are the
  * transfer the row is listed at.
  */
-export type TransferRow = { id: string; timestamp: string } & (
+export type TransferRow = { id: string; timestamp: Date } & (
   | {
       kind: "spin";
       spun: TransferObjekt;

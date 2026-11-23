@@ -49,7 +49,7 @@ export const syncTypesenseTask = {
     const collections = yield* indexer.query.collections.findMany({
       where: {
         ...(Option.isSome(previous) && {
-          createdAt: { gt: new Date(previous.value.watermark).toISOString() },
+          createdAt: { gt: new Date(previous.value.watermark) },
         }),
       },
       orderBy: {
@@ -113,7 +113,7 @@ export const syncTypesenseTask = {
                   chunk.map((c) => ({
                     // collection fields
                     ...c,
-                    createdAt: new Date(c.createdAt).getTime(),
+                    createdAt: c.createdAt.getTime(),
                     // custom fields
                     description: descMap.get(c.slug),
                     memberSortOrder: memberSortMap.get(c.member),
@@ -155,7 +155,7 @@ export const syncTypesenseTask = {
                 onNone: () => 0,
                 onSome: ({ watermark }) => watermark,
               })
-            : new Date(newest.createdAt).getTime(),
+            : newest.createdAt.getTime(),
         flagged: flaggedNow,
       }),
     );

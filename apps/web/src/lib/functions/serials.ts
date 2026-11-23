@@ -54,8 +54,7 @@ export const $listSerialConfirmations = createServerFn({ method: "GET" })
     return rows.map((row) => ({
       tokenId: row.tokenId,
       confirmedSerial: row.confirmedSerial,
-      // the indexer schema stores timestamps as Postgres-formatted strings
-      confirmedAt: new Date(row.confirmedAt),
+      confirmedAt: row.confirmedAt,
       objekt:
         row.storedSerial !== null && row.slug !== null
           ? { serial: row.storedSerial, slug: row.slug }

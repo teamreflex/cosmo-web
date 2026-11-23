@@ -79,12 +79,7 @@ async function getHourlyStats(since: Date, until: Date): Promise<RawStats[]> {
     })
     .from(objekts)
     .innerJoin(collections, eq(objekts.collectionId, collections.id))
-    .where(
-      and(
-        gte(objekts.mintedAt, since.toISOString()),
-        lt(objekts.mintedAt, until.toISOString()),
-      ),
-    )
+    .where(and(gte(objekts.mintedAt, since), lt(objekts.mintedAt, until)))
     .groupBy(
       sql`date_trunc('hour', ${objekts.mintedAt})`,
       collections.member,

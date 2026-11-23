@@ -30,8 +30,8 @@ A task that needs a new service adds it to the closed requirement union of `Sche
 ## One connection per database
 
 - The web client has `max: 1`. Every task fiber and the queue worker share it, so the process runs one web statement at a time.
-- `db.transaction` reserves that connection. Any `db` call inside the transaction waits forever for it, so inside a transaction use only `tx`.
-- That is why `insertTradeNotifications(tx, …)` exists beside `insertNotifications()`, which goes through the pool.
+- `db.transaction` holds that connection until it commits or rolls back, so every other web query in the process waits for it.
+- A `db` call inside a transaction runs on the transaction's connection and commits or rolls back with it, because the driver finds the transaction in the fiber's context.
 - Reuse `webDatabaseLayer` everywhere. A second `DatabaseWeb.layer()` call opens a second client ([`docs/tooling.md`](../../docs/tooling.md) explains why).
 - The indexer client also has one connection, so a long indexer job such as `recompute-serials` delays every other indexer read in the process.
 

@@ -441,7 +441,7 @@ async function seed() {
   const collectionValues = SEED_COLLECTIONS.map((collection) => ({
     id: collection.id,
     contract: CONTRACT,
-    createdAt: collection.createdAt,
+    createdAt: new Date(collection.createdAt),
     slug: collection.slug,
     collectionId: collection.collectionId,
     season: collection.season,
@@ -508,8 +508,6 @@ async function seed() {
 
   // 5. Seed objekts (batch insert)
   console.log("🎴 Seeding objekts...");
-  const objektMintedAt = now.toISOString();
-
   // Get max objekt id to increment from
   const maxIdResult = await indexer
     .select({ maxId: sql<string>`COALESCE(MAX(CAST(id AS INTEGER)), 0)` })
@@ -519,8 +517,8 @@ async function seed() {
   const objektValues = SEED_COLLECTIONS.map((collection) => ({
     id: String(nextId++),
     owner: SEED_ADDRESS,
-    mintedAt: objektMintedAt,
-    receivedAt: objektMintedAt,
+    mintedAt: now,
+    receivedAt: now,
     serial: 1,
     transferable: true,
     collectionId: collection.id,

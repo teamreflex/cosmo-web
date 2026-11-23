@@ -71,7 +71,7 @@ export async function fetchProfileCard(
           .select({ at: min(transfers.timestamp) })
           .from(transfers)
           .where(eq(transfers.to, address));
-        const at = row?.at ?? null;
+        const at = row?.at?.toISOString() ?? null;
         return at !== null || known ? at : uncached(at);
       },
     ),

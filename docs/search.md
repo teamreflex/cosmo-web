@@ -55,7 +55,7 @@ imported = some {        imported unchanged, so the retry and the
 - A renamed or de-indexed field fails at query time in the browser, not at type-check time.
 - Fields web only displays, such as image URLs, are `index: false`.
 - Web parses every hit with `collectionDocumentSchema` (`apps/web/src/lib/universal/schema/search.ts`), which lists each field it reads under the indexer column's name. A hit missing one fails the whole search, so documents keep every column under its own name.
-- A hit's `createdAt` is epoch milliseconds, not the row's timestamp string, so a parsed hit is a `CollectionDocument` and never an `IndexedObjekt`.
+- A hit's `createdAt` is epoch milliseconds, not the row's `Date`, so a parsed hit is a `CollectionDocument` and never an `IndexedObjekt`.
 - Typesense leaves out a field whose value is null, whether or not the collection declares it. The schema defaults the nullable fields to null; a new nullable field that web reads needs the same.
 - Documents spread every indexer `collection` column (`...c` in `apps/schedules/src/functions/sync-typesense.ts`), so a column the schema doesn't declare is still stored, unindexed.
 

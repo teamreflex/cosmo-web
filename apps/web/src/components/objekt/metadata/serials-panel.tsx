@@ -178,7 +178,7 @@ type TransferItemProps = {
 };
 
 function TransferItem({ transfer }: TransferItemProps) {
-  const timestamp = new Date(transfer.timestamp).toLocaleString("en-US", {
+  const timestamp = transfer.timestamp.toLocaleString("en-US", {
     month: "short",
     day: "numeric",
     year: "numeric",

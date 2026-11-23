@@ -20,8 +20,7 @@ export function groupByDay(rows: TransferRow[], now: number): TransferDay[] {
 
   const days: Omit<TransferDay, "tally">[] = [];
   for (const row of rows) {
-    const date = new Date(row.timestamp);
-    const key = format(date, "yyyy-MM-dd");
+    const key = format(row.timestamp, "yyyy-MM-dd");
     const last = days.at(-1);
     if (last?.key === key) {
       last.rows.push(row);
@@ -35,9 +34,9 @@ export function groupByDay(rows: TransferRow[], now: number): TransferDay[] {
           ? m.transfer_day_today()
           : key === yesterday
             ? m.transfer_day_yesterday()
-            : format(date, "MMM d, yyyy"),
+            : format(row.timestamp, "MMM d, yyyy"),
       sub: format(
-        date,
+        row.timestamp,
         key === today || key === yesterday ? "EEEE, MMM d, yyyy" : "EEEE",
       ),
       rows: [row],

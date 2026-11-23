@@ -30,7 +30,6 @@ A platform for exploring objekts & gravities from [MODHAUS](https://www.mod-haus
 - `packages/chat`: The chat protocol and access policy
 - `packages/cosmo`: COSMO related types and API functions
 - `packages/database`: `drizzle-orm` schemas for both databases
-- `packages/drizzle-bun-effect`: Effect service for Bun.SQL, derived from `drizzle-orm/effect-postgres`
 - `packages/image`: Mirrors objekt images into R2
 - `packages/lint`: Shared oxlint config
 - `packages/mail`: The SES sender and react-email templates shared by the web and schedules apps

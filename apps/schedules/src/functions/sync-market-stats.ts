@@ -74,15 +74,19 @@ export const syncMarketStatsTask = {
       .groupBy(slug);
 
     /**
-     * The aggregate travels as one jsonb parameter, keyed by collection id
-     * through the slug, and is compared against the indexer's copy there
-     * rather than reading that copy back.
+     * The aggregate travels as one typed array parameter per column, zipped
+     * back into rows by `unnest`, keyed by collection id through the slug, and
+     * is compared against the indexer's copy there rather than reading that
+     * copy back.
      */
     const incoming = sql`(
       select ${collections.id} as "collection_id", i."floorUsd", i."listingCount", i."lastListedAt"
-      from jsonb_to_recordset(${sql.param(stats)}::jsonb) as i(
-        "slug" text, "floorUsd" real, "listingCount" int, "lastListedAt" timestamptz
-      )
+      from unnest(
+        ${sql.param(stats.map((s) => s.slug))}::text[],
+        ${sql.param(stats.map((s) => s.floorUsd))}::real[],
+        ${sql.param(stats.map((s) => s.listingCount))}::int[],
+        ${sql.param(stats.map((s) => s.lastListedAt))}::timestamptz[]
+      ) as i("slug", "floorUsd", "listingCount", "lastListedAt")
       join ${collections} on ${collections.slug} = i."slug"
     ) as incoming`;
 

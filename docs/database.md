@@ -23,10 +23,10 @@ What each `@apollo/database` subpath exports: [packages/database/README.md](../p
 | apps/chat                             | `DatabaseWeb`                                              | -                                                                 | 10                 |
 | apps/indexer                          | -                                                          | TypeORM store (`DB_URL`)                                          |                    |
 
-- apps/web uses the promise driver `drizzle-orm/bun-sql`. The Effect apps use [`@apollo/drizzle-bun-effect`](../packages/drizzle-bun-effect/README.md).
-- Every client sets `application_name` on its URL, so its connections are named in `pg_stat_activity`.
-- A one-connection client can't query through the pool inside its own transaction; the rule is in the Effect conventions of [docs/tooling.md](tooling.md).
-- Locally the pooled URLs go through pgbouncer in transaction mode and the unpooled one straight to Postgres ([docs/tooling.md](tooling.md) lists the ports). Bun SQL prepares every statement, and pgbouncer's `MAX_PREPARED_STATEMENTS` is what lets that work under transaction pooling.
+- apps/web uses the promise driver `drizzle-orm/bun-sql`, because Bun SQL reuses each statement's server-side parse and the Drizzle Postgres driver only reuses `.prepare()`d ones. The Effect apps use the Drizzle Postgres driver's Effect entry, `drizzle-orm/postgres/effect`.
+- Every client names its connections in `pg_stat_activity`: web with `application_name` on its URL, the Effect apps with `applicationName` on the client layer.
+- Inside an Effect transaction, `db` calls join the transaction; the rule is in the Effect conventions of [docs/tooling.md](tooling.md).
+- Locally the pooled URLs go through pgbouncer in transaction mode and the unpooled one straight to Postgres ([docs/tooling.md](tooling.md) lists the ports). Both drivers use named prepared statements there, because the local pgbouncer ports aren't ones the Drizzle Postgres driver detects as a pooler, and pgbouncer's `MAX_PREPARED_STATEMENTS` is what lets that work under transaction pooling.
 
 ## Who writes what
 
@@ -48,6 +48,7 @@ What each `@apollo/database` subpath exports: [packages/database/README.md](../p
 - `drain-outbox` is the exception: it locks `list_drain_cursor` inside its web transaction and then reads the outbox past it, because the cursor lock is what makes each batch apply exactly once ([apps/schedules/CLAUDE.md](../apps/schedules/CLAUDE.md)).
 - Trade rows copy the indexer's collection values (`slug`, `artist`, `member`, `season`, `class`, `on_offline`), so the trade feed filters without crossing databases.
 - `member` and `collection_market_stats` live in the indexer DB although apps/schedules writes them, so the web app's member and market sorts join them to `collection` in one query.
+- Rows read from one database reach a query on the other as one typed array per column, `unnest(${sql.param(ids)}::uuid[], …)`, which the driver encodes natively; `fetchListPage()` and `sync-market-stats` are the pattern.
 
 ## Identifiers across the databases
 
@@ -92,7 +93,7 @@ The repo runs Drizzle 1.0 with the relational query builder v2. For the full ope
 
 - Prefix search on user input: `ilike: prefixPattern(query)` (`apps/web/src/lib/server/util.server.ts`) escapes `%` and `_`.
 - Queries against one database run one after another, never in `Promise.all`, because concurrent queries each take a pooled connection and contend on the same server for little gain. One `db` read and one `indexer` read may run in parallel, as `readTokenStates()` does.
-- Use `db.select()` for joins, aggregates and CTEs. Write raw `sql` only where Drizzle has no builder (`array_agg`, `CASE`, `jsonb_to_recordset`).
+- Use `db.select()` for joins, aggregates and CTEs. Write raw `sql` only where Drizzle has no builder (`array_agg`, `CASE`, `unnest`).
 - Bind arrays with `inArray()` or `arrayOverlaps()`, never by joining values into SQL text.
 - A query meant to use a partial index writes the index's predicate as literal SQL, not bound parameters, because a generic plan can't prove the index's `WHERE` from a parameter. `openListing` in `apps/web/src/lib/server/trades/feed.server.ts` is the pattern.
 - Postgres returns `count`, `sum` and window functions as `bigint`, which bun:sql hands back as a JS `BigInt`. `JSON.stringify` throws on it, and the `sql<number>` annotation converts nothing. Write ``sql<number>`count(*)::int`.mapWith(Number)`` or use Drizzle's `count()` / `$count()`.
@@ -102,7 +103,8 @@ The repo runs Drizzle 1.0 with the relational query builder v2. For the full ope
 
 ## Schema conventions (web DB)
 
-- New timestamp columns use `mode: "date"`, because string mode returns a zoneless string that breaks older Safari. `mode` only affects JS, so changing it needs no migration, but it changes every consumer's type.
+- Timestamp columns use `mode: "date"`. `drizzle-orm/bun-sql` throws on reading a `timestamptz` column in string mode, and string mode's Postgres text breaks older Safari. `mode` only affects JS, so changing it needs no migration, but it changes every consumer's type.
+- A `Date` read from the database becomes an ISO string at a JSON boundary, such as a `remember()` cache without a schema, so wire types that get cached hold `toISOString()` strings, as `Objekt.Token.acquiredAt` does.
 - `createdAt` and `createdTimestamp()` from `@apollo/database/custom` make `timestamp` columns without a time zone, holding UTC. Trades, notifications and `list_drain_cursor` use `timestamptz`.
 - Raw SQL that reads a zoneless column as an instant converts it with `at time zone 'utc'`, as `sync-market-stats` does.
 - CHECK constraints live in the Drizzle schema, never in hand-written SQL, because drizzle-kit only knows what the snapshot holds. Several encode a per-row state machine (`trade_offers_*_chk`, `notifications_subject_chk`, `trade_listing_wants_shape_chk`).

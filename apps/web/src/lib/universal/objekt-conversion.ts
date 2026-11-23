@@ -95,7 +95,7 @@ export namespace Objekt {
       serial: objekt.serial,
       tokenId: Number(objekt.id),
       transferable: objekt.transferable,
-      acquiredAt: objekt.receivedAt,
+      acquiredAt: objekt.receivedAt.toISOString(),
       nonTransferableReason: nonTransferableReason(
         className,
         objekt.transferable,

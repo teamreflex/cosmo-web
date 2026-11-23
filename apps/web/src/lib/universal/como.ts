@@ -8,7 +8,7 @@ function getUtcDaysInMonth(year: number, month: number) {
 
 export type ObjektWithCollection = {
   artistId: string;
-  mintedAt: string;
+  mintedAt: Date;
   amount: number;
 };
 
@@ -49,7 +49,7 @@ export function buildCalendar(
   ];
 
   for (const objekt of objekts) {
-    const mintUtcDay = new Date(objekt.mintedAt).getUTCDate();
+    const mintUtcDay = objekt.mintedAt.getUTCDate();
 
     for (const { year, month } of candidates) {
       const daysInUtcMonth = getUtcDaysInMonth(year, month);

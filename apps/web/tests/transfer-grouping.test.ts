@@ -30,7 +30,7 @@ function transfer(
       hash: `0x${id}`,
       from,
       to,
-      timestamp: new Date(BASE + minute * 60_000).toISOString(),
+      timestamp: new Date(BASE + minute * 60_000),
       tokenId: 1,
       objektId: id,
       collectionId: "collection",

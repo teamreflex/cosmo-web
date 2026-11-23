@@ -19,7 +19,6 @@
     "@apollo/auth": "workspace:*",
     "@apollo/cosmo": "workspace:*",
     "@apollo/database": "workspace:*",
-    "@apollo/drizzle-bun-effect": "workspace:*",
     "@apollo/image": "workspace:*",
     "@apollo/mail": "workspace:*",
     "@apollo/queue": "workspace:*",

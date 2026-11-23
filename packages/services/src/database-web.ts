@@ -1,7 +1,7 @@
 import { relations } from "@apollo/database/web/relations";
-import { make } from "@apollo/drizzle-bun-effect";
-import { SQL } from "bun";
-import { Config, Context, Effect, Layer, Redacted } from "effect";
+import { DrizzlePostgresClient } from "drizzle-orm/postgres/client/effect/node";
+import { makeWithDefaults } from "drizzle-orm/postgres/effect";
+import { Config, Context, Layer } from "effect";
 
 interface DatabaseWebOptions {
   applicationName: string;
@@ -10,30 +10,23 @@ interface DatabaseWebOptions {
 
 export class DatabaseWeb extends Context.Service<DatabaseWeb>()(
   "apollo/Database/Web",
-  {
-    make: (options: DatabaseWebOptions) =>
-      Effect.gen(function* () {
-        const databaseUrl = yield* Config.Redacted("WEB_DATABASE_URL");
-
-        // set application name for pg_stat_activity visibility
-        const url = new URL(Redacted.value(databaseUrl));
-        url.searchParams.set("application_name", options.applicationName);
-
-        // scoped client: the layer finalizer closes the connection on shutdown
-        const client = yield* Effect.acquireRelease(
-          Effect.sync(() => new SQL({ url: url.toString(), max: options.max })),
-          (client) => Effect.promise(() => client.end({ timeout: 5 })),
-        );
-        return yield* make({ client, relations });
-      }),
-  },
+  { make: makeWithDefaults({ relations }) },
 ) {
   /**
-   * Each call builds a new layer, and layers memoize by reference, so an app
-   * declares its layer once and reuses that value everywhere.
+   * Each call builds a new layer with its own pool, and layers memoize by
+   * reference, so an app declares its layer once and reuses that value
+   * everywhere. The pool closes with the layer's scope.
    */
   static readonly layer = (options: DatabaseWebOptions) =>
-    Layer.effect(this, this.make(options));
+    Layer.effect(this, this.make).pipe(
+      Layer.provide(
+        DrizzlePostgresClient.layerConfig({
+          url: Config.Redacted("WEB_DATABASE_URL"),
+          applicationName: Config.succeed(options.applicationName),
+          maxConnections: Config.succeed(options.max),
+        }),
+      ),
+    );
 }
 
 export type WebTx = Parameters<

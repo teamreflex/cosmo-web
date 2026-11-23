@@ -242,7 +242,7 @@ export const recomputeSerialsTask = {
       .where(
         gt(
           objekts.mintedAt,
-          new Date(Date.now() - Duration.toMillis(DAILY_WINDOW)).toISOString(),
+          new Date(Date.now() - Duration.toMillis(DAILY_WINDOW)),
         ),
       )
       .as("minted");
