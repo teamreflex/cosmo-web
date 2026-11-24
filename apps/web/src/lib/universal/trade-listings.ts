@@ -369,11 +369,9 @@ export function listingSize(
  * An open listing as a feed slip shows it. `items` is its pool, empty on a
  * buy listing, `units` how many of them one trade takes for the want rows
  * and payment at their counts or how many units a buy listing pays for
- * (ListingSize), `options` what the claimer can give, one of them, `posted`
- * how many objekts it has ever offered (the pool and the ones that left
- * it), and `free` how many no live trade holds and the poster hasn't
- * locked, which may be fewer than a unit's worth, even 0, while trades or
- * locks hold the rest.
+ * (ListingSize), `options` what the claimer can give, one of them, and
+ * `posted` how many objekts it has ever offered (the pool and the ones that
+ * left it).
  */
 export type ListingSlip = {
   id: string;
@@ -382,7 +380,6 @@ export type ListingSlip = {
   options: ListingOption<ListingFeedWant>[];
   units: ListingSize;
   posted: number;
-  free: number;
 };
 
 /**

@@ -23,7 +23,6 @@ import {
   and,
   type AnyColumn,
   arrayOverlaps,
-  count,
   countDistinct,
   eq,
   exists,
@@ -307,37 +306,12 @@ function lockOf(address: AnyColumn, tokenId: AnyColumn) {
     );
 }
 
-/**
- * How many of the listing's pool objekts are free, as an int: no live trade
- * holds them and the poster hasn't locked them. At most MAX_OFFERED pool
- * rows, each probing both indexes, so it's selected for the rows a page
- * returns and never filters on. `listing` is the listing's columns, aliased
- * or not.
- */
-export function freePoolCount(listing: {
-  id: AnyColumn;
-  fromAddress: AnyColumn;
-}) {
-  return sql<number>`(${qb
-    .select({ free: count() })
-    .from(tradeOfferItems)
-    .where(
-      and(
-        eq(tradeOfferItems.offerId, listing.id),
-        isNull(tradeOfferItems.leftAt),
-        notExists(liveCopyOf(tradeOfferItems.tokenId)),
-        notExists(lockOf(listing.fromAddress, tradeOfferItems.tokenId)),
-      ),
-    )})::int`.mapWith(Number);
-}
-
 const itemListing = alias(tradeOffers, "item_listing");
 
 /**
  * Relational extras on a listing's items saying what holds each back
- * beside the indexer, as freePoolCount() judges it: a live copy of its
- * token in any trade (`inTrade`), and a lock on it by the listing's address
- * (`locked`). Only a pool item (`left_at` null) is judged; one that left
+ * beside the indexer: a live copy of its token in any trade (`inTrade`),
+ * and a lock on it by the listing's address (`locked`). Only a pool item (`left_at` null) is judged; one that left
  * reads false.
  */
 export const poolItemExtras = {

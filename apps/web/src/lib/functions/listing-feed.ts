@@ -3,7 +3,6 @@ import { db } from "@/lib/server/db";
 import { feedbackRepColumns } from "@/lib/server/feedback.server";
 import { authenticatedMiddleware } from "@/lib/server/middlewares";
 import {
-  freePoolCount,
   hydrateListings,
   listingFeedWhere,
   openListing,
@@ -87,8 +86,8 @@ function toPage<T extends { id: string; bumpedAt: Date }>(rows: T[]) {
 
 /**
  * One page of the Listings feed: open listings, most recently posted or
- * bumped first, each with its units and how many of its pool objekts are
- * free, or a buy listing's units its trades hold. The cursor is the
+ * bumped first, each with its units, or a buy listing's units and how
+ * many its trades hold. The cursor is the
  * previous page's last place as that page read it, so a listing bumped,
  * claimed from, edited or withdrawn between pages still marks the place; a
  * bumped one moves to the top of a refetch rather than repeating.
@@ -106,7 +105,6 @@ export const $fetchListingFeed = createServerFn({ method: "GET" })
         fromAddress: true,
       },
       extras: {
-        free: (t) => freePoolCount(t),
         posted: (t) => postedCount(t.id),
         taken: (t) => listingTakenUnits(t),
       },
@@ -132,7 +130,6 @@ export const $fetchListingFeed = createServerFn({ method: "GET" })
         options: listing.options,
         units: listingSize(listing),
         posted: listing.posted,
-        free: listing.free,
       })),
       nextCursor,
     };
@@ -168,7 +165,6 @@ export const $fetchMyListings = createServerFn({ method: "GET" })
       where: { RAW: (t) => inArray(t.id, pageIds(where, data.cursor)) },
       columns: slipColumns.columns,
       extras: {
-        free: (t) => freePoolCount(t),
         posted: (t) => postedCount(t.id),
         taken: (t) => listingTakenUnits(t),
         pendingOffers: (t) => listingTradeCount(t, ["pending"]),
@@ -188,7 +184,6 @@ export const $fetchMyListings = createServerFn({ method: "GET" })
         options: listing.options,
         units: listingSize(listing),
         posted: listing.posted,
-        free: listing.free,
         offers: listing.pendingOffers,
         liveTrades: listing.liveTrades,
       })),
