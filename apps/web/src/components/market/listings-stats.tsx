@@ -36,17 +36,14 @@ export function ListingsStatsStrip({ collection, stats }: StripProps) {
             <FloorChange slug={collection.slug} floorUsd={stats.floorUsd} />
           </span>
         }
-        mono
       />
       <StatCell
         label={m.objekt_metadata_market_price()}
         value={<PriceDisplay usd={stats.medianUsd} />}
-        mono
       />
       <StatCell
         label={m.objekt_metadata_max_price()}
         value={<PriceDisplay usd={stats.maxUsd} />}
-        mono
       />
       <FloorTrend
         collection={collection}

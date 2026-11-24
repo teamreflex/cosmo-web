@@ -131,7 +131,7 @@ export default function PriceHistoryChart({ points }: Props) {
   return (
     <ChartContainer
       config={config}
-      className="aspect-auto h-48 [&_.recharts-cartesian-axis-tick_text]:font-mono"
+      className="aspect-auto h-48 [&_.recharts-xAxis_.recharts-cartesian-axis-tick_text]:font-mono"
     >
       <ComposedChart data={rows} margin={{ left: 0, right: 8, top: 4 }}>
         <defs>
@@ -172,7 +172,7 @@ export default function PriceHistoryChart({ points }: Props) {
                       <span className="text-muted-foreground">
                         {seriesLabel(config, name ?? "")}
                       </span>
-                      <span className="font-mono font-medium text-foreground tabular-nums">
+                      <span className="font-medium text-foreground tabular-nums">
                         {name === "listingCount" ? (
                           Number(value)
                         ) : (

@@ -95,9 +95,7 @@ export function UnitCounts({
           amount: formatAmount(payment.amount * picks.units, payment.currency),
         };
   return (
-    <span
-      className={cn("flex gap-4 font-mono text-xs tabular-nums", className)}
-    >
+    <span className={cn("flex gap-4 text-xs tabular-nums", className)}>
       {(picks.offeredCount > 0 || priced?.side === "from") && (
         <span className="text-amber-700 dark:text-amber-500">
           {sideText(

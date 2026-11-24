@@ -172,7 +172,7 @@ function Count<TQueryKey extends QueryKey>({
   return (
     <div className="flex h-4 items-center gap-2 text-muted-foreground">
       <IconArrowsExchange aria-hidden className="size-4" />
-      <p className="font-mono text-xxs tracking-widest tabular-nums sm:text-xs">
+      <p className="text-xxs tracking-widest tabular-nums sm:text-xs">
         <span aria-hidden>{formatted}</span>
         <span className="sr-only">
           {filtered

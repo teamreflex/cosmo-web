@@ -307,7 +307,7 @@ function OfferSide({
       {payment !== null && (
         <p className="flex items-center gap-2 text-sm">
           <Badge variant="outline">{m.listing_detail_kind_payment()}</Badge>
-          <span className="font-mono font-semibold tabular-nums">
+          <span className="font-semibold tabular-nums">
             {formatAmount(payment.amount, payment.currency)}
           </span>
         </p>

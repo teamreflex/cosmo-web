@@ -57,7 +57,7 @@ export default function PriceHistory({
             {m.objekt_metadata_history_floor_current()}
           </span>
           <div className="flex items-baseline gap-2">
-            <span className="font-mono text-lg font-bold tabular-nums">
+            <span className="text-lg font-bold tabular-nums">
               {floor === undefined ? "—" : <PriceDisplay usd={floor} />}
             </span>
             {first !== undefined &&
@@ -147,7 +147,7 @@ function StatBox({ label, value, className }: StatBoxProps) {
       <span className="truncate text-xxs font-medium tracking-widest text-muted-foreground uppercase">
         {label}
       </span>
-      <span className="truncate font-mono text-xs font-bold tabular-nums @sm:text-sm">
+      <span className="truncate text-xs font-bold tabular-nums @sm:text-sm">
         {value}
       </span>
     </div>

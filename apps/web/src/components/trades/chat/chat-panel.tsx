@@ -416,7 +416,7 @@ function EventMarker({
           <Timestamp
             date={at}
             format={chatTimeFormat}
-            className="font-mono tabular-nums"
+            className="tabular-nums"
           />
           {" · "}
           {line}
@@ -499,7 +499,7 @@ function MessageRow({
             <Timestamp
               date={message.sentAt}
               format={chatTimeFormat}
-              className="font-mono tabular-nums"
+              className="tabular-nums"
             />
           </MessageFooter>
         )}

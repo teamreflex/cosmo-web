@@ -278,9 +278,7 @@ function CountFrom({ stats }: { stats: ListingStats }) {
         message={m.listings_from}
         inputs={{ count: stats.count.toString(), price: price.text }}
         markup={{
-          price: () => (
-            <ApproxPrice price={price} className="font-mono font-bold" />
-          ),
+          price: () => <ApproxPrice price={price} className="font-bold" />,
         }}
       />
     </span>

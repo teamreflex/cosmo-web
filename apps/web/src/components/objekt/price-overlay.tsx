@@ -91,7 +91,7 @@ function PriceContent({ id, badges, label, price }: PriceContentProps) {
       {label && (
         <span className="truncate text-xxs leading-3 opacity-70">{label}</span>
       )}
-      <span className="truncate font-mono text-xs font-bold tabular-nums @[180px]:text-base">
+      <span className="truncate text-xs font-bold tabular-nums @[180px]:text-base">
         {price}
       </span>
     </span>

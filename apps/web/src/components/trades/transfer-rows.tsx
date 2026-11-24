@@ -179,7 +179,7 @@ function PaymentRow({
       {/* a narrow list puts the action under the amount, so a long label never covers it */}
       <div className="flex min-w-0 flex-1 flex-wrap items-center gap-x-3 gap-y-1.5">
         <div className="flex min-w-0 flex-wrap items-baseline gap-x-2 gap-y-0.5">
-          <span className="font-mono font-semibold tabular-nums">
+          <span className="font-semibold tabular-nums">
             {formatAmount(payment.amount, payment.currency)}
           </span>
           {progress.stage === "confirmed" && (

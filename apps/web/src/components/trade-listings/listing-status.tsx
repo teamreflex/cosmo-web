@@ -295,7 +295,7 @@ function OffererState({
     >
       <div className="flex flex-wrap items-center gap-3">
         <ObjektStrip items={picks} />
-        <span className="font-mono text-muted-foreground tabular-nums">
+        <span className="text-muted-foreground tabular-nums">
           {ratioText({ give: picks.length, get: given.length, payment })}
         </span>
         <ObjektStrip items={given} />

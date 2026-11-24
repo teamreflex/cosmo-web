@@ -154,7 +154,6 @@ function PriceInput({ label, ariaLabel, value, onChange }: PriceInputProps) {
         min={0}
         step="any"
         aria-label={ariaLabel}
-        className="font-mono"
         value={value ?? ""}
         onChange={(event) =>
           onChange(

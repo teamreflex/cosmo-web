@@ -17,7 +17,7 @@ export default function PriceDelta({ from, to }: Props) {
   return (
     <span
       className={cn(
-        "rounded-sm px-1.5 font-mono text-xxs font-semibold whitespace-nowrap tabular-nums",
+        "rounded-sm px-1.5 text-xxs font-semibold whitespace-nowrap tabular-nums",
         TONES[direction],
       )}
     >

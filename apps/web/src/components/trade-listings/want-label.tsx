@@ -83,7 +83,7 @@ export function PaymentLabel({
           </span>
         ) : (
           <>
-            <span className="font-mono font-semibold tabular-nums">
+            <span className="font-semibold tabular-nums">
               {formatAmount(payment.amount * units, payment.currency)}
             </span>
             <span className="ms-1.5 text-muted-foreground">

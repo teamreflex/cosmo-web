@@ -110,7 +110,7 @@ export default function SalePriceOverlay({
       collection={collection}
       badges={badges}
       label={
-        <span className="font-mono tabular-nums" title={listed}>
+        <span className="tabular-nums" title={listed}>
           {listed}
         </span>
       }

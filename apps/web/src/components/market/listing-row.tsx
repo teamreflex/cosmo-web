@@ -210,7 +210,7 @@ function Price({ listing }: { listing: CollectionListing }) {
 
   return (
     <div className="flex max-w-full min-w-0 items-baseline gap-1.5">
-      <span className="truncate font-mono text-base font-bold tabular-nums lg:text-lg">
+      <span className="truncate text-base font-bold tabular-nums lg:text-lg">
         {listing.priceUsd === null || listing.currency === currency ? (
           listed
         ) : (
@@ -218,7 +218,7 @@ function Price({ listing }: { listing: CollectionListing }) {
         )}
       </span>
       {listing.priceUsd !== null && listing.currency !== currency && (
-        <span className="truncate font-mono text-xs text-muted-foreground tabular-nums">
+        <span className="truncate text-xs text-muted-foreground tabular-nums">
           {listed}
         </span>
       )}

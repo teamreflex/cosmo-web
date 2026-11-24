@@ -6,7 +6,7 @@ export default function ObjektTotalSlot() {
   return (
     <div
       id="objekt-total"
-      className="flex h-4 items-center font-mono text-xs text-muted-foreground tabular-nums"
+      className="flex h-4 items-center text-xs text-muted-foreground tabular-nums"
     />
   );
 }

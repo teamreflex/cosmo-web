@@ -38,9 +38,7 @@ export function AmountField({
   >) {
   return (
     <span className="flex min-w-0 items-center gap-2">
-      <span className="shrink-0 font-mono text-sm text-muted-foreground">
-        {currency}
-      </span>
+      <span className="shrink-0 text-sm text-muted-foreground">{currency}</span>
       <Input
         {...input}
         inputMode="decimal"
@@ -49,7 +47,7 @@ export function AmountField({
         value={amount}
         onChange={(event) => onChange(event.target.value)}
         className={cn(
-          "h-9 w-24 min-w-14 font-mono font-bold tabular-nums md:w-28",
+          "h-9 w-24 min-w-14 font-bold tabular-nums md:w-28",
           className,
         )}
       />
