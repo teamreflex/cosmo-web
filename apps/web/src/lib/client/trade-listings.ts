@@ -143,6 +143,16 @@ export function objektName(
   return `${attributes.season} ${attributes.member} ${collectionNumber(collection, attributes)}`;
 }
 
+/**
+ * An objekt's name on a chip, member first, "HeeJin Atom02 201Z".
+ */
+export function chipObjektName(
+  collection: Objekt.Collection | null,
+  attributes: ObjektAttributes,
+) {
+  return `${attributes.member} ${attributes.season} ${collectionNumber(collection, attributes)}`;
+}
+
 function collectionNumber(
   collection: Objekt.Collection | null,
   attributes: ObjektAttributes,
@@ -172,23 +182,6 @@ export function offeredNames(
   }
   return [...groups]
     .map(([prefix, numbers]) => `${prefix} ${[...numbers].join(", ")}`)
-    .join(", ");
-}
-
-/**
- * Several offered objekts as the phone card's subtitle: each season once,
- * then its members, "Atom02 · JinSoul, KimLip, Choerry".
- */
-export function offeredMembers(
-  items: readonly { attributes: ObjektAttributes }[],
-) {
-  const seasons = new Map<string, Set<string>>();
-  for (const { attributes } of items) {
-    const members = seasons.get(attributes.season) ?? new Set();
-    seasons.set(attributes.season, members.add(attributes.member));
-  }
-  return [...seasons]
-    .map(([season, members]) => `${season} · ${[...members].join(", ")}`)
     .join(", ");
 }
 
@@ -263,24 +256,14 @@ export function wantLabel(want: ListingFeedWant) {
 /**
  * A want row with its count, "5× Atom02 · ARTMS · First".
  */
-export function wantText(want: ListingFeedWant) {
+function wantText(want: ListingFeedWant) {
   return `${want.count}× ${wantLabel(want)}`;
-}
-
-/**
- * Every want row in posted order, as the phone card's subtitle under how
- * many objekts it asks for: a row asking for one drops its "1×".
- */
-export function wantsCaption(wants: readonly ListingFeedWant[]) {
-  return wants
-    .map((want) => (want.count === 1 ? wantLabel(want) : wantText(want)))
-    .join(", ");
 }
 
 /**
  * Every want row in posted order, as one line.
  */
-export function wantsSummary(wants: readonly ListingFeedWant[]) {
+function wantsSummary(wants: readonly ListingFeedWant[]) {
   return wants.map(wantText).join(", ");
 }
 
@@ -355,7 +338,7 @@ export function joinOptions(phrases: readonly string[]) {
  * reads it, a range by its narrowed values, "Atom02 · KimLip · First", else
  * how many objekts its rows ask for, as Offering titles several.
  */
-export function askingTitle(wants: readonly ListingFeedWant[]) {
+function askingTitle(wants: readonly ListingFeedWant[]) {
   const [only] = wants;
   if (only !== undefined && wants.length === 1) {
     return wantLabel(only);
@@ -401,6 +384,15 @@ export function rangeArtist(
   return only === undefined || others.length > 0
     ? null
     : (toUiArtist(only) ?? null);
+}
+
+/**
+ * The one member a range row narrows to, whose picture and colour its card
+ * shows: every range names that member alone. Null otherwise.
+ */
+export function rangeMember(ranges: readonly RangeFilter[]): string | null {
+  const [only, ...others] = rangesColumn(ranges, (filter) => filter.member);
+  return only === undefined || others.length > 0 ? null : only;
 }
 
 /**

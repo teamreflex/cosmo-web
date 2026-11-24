@@ -16,11 +16,18 @@ const DrawerContext = React.createContext<{ side: Side; modal: boolean }>({
   modal: true,
 });
 
-type DrawerProps = Omit<DrawerPrimitive.Root.Props, "swipeDirection"> & {
+type DrawerProps<Payload = unknown> = Omit<
+  DrawerPrimitive.Root.Props<Payload>,
+  "swipeDirection"
+> & {
   side?: Side;
 };
 
-function Drawer({ side = "bottom", modal = true, ...props }: DrawerProps) {
+function Drawer<Payload>({
+  side = "bottom",
+  modal = true,
+  ...props
+}: DrawerProps<Payload>) {
   return (
     <DrawerContext.Provider value={{ side, modal: modal === true }}>
       <DrawerPrimitive.Root
@@ -33,7 +40,9 @@ function Drawer({ side = "bottom", modal = true, ...props }: DrawerProps) {
   );
 }
 
-function DrawerTrigger({ ...props }: DrawerPrimitive.Trigger.Props) {
+function DrawerTrigger<Payload>({
+  ...props
+}: DrawerPrimitive.Trigger.Props<Payload>) {
   return <DrawerPrimitive.Trigger data-slot="drawer-trigger" {...props} />;
 }
 

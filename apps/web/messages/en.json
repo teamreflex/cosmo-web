@@ -2254,7 +2254,40 @@
   "market_listings_filter_artist": "Artist",
   "market_listings_filter_member": "Member",
   "market_listings_any_artist": "Any artist",
-  "market_listings_range_matches": "{count}× any match",
+  "listing_chip_seasons": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{count} season",
+        "countPlural=other": "{count} seasons"
+      }
+    }
+  ],
+  "listing_chip_classes": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{count} class",
+        "countPlural=other": "{count} classes"
+      }
+    }
+  ],
+  "listing_chip_numbers": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{count} number",
+        "countPlural=other": "{count} numbers"
+      }
+    }
+  ],
+  "listing_chip_more": "+{count}",
+  "listing_chip_more_lines": "+{count} more",
+  "listing_slip_details": "Details",
+  "listing_slip_details_title": "Listing details",
   "market_listings_column_type": "Type",
   "market_listings_column_offering": "Offering",
   "market_listings_column_asking": "Asking",
@@ -2820,7 +2853,6 @@
   "trade_error_payment_method_unaccepted": "That payment method isn't one this listing accepts.",
   "market_listings_sell": "Selling",
   "market_listings_buy": "Buying",
-  "market_listings_payment_on_top": "+ {amount} each trade",
   "market_listings_buying_up_to": "Up to {count}",
   "market_listings_buying_left": "{left} of {max} left",
   "market_listings_buying_all_bought": "All bought",

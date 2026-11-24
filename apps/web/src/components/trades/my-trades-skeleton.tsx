@@ -7,11 +7,12 @@ import {
   ListingSlipFooter,
   Slip,
   SlipDivider,
+  SlipFanCard,
+  SlipFanFrame,
   SlipHalf,
   SlipItem,
   SlipItems,
   SlipList,
-  SlipTile,
   TradeSlipFooter,
 } from "../trade-listings/slip";
 import { Skeleton } from "../ui/skeleton";
@@ -104,24 +105,19 @@ function ListingSlipSkeleton() {
   );
 }
 
-// a tile, then a title line over a detail line
+// a fan's front card, then a line of chips
 function HalfSkeleton({ side }: { side: "give" | "get" }) {
   return (
-    <SlipHalf side={side} thumbs={<SlipTile render={<Skeleton />} />}>
-      <Line className="w-40 max-w-full" />
-      <span className="flex h-4 items-center">
-        <Skeleton className="h-3 w-14" />
-      </span>
+    <SlipHalf
+      side={side}
+      thumbs={
+        <SlipFanFrame count={1}>
+          <SlipFanCard index={0} render={<Skeleton />} />
+        </SlipFanFrame>
+      }
+    >
+      <Skeleton className="h-6 w-40 max-w-full rounded-full" />
     </SlipHalf>
-  );
-}
-
-// a block in a line of text-sm
-function Line({ className }: { className: string }) {
-  return (
-    <span className="flex h-5 min-w-0 items-center">
-      <Skeleton className={cn("h-3.5", className)} />
-    </span>
   );
 }
 

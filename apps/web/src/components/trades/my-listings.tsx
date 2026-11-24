@@ -6,6 +6,7 @@ import { useSuspenseInfiniteQuery } from "@tanstack/react-query";
 import { InfiniteQueryNext } from "../infinite-query-pending";
 import ListingFeedHeader from "../trade-listings/listing-feed-header";
 import { ListingSlipRow } from "../trade-listings/listing-feed-row";
+import ListingPreviews from "../trade-listings/listing-preview";
 import NewListingButton from "../trade-listings/new-listing-button";
 import { SlipItems, SlipList } from "../trade-listings/slip";
 import { tones } from "../trade-listings/state-tones";
@@ -55,6 +56,7 @@ export default function MyListings() {
             </ListingSlipRow>
           ))}
         </SlipItems>
+        <ListingPreviews />
       </SlipList>
       <InfiniteQueryNext
         status={query.status}

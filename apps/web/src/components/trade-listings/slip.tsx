@@ -6,7 +6,8 @@ import type { ComponentProps, ReactNode } from "react";
 /**
  * The parts of a trade slip, shared by the Listings feed, My trades and
  * their skeletons, so a skeleton lays out as its row by construction. Below
- * md a slip is a card of two tinted halves over a footer, from md one line,
+ * md a slip is a card of two tinted halves stacked over a footer, from md
+ * one line,
  * and from lg its variant's columns under a SlipColumnHeader. Nothing here
  * reads a row, so a route's skeleton can import it without the rows.
  */
@@ -92,7 +93,7 @@ export function Slip({
     props: mergeProps<"div">(
       {
         className: cn(
-          "grid grid-cols-[minmax(0,1fr)_0_minmax(0,1fr)] text-sm md:items-center md:gap-x-3.5 md:gap-y-2.5 md:px-4 md:py-3",
+          "grid text-sm md:items-center md:gap-x-3.5 md:gap-y-2.5 md:px-4 md:py-3",
           "max-md:overflow-hidden max-md:rounded-[10px] max-md:border max-md:bg-card",
           columns[variant],
         ),
@@ -126,49 +127,56 @@ export function SlipColumnHeader({
   );
 }
 
+// a phone card stacks what is given over what is got, with the divider between
 const sides = {
-  give: "col-start-1 lg:col-start-2 max-md:bg-teal-700/5 max-md:dark:bg-teal-500/5",
-  get: "col-start-3 lg:col-start-4 max-md:bg-amber-700/5 max-md:dark:bg-amber-500/5",
+  give: "max-md:row-start-1 md:col-start-1 lg:col-start-2 max-md:bg-teal-700/5 max-md:dark:bg-teal-500/5",
+  get: "max-md:row-start-3 md:col-start-3 lg:col-start-4 max-md:bg-amber-700/5 max-md:dark:bg-amber-500/5",
 };
 
 /**
  * One side of the trade, its tiles then its words: what the poster or
- * viewer gives, or what they get, each tinted on a card.
+ * viewer gives, or what they get, each tinted on a card. A phone card puts
+ * `corner` at the half's top end, beside its words.
  */
 export function SlipHalf({
   side,
   label,
   thumbs,
+  corner,
   children,
 }: {
   side: keyof typeof sides;
   /** names the side to a screen reader; a skeleton has none */
   label?: string;
   thumbs: ReactNode;
+  corner?: ReactNode;
   children: ReactNode;
 }) {
   return (
-    <span
+    <div
       className={cn(
-        "row-start-1 flex min-w-0 flex-col items-start gap-2 max-md:p-3 sm:flex-row sm:items-center sm:gap-3 md:gap-2.5",
+        "flex min-w-0 items-center gap-3 max-md:p-3 md:row-start-1 md:gap-2.5",
         sides[side],
       )}
     >
       {label !== undefined && <span className="sr-only">{label}</span>}
       {thumbs}
-      <span className="flex max-w-full min-w-0 flex-col gap-0.5">
-        {children}
-      </span>
-    </span>
+      <div className="flex min-w-0 flex-1 flex-col gap-0.5">{children}</div>
+      {corner !== undefined && (
+        <div className="flex shrink-0 gap-1.5 self-start md:hidden">
+          {corner}
+        </div>
+      )}
+    </div>
   );
 }
 
-// between the halves: a dashed rule on a card, the arrow or ratio from md
+// between the halves: a dashed rule across a phone card, whose arrow or ratio sits on its middle; from md its own column
 export function SlipDivider({ className, ...props }: ComponentProps<"span">) {
   return (
     <span
       className={cn(
-        "relative col-start-2 row-start-1 text-muted-foreground max-md:border-l max-md:border-dashed lg:col-start-3",
+        "relative text-muted-foreground max-md:row-start-2 max-md:border-t max-md:border-dashed md:col-start-2 md:row-start-1 lg:col-start-3",
         className,
       )}
       {...props}
@@ -176,17 +184,55 @@ export function SlipDivider({ className, ...props }: ComponentProps<"span">) {
   );
 }
 
-// an objekt's or a payment's picture, the size of a photocard
-export function SlipTile({
+/**
+ * Where each card of a fan sits, front first: the front card upright, the
+ * ones behind it turned further out.
+ */
+const fanPlacements = [
+  "z-3 top-1.5 left-0",
+  "z-2 top-1 left-1.25 rotate-3",
+  "z-1 top-0.5 left-2.5 rotate-8",
+];
+
+// below md a fan is only as wide as its cards, so a lone card sits by its chips; from md every fan is as wide as three, so a list's chips line up
+const fanWidths = ["max-md:w-8", "max-md:w-9.25", "max-md:w-10.5"];
+
+/**
+ * A fan of up to three photocard-sized cards, `count` of them.
+ */
+export function SlipFanFrame({
+  count,
+  children,
+}: {
+  count: number;
+  children: ReactNode;
+}) {
+  return (
+    <span
+      aria-hidden
+      className={cn(
+        "relative isolate h-15 shrink-0 md:w-12",
+        fanWidths[Math.min(Math.max(count, 1), fanWidths.length) - 1],
+      )}
+    >
+      {children}
+    </span>
+  );
+}
+
+export function SlipFanCard({
+  index,
   render,
   ...props
-}: useRender.ComponentProps<"span">) {
+}: useRender.ComponentProps<"span"> & { index: number }) {
   return useRender({
     defaultTagName: "span",
     props: mergeProps<"span">(
       {
-        className:
-          "aspect-photocard w-13 shrink-0 rounded-[3px] sm:w-11 md:w-9",
+        className: cn(
+          "absolute flex h-12.5 w-8 overflow-hidden rounded-[3px] ring-2 ring-card",
+          fanPlacements[index],
+        ),
       },
       props,
     ),
@@ -195,9 +241,10 @@ export function SlipTile({
 }
 
 /**
- * A listing slip's footer. Below md one line: the end first, then the
- * time, then the type badges at its far end. From md one line of badges,
- * time and end; from lg each takes its column.
+ * A listing slip's footer. Below md one line: the end, then the time, with
+ * room at its far end for the row's Details button; the type badges sit in
+ * the offering half's corner instead (SlipHalf's `corner`). From md one
+ * line of badges, time and end; from lg each takes its column.
  */
 export function ListingSlipFooter({
   types,
@@ -209,9 +256,9 @@ export function ListingSlipFooter({
   end: ReactNode;
 }) {
   return (
-    <span className="col-span-full row-start-2 flex min-w-0 items-center gap-1.5 max-md:border-t max-md:border-dashed max-md:px-3 max-md:py-2 max-md:text-xs md:gap-2 lg:contents">
+    <span className="col-span-full flex min-w-0 items-center gap-1.5 max-md:row-start-4 max-md:border-t max-md:border-dashed max-md:py-2 max-md:pr-24 max-md:pl-3 max-md:text-xs md:row-start-2 md:gap-2 lg:contents">
       <span className="flex items-center gap-2 max-md:contents lg:col-start-1 lg:row-start-1 lg:flex-col lg:items-start lg:gap-1">
-        <span className="flex shrink-0 gap-1.5 max-md:order-2 max-md:ml-auto md:contents">
+        <span className="flex shrink-0 gap-1.5 max-md:hidden md:contents">
           {types}
         </span>
         <span className="shrink-0 text-xs text-muted-foreground max-md:order-1">
@@ -242,7 +289,7 @@ export function TradeSlipFooter({
   time: ReactNode;
 }) {
   return (
-    <span className="col-span-full row-start-2 flex min-w-0 items-center gap-2 max-md:grid max-md:grid-cols-[minmax(0,1fr)_auto] max-md:gap-y-1.5 max-md:border-t max-md:border-dashed max-md:px-3 max-md:py-2 max-md:text-xs lg:contents">
+    <span className="col-span-full flex min-w-0 items-center gap-2 max-md:row-start-4 max-md:grid max-md:grid-cols-[minmax(0,1fr)_auto] max-md:gap-y-1.5 max-md:border-t max-md:border-dashed max-md:px-3 max-md:py-2 max-md:text-xs md:row-start-2 lg:contents">
       <span className="flex max-md:col-start-1 max-md:row-start-2 lg:col-start-1 lg:row-start-1">
         {type}
       </span>
@@ -256,6 +303,27 @@ export function TradeSlipFooter({
       <span className="ml-auto shrink-0 text-xs text-muted-foreground max-md:col-start-2 max-md:row-start-1 lg:col-start-7 lg:row-start-1 lg:ml-0 lg:text-right">
         {time}
       </span>
+    </span>
+  );
+}
+
+/**
+ * A slip's muted second line, truncated with its full text in a tooltip.
+ */
+export function SlipDetail({
+  className,
+  children,
+}: {
+  className?: string;
+  children: string;
+}) {
+  return (
+    <span
+      dir="auto"
+      title={children}
+      className={cn("truncate text-xs text-muted-foreground", className)}
+    >
+      {children}
     </span>
   );
 }

@@ -12,7 +12,7 @@ export default function ListingFeedSkeleton() {
         {Array.from({ length: 8 }).map((_, i) => (
           <Skeleton
             key={i}
-            className="h-44 w-full rounded-[10px] sm:h-29 md:h-23 md:rounded-none md:border-t md:first:border-t-0 lg:h-16"
+            className="h-51.5 w-full rounded-[10px] md:h-30 md:rounded-none md:border-t md:first:border-t-0 lg:h-21"
           />
         ))}
       </div>

@@ -1,6 +1,7 @@
 import { m } from "@/i18n/messages";
 import { formatAmount, partyName } from "@/lib/client/trade-listings";
 import { myTradesQuery } from "@/lib/queries/trades";
+import { itemLines, tradeSideCards } from "@/lib/universal/listing-slip";
 import type {
   MyTradeRow,
   MyTradeSide,
@@ -12,20 +13,19 @@ import { cn } from "@/lib/utils";
 import type { NextStep, TradePart } from "@apollo/trades/lifecycle";
 import type { PaymentStage } from "@apollo/trades/payment";
 import { ParaglideMessage } from "@inlang/paraglide-js-react";
-import { IconArrowsExchange, IconArrowsRightLeft } from "@tabler/icons-react";
+import {
+  IconArrowsExchange,
+  IconArrowsRightLeft,
+  IconArrowsUpDown,
+} from "@tabler/icons-react";
 import { useSuspenseInfiniteQuery } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
 import { Suspense } from "react";
 import { InfiniteQueryNext } from "../infinite-query-pending";
 import Countdown from "../misc/countdown";
 import {
-  OfferingCaption,
-  PaymentTile,
-  SlipDetail,
-  Thumbs,
-} from "../trade-listings/listing-feed-row";
-import {
   Slip,
+  SlipDetail,
   SlipDivider,
   SlipHalf,
   SlipItem,
@@ -33,6 +33,8 @@ import {
   SlipList,
   TradeSlipFooter,
 } from "../trade-listings/slip";
+import { SlipFan } from "../trade-listings/slip-fan";
+import { SlipLines } from "../trade-listings/slip-lines";
 import { tones } from "../trade-listings/state-tones";
 import { Badge } from "../ui/badge";
 import { buttonVariants } from "../ui/button";
@@ -116,15 +118,15 @@ function TradeRow({ row }: { row: MyTradeRow }) {
         <SlipHalf
           side="give"
           label={m.my_trades_column_send()}
-          thumbs={<SideThumbs side={row.send} />}
+          thumbs={<SlipFan cards={tradeSideCards(row.send)} />}
         >
-          <OfferingCaption items={row.send.items} />
+          <SlipLines lines={itemLines(row.send.items, "compact")} size="sm" />
           <PaymentCaption side={row.send} />
         </SlipHalf>
 
         <SlipDivider aria-hidden>
-          <span className="absolute top-13 left-0 z-5 flex size-6 -translate-1/2 items-center justify-center rounded-full border bg-card sm:top-1/2 md:hidden">
-            <IconArrowsRightLeft className="size-3.5" />
+          <span className="absolute top-0 left-1/2 z-5 flex size-6 -translate-1/2 items-center justify-center rounded-full border bg-card md:hidden">
+            <IconArrowsUpDown className="size-3.5" />
           </span>
           <IconArrowsRightLeft className="size-4 max-md:hidden" />
         </SlipDivider>
@@ -132,9 +134,9 @@ function TradeRow({ row }: { row: MyTradeRow }) {
         <SlipHalf
           side="get"
           label={m.my_trades_column_get()}
-          thumbs={<SideThumbs side={row.get} />}
+          thumbs={<SlipFan cards={tradeSideCards(row.get)} />}
         >
-          <OfferingCaption items={row.get.items} />
+          <SlipLines lines={itemLines(row.get.items, "compact")} size="sm" />
           <PaymentCaption side={row.get} />
         </SlipHalf>
 
@@ -165,15 +167,6 @@ function TradeRow({ row }: { row: MyTradeRow }) {
         />
       </Slip>
     </SlipItem>
-  );
-}
-
-// a side's objekts, or its payment's tile when it sends only a payment
-function SideThumbs({ side }: { side: MyTradeSide }) {
-  return side.part === "pay" ? (
-    <PaymentTile payment={side.payment} />
-  ) : (
-    <Thumbs items={side.items} />
   );
 }
 

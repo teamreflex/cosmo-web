@@ -1,7 +1,7 @@
 import { idLink, logTimeFormat, shortId } from "@/components/admin/common";
 import LogPanel from "@/components/admin/log-panel";
 import Countdown from "@/components/misc/countdown";
-import { OfferingCaption } from "@/components/trade-listings/listing-feed-row";
+import { SlipDetail } from "@/components/trade-listings/slip";
 import { tones } from "@/components/trade-listings/state-tones";
 import {
   DisputeBadge,
@@ -12,7 +12,11 @@ import { EndedBadge, PartyAvatar } from "@/components/trades/trade-header";
 import { Badge } from "@/components/ui/badge";
 import { Timestamp } from "@/components/ui/timestamp";
 import { m } from "@/i18n/messages";
-import { partyName } from "@/lib/client/trade-listings";
+import {
+  objektName,
+  offeredNames,
+  partyName,
+} from "@/lib/client/trade-listings";
 import { marketActivityQuery } from "@/lib/queries/market-activity";
 import {
   isNewSince,
@@ -22,6 +26,7 @@ import {
 } from "@/lib/universal/market-activity";
 import type { MyTradeSide, TradePartyName } from "@/lib/universal/trades";
 import { cn } from "@/lib/utils";
+import { formatSerial } from "@apollo/util";
 import { ParaglideMessage } from "@inlang/paraglide-js-react";
 import {
   IconArrowRight,
@@ -323,7 +328,7 @@ function Side({ side }: { side: MyTradeSide }) {
         </span>
       ) : (
         <>
-          <OfferingCaption items={side.items} />
+          <SideObjekts items={side.items} />
           <PaymentCaption side={side} />
         </>
       )}
@@ -368,4 +373,32 @@ function Origin({ row }: { row: MarketActivityRow }) {
         </>
       );
   }
+}
+
+/**
+ * A side's objekts by name: one as its name and serial, several as how many
+ * over their names (offeredNames()).
+ */
+function SideObjekts({ items }: { items: MyTradeSide["items"] }) {
+  const [first] = items;
+  if (first === undefined) return null;
+  return items.length === 1 ? (
+    <>
+      <span dir="auto" className="truncate font-semibold">
+        {objektName(first.collection, first.attributes)}
+      </span>
+      {first.serial !== null && (
+        <span className="font-mono text-xs text-muted-foreground tabular-nums">
+          {formatSerial(first.serial)}
+        </span>
+      )}
+    </>
+  ) : (
+    <>
+      <span className="truncate font-semibold">
+        {m.market_listings_objekts({ count: items.length })}
+      </span>
+      <SlipDetail>{offeredNames(items)}</SlipDetail>
+    </>
+  );
 }

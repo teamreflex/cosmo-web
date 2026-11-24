@@ -2215,7 +2215,37 @@
   "market_listings_filter_artist": "藝人",
   "market_listings_filter_member": "成員",
   "market_listings_any_artist": "任一藝人",
-  "market_listings_range_matches": "{count}× 任一符合條件的",
+  "listing_chip_seasons": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=other": "{count} 個季度"
+      }
+    }
+  ],
+  "listing_chip_classes": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=other": "{count} 個等級"
+      }
+    }
+  ],
+  "listing_chip_numbers": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=other": "{count} 個編號"
+      }
+    }
+  ],
+  "listing_chip_more": "+{count}",
+  "listing_chip_more_lines": "另外 {count} 項",
+  "listing_slip_details": "詳情",
+  "listing_slip_details_title": "刊登詳情",
   "market_listings_column_type": "類型",
   "market_listings_column_offering": "提供",
   "market_listings_column_asking": "徵求",
@@ -2759,7 +2789,6 @@
   "trade_error_payment_method_unaccepted": "這筆刊登不接受該付款方式。",
   "market_listings_sell": "出售",
   "market_listings_buy": "徵求購買",
-  "market_listings_payment_on_top": "+ 每次交換 {amount}",
   "market_listings_buying_up_to": "最多 {count}",
   "market_listings_buying_left": "剩餘 {left}/{max}",
   "market_listings_buying_all_bought": "已全部買入",

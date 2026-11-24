@@ -1,53 +1,47 @@
 import { m } from "@/i18n/messages";
-import { getObjektFrontImageUrl } from "@/lib/client/objekt-util";
 import {
-  askingPriceText,
-  askingTitle,
-  buyingText,
-  formatAmount,
-  joinOptions,
   listingTypesOfListing,
-  objektName,
-  offeredMembers,
-  offeredNames,
-  optionTitle,
-  optionTitles,
-  paymentMethodsText,
   pillRatio,
   posterName,
-  wantLabel,
-  wantsCaption,
-  wantsSummary,
-  withPayment,
 } from "@/lib/client/trade-listings";
-import type { Objekt } from "@/lib/universal/objekt-conversion";
 import {
-  hasRatio,
-  type ListingFeedItem,
-  type ListingFeedRow as FeedRow,
-  type ListingFeedWant,
-  type ListingSlip,
+  askingCards,
+  askingLines,
+  offeringCards,
+  offeringLines,
+} from "@/lib/universal/listing-slip";
+import type {
+  ListingFeedRow as FeedRow,
+  ListingSlip,
 } from "@/lib/universal/trade-listings";
-import { cn } from "@/lib/utils";
-import type { ListingPayment } from "@apollo/trades/payment";
-import { formatSerial } from "@apollo/util";
-import { IconArrowRight, IconArrowsRightLeft } from "@tabler/icons-react";
+import {
+  IconArrowDown,
+  IconArrowRight,
+  IconChevronRight,
+} from "@tabler/icons-react";
 import { Link } from "@tanstack/react-router";
 import type { ReactNode } from "react";
 import FeedbackBadge from "../feedback/feedback-badge";
 import UserAvatar from "../profile/user-avatar";
+import { Button } from "../ui/button";
+import { DrawerTrigger } from "../ui/drawer";
+import { HoverCardTrigger } from "../ui/hover-card";
 import { Timestamp } from "../ui/timestamp";
 import { RatioText } from "./listing-header";
+import {
+  listingDetailsDrawer,
+  listingPreviewCard,
+} from "./listing-preview-handles";
 import ListingTypeBadge from "./listing-type-badge";
-import { RangeTile } from "./range-want";
 import {
   ListingSlipFooter,
   Slip,
   SlipDivider,
   SlipHalf,
   SlipItem,
-  SlipTile,
 } from "./slip";
+import { SlipFan } from "./slip-fan";
+import { SlipLines } from "./slip-lines";
 
 /**
  * A listing in the feed, ending with its poster and their rating.
@@ -76,10 +70,15 @@ export default function ListingFeedRow({ row }: { row: FeedRow }) {
 
 /**
  * A listing as a slip that opens it: two halves over a footer below md,
- * one line from md and the header's columns from lg. A ratio
- * (listingRatio()) replaces the arrow and counts the free objekts; a
- * bundle keeps the arrow. `children` end the slip: after the time on a
- * phone, and in the last column from lg.
+ * one line from md and the header's columns from lg. Each half is a fan of
+ * its first pictures beside lines of chips. A ratio (listingRatio())
+ * replaces the arrow and counts the free objekts; a bundle keeps the
+ * arrow. `children` end the slip: after the time on a phone, and in the
+ * last column from lg.
+ *
+ * Hovering the slip from md opens the list's preview card, and its Details
+ * button opens the list's drawer on a phone (ListingPreviews), each naming
+ * what the lines sum up. The button sits beside the link, not in it.
  *
  * No `content-visibility: auto` here: WebKit never painted rows that first
  * laid out under the market notice's scroll lock.
@@ -91,34 +90,46 @@ export function ListingSlipRow({
   row: ListingSlip;
   children: ReactNode;
 }) {
-  const [first] = row.options;
   const ratio = pillRatio(row, row.posted);
+  const types = listingTypesOfListing(row).map((type) => (
+    <ListingTypeBadge key={type} type={type} />
+  ));
   return (
-    <SlipItem className="transition-colors md:hover:bg-secondary/50">
+    <SlipItem className="relative transition-colors md:hover:bg-secondary/50">
       <Slip
         variant="listing"
-        render={<Link to="/market/listing/$id" params={{ id: row.id }} />}
+        render={
+          <HoverCardTrigger
+            handle={listingPreviewCard}
+            payload={row}
+            delay={500}
+            render={<Link to="/market/listing/$id" params={{ id: row.id }} />}
+          />
+        }
         className="outline-none max-md:hover:bg-secondary max-md:focus-visible:border-ring max-md:focus-visible:bg-secondary md:focus-visible:bg-secondary/50"
       >
-        <OfferingHalf
-          row={row}
-          // the poster's payment prices every option alike
-          payment={first?.payment?.side === "from" ? first.payment : null}
-        />
+        <SlipHalf
+          side="give"
+          label={m.market_listings_column_offering()}
+          thumbs={<SlipFan cards={offeringCards(row)} />}
+          corner={types}
+        >
+          <SlipLines lines={offeringLines(row, "compact")} size="sm" />
+        </SlipHalf>
 
         <SlipDivider className="md:flex md:justify-center">
           {ratio === null ? (
             <>
               <span
                 aria-hidden
-                className="absolute top-13 left-0 z-5 flex size-6 -translate-1/2 items-center justify-center rounded-full border bg-card sm:top-1/2 md:hidden"
+                className="absolute top-0 left-1/2 z-5 flex size-6 -translate-1/2 items-center justify-center rounded-full border bg-card md:hidden"
               >
-                <IconArrowsRightLeft className="size-3.5" />
+                <IconArrowDown className="size-3.5" />
               </span>
               <IconArrowRight aria-hidden className="size-4 max-md:hidden" />
             </>
           ) : (
-            <span className="absolute top-13 left-0 z-5 -translate-1/2 rounded-full border bg-card px-1.5 py-0.5 font-mono text-xxs font-medium whitespace-nowrap text-cosmo tabular-nums sm:top-1/2 md:static md:translate-0 md:border-0 md:bg-cosmo/15 md:px-2 md:text-xs dark:text-cosmo-text">
+            <span className="absolute top-0 left-1/2 z-5 -translate-1/2 rounded-full border bg-card px-1.5 py-0.5 font-mono text-xxs font-medium whitespace-nowrap text-cosmo tabular-nums md:static md:translate-0 md:border-0 md:bg-cosmo/15 md:px-2 md:text-xs dark:text-cosmo-text">
               <RatioText ratio={ratio} />
             </span>
           )}
@@ -127,22 +138,13 @@ export function ListingSlipRow({
         <SlipHalf
           side="get"
           label={m.market_listings_column_asking()}
-          thumbs={<WantThumbs options={row.options} />}
+          thumbs={<SlipFan cards={askingCards(row.options)} />}
         >
-          {first !== undefined && row.options.length === 1 ? (
-            <AskingCaption
-              wants={first.wants}
-              payment={first.payment?.side === "to" ? first.payment : null}
-            />
-          ) : (
-            <OptionsCaption options={row.options} />
-          )}
+          <SlipLines lines={askingLines(row.options)} size="sm" />
         </SlipHalf>
 
         <ListingSlipFooter
-          types={listingTypesOfListing(row).map((type) => (
-            <ListingTypeBadge key={type} type={type} />
-          ))}
+          types={types}
           time={
             <>
               <span className="md:hidden">{"· "}</span>
@@ -156,404 +158,22 @@ export function ListingSlipRow({
           end={children}
         />
       </Slip>
-    </SlipItem>
-  );
-}
 
-/**
- * What the listing offers: its objekts, with the poster's payment on top,
- * or a buy listing's payment alone, priced for each unit over how many it
- * has left and the methods it pays by.
- */
-function OfferingHalf({
-  row,
-  payment,
-}: {
-  row: ListingSlip;
-  payment: ListingPayment | null;
-}) {
-  if (row.units.kind === "buy" && payment !== null) {
-    return (
-      <SlipHalf
-        side="give"
-        label={m.market_listings_column_offering()}
-        thumbs={
-          <Stack
-            thumbs={[
-              { key: "payment", thumb: <PaymentTile payment={payment} /> },
-            ]}
+      {/* at the footer's far end, which leaves it room; the hit area reaches 44px */}
+      <DrawerTrigger
+        handle={listingDetailsDrawer}
+        payload={row}
+        render={
+          <Button
+            variant="outline"
+            size="xs"
+            className="absolute right-2 bottom-1.25 z-10 rounded-full border-cosmo/50 bg-card text-cosmo before:absolute before:-inset-2.5 md:hidden dark:text-cosmo-text"
           />
         }
       >
-        <SlipTitle>{perUnitPriceText(payment)}</SlipTitle>
-        <SlipDetail>
-          {[buyingText(row.units), paymentMethodsText(payment.methods)]
-            .filter((part) => part !== undefined)
-            .join(" · ")}
-        </SlipDetail>
-      </SlipHalf>
-    );
-  }
-  return (
-    <SlipHalf
-      side="give"
-      label={m.market_listings_column_offering()}
-      thumbs={<Thumbs items={row.items} />}
-    >
-      <OfferingCaption
-        items={row.items}
-        free={
-          row.units.kind === "pool" && hasRatio(row.units.unitSize, row.posted)
-            ? row.free
-            : null
-        }
-      />
-      {payment !== null && (
-        <SlipDetail className="font-medium text-foreground">
-          {m.market_listings_payment_on_top({
-            amount: askingPriceText(payment),
-          })}
-        </SlipDetail>
-      )}
-    </SlipHalf>
-  );
-}
-
-/**
- * A buy listing's price for each unit, "$3.00 each", with whether it takes
- * offers, or "Make an offer" with no asking price.
- */
-function perUnitPriceText(payment: ListingPayment) {
-  if (payment.amount === null) return askingPriceText(payment);
-  const price = m.listing_payment_per_unit({
-    amount: formatAmount(payment.amount, payment.currency),
-  });
-  return payment.mode === "price_or_offer"
-    ? `${price} · ${m.listing_payment_open_to_offers_tag()}`
-    : price;
-}
-
-/**
- * One offered objekt reads as its name and serial; several as a count over
- * their seasons and members on a phone, and their names from md. A listing
- * that trades part of its pool at a time leads that line with how many are
- * free (`free`).
- */
-export function OfferingCaption({
-  items,
-  free = null,
-}: {
-  items: ListingFeedItem[];
-  free?: number | null;
-}) {
-  const [first] = items;
-  if (first === undefined) return null;
-  const available =
-    free === null ? null : m.market_listings_available({ count: free });
-  const detail = (text: string) =>
-    available === null ? text : `${available} · ${text}`;
-
-  return items.length === 1 ? (
-    <>
-      <SlipTitle>{objektName(first.collection, first.attributes)}</SlipTitle>
-      {first.serial !== null && (
-        <span className="font-mono text-xs text-muted-foreground tabular-nums">
-          {formatSerial(first.serial)}
-        </span>
-      )}
-    </>
-  ) : (
-    <>
-      <SlipTitle>
-        {m.market_listings_objekts({ count: items.length })}
-      </SlipTitle>
-      <SlipDetail className="md:hidden">
-        {detail(offeredMembers(items))}
-      </SlipDetail>
-      <SlipDetail className="max-md:hidden">
-        {detail(offeredNames(items))}
-      </SlipDetail>
-    </>
-  );
-}
-
-/**
- * Titled as `askingTitle` says, over every row in posted order, with the
- * claimer's payment added to the title. A sale reads as its price over the
- * methods it takes. On a phone one exact row or "any of" row reads as its
- * name alone, its count on the image, and one range as how many matches it
- * takes, "1× any match", on every width; several rows drop each "1×".
- */
-function AskingCaption({
-  wants,
-  payment,
-}: {
-  wants: ListingFeedWant[];
-  payment: ListingPayment | null;
-}) {
-  const price = payment && askingPriceText(payment);
-  const [only] = wants;
-  if (only === undefined) {
-    return payment === null ? null : (
-      <>
-        <SlipTitle>{price}</SlipTitle>
-        <SlipDetail>{paymentMethodsText(payment.methods)}</SlipDetail>
-      </>
-    );
-  }
-  const title =
-    price === null
-      ? askingTitle(wants)
-      : withPayment(askingTitle(wants), price);
-
-  const summary = (
-    <SlipDetail className="max-md:hidden">{wantsSummary(wants)}</SlipDetail>
-  );
-
-  if (wants.length > 1) {
-    return (
-      <>
-        <SlipTitle clamp>{title}</SlipTitle>
-        <SlipDetail className="md:hidden">{wantsCaption(wants)}</SlipDetail>
-        {summary}
-      </>
-    );
-  }
-
-  return (
-    <>
-      <SlipTitle clamp>{title}</SlipTitle>
-      {only.kind === "range" ? (
-        <SlipDetail>
-          {m.market_listings_range_matches({ count: only.count })}
-        </SlipDetail>
-      ) : (
-        summary
-      )}
-    </>
-  );
-}
-
-/**
- * A listing's options as alternatives, each as optionTitles() reads it: "2
- * objekts or $3.00", over each option's rows in posted order.
- */
-function OptionsCaption({ options }: { options: ListingSlip["options"] }) {
-  return (
-    <>
-      <SlipTitle clamp>{joinOptions(optionTitles(options))}</SlipTitle>
-      <SlipDetail className="max-md:hidden">
-        {joinOptions(
-          options.map((option) =>
-            option.wants.length === 0
-              ? optionTitle(option)
-              : wantsSummary(option.wants),
-          ),
-        )}
-      </SlipDetail>
-    </>
-  );
-}
-
-/**
- * A slip's title clamps to two lines on a phone and to one from md.
- */
-function SlipTitle({
-  clamp = false,
-  children,
-}: {
-  clamp?: boolean;
-  children: ReactNode;
-}) {
-  return (
-    <span
-      dir="auto"
-      className={cn(
-        "font-semibold",
-        clamp ? "max-md:line-clamp-2 md:truncate" : "truncate",
-      )}
-    >
-      {children}
-    </span>
-  );
-}
-
-export function SlipDetail({
-  className,
-  children,
-}: {
-  className?: string;
-  children: string;
-}) {
-  return (
-    <span
-      dir="auto"
-      title={children}
-      className={cn("truncate text-xs text-muted-foreground", className)}
-    >
-      {children}
-    </span>
-  );
-}
-
-/**
- * Up to three offered objekts, stacked.
- */
-export function Thumbs({ items }: { items: ListingFeedItem[] }) {
-  return (
-    <Stack
-      thumbs={items.map((item) => ({
-        key: `${item.tokenId}`,
-        thumb: <CollectionThumb collection={item.collection} />,
-      }))}
-    />
-  );
-}
-
-/**
- * Up to three pictures of the want rows, stacked, the first option's
- * first: an exact row's collection, a range's tile in its group's colour,
- * or each of a choice row's collections, a row's first picture carrying
- * its count on a phone when it asks for more than one. An option of the
- * claimer's payment alone has a tile of its currency.
- */
-function WantThumbs({ options }: { options: ListingSlip["options"] }) {
-  // a payment's tile under another's shows its code at its uncovered end
-  const covered = (option: number) =>
-    options
-      .slice(0, option)
-      .some(({ wants, payment }) => wants.length > 0 || payment?.side === "to");
-  return (
-    <Stack
-      thumbs={options.flatMap(({ wants, payment }, option) => [
-        ...(wants.length === 0 && payment?.side === "to"
-          ? [
-              {
-                key: `${option}:payment`,
-                thumb: (
-                  <PaymentTile payment={payment} covered={covered(option)} />
-                ),
-              },
-            ]
-          : []),
-        ...wants.flatMap((want, index) => {
-          const key = `${option}:${index}`;
-          switch (want.kind) {
-            case "exact":
-              return [
-                {
-                  key,
-                  count: want.count,
-                  thumb: <CollectionThumb collection={want.collection} />,
-                },
-              ];
-            case "range":
-              return [
-                {
-                  key,
-                  count: want.count,
-                  thumb: (
-                    <SlipTile
-                      render={
-                        <RangeTile
-                          ranges={want.ranges}
-                          label={wantLabel(want)}
-                        />
-                      }
-                    />
-                  ),
-                },
-              ];
-            case "choice":
-              return want.options.map((choice, position) => ({
-                key: `${key}:${position}`,
-                count: position === 0 ? want.count : 1,
-                thumb: <CollectionThumb collection={choice.collection} />,
-              }));
-          }
-        }),
-      ])}
-    />
-  );
-}
-
-/**
- * A payment's tile, the size of an objekt's: its currency's code.
- */
-export function PaymentTile({
-  payment,
-  covered = false,
-}: {
-  payment: Pick<ListingPayment, "currency">;
-  /** another tile overlaps its start, so the code sits at its end */
-  covered?: boolean;
-}) {
-  // the tint sits on the card's colour, so a tile stacked under it never shows through
-  return (
-    <SlipTile aria-hidden className="flex overflow-hidden bg-card">
-      <span
-        className={cn(
-          "flex flex-1 items-center bg-amber-500/15 font-mono text-xxs font-semibold text-amber-700 dark:text-amber-400",
-          covered ? "justify-end pe-0.5" : "justify-center",
-        )}
-      >
-        {payment.currency}
-      </span>
-    </SlipTile>
-  );
-}
-
-function Stack({
-  thumbs,
-}: {
-  thumbs: { key: string; thumb: ReactNode; count?: number }[];
-}) {
-  return (
-    <span className="isolate flex shrink-0 items-center">
-      {thumbs.slice(0, 3).map(({ key, thumb, count = 1 }, i) => (
-        <span
-          key={key}
-          className={cn(
-            "relative flex shrink-0 rounded-[3px]",
-            i === 0 && "z-3",
-            i === 1 && "z-2 brightness-80",
-            i === 2 && "z-1 brightness-60",
-            i > 0 && "-ml-7 sm:-ml-5.5 md:-ml-3.5",
-            thumbs.length > 1 && "ring-2 ring-card",
-          )}
-        >
-          {thumb}
-          {count > 1 && (
-            <span className="absolute right-0.5 bottom-0.5 rounded-full bg-black px-1 font-mono text-xxs font-semibold text-white tabular-nums md:hidden">
-              ×{count}
-            </span>
-          )}
-        </span>
-      ))}
-    </span>
-  );
-}
-
-function CollectionThumb({
-  collection,
-}: {
-  collection: Objekt.Collection | null;
-}) {
-  return collection === null ? (
-    <SlipTile className="bg-muted" />
-  ) : (
-    <SlipTile
-      className="bg-muted object-cover object-top"
-      render={
-        <img
-          src={getObjektFrontImageUrl(collection, "xs")}
-          alt=""
-          width={44}
-          height={68}
-          loading="lazy"
-          decoding="async"
-        />
-      }
-    />
+        {m.listing_slip_details()}
+        <IconChevronRight data-icon="inline-end" />
+      </DrawerTrigger>
+    </SlipItem>
   );
 }

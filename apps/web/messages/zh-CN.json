@@ -2215,7 +2215,37 @@
   "market_listings_filter_artist": "艺人",
   "market_listings_filter_member": "成员",
   "market_listings_any_artist": "任意艺人",
-  "market_listings_range_matches": "{count}× 任一符合条件的",
+  "listing_chip_seasons": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=other": "{count} 个季度"
+      }
+    }
+  ],
+  "listing_chip_classes": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=other": "{count} 个等级"
+      }
+    }
+  ],
+  "listing_chip_numbers": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=other": "{count} 个编号"
+      }
+    }
+  ],
+  "listing_chip_more": "+{count}",
+  "listing_chip_more_lines": "另外 {count} 项",
+  "listing_slip_details": "详情",
+  "listing_slip_details_title": "挂单详情",
   "market_listings_column_type": "类型",
   "market_listings_column_offering": "提供",
   "market_listings_column_asking": "想要",
@@ -2759,7 +2789,6 @@
   "trade_error_payment_method_unaccepted": "此挂单不接受该付款方式。",
   "market_listings_sell": "出售",
   "market_listings_buy": "求购",
-  "market_listings_payment_on_top": "+ 每次交换 {amount}",
   "market_listings_buying_up_to": "最多 {count}",
   "market_listings_buying_left": "剩余 {left}/{max}",
   "market_listings_buying_all_bought": "已全部买入",

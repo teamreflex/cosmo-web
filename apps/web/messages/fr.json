@@ -2263,7 +2263,40 @@
   "market_listings_filter_artist": "Artiste",
   "market_listings_filter_member": "Membre",
   "market_listings_any_artist": "Tous les artistes",
-  "market_listings_range_matches": "{count}× au choix parmi les correspondances",
+  "listing_chip_seasons": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{count} saison",
+        "countPlural=other": "{count} saisons"
+      }
+    }
+  ],
+  "listing_chip_classes": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{count} classe",
+        "countPlural=other": "{count} classes"
+      }
+    }
+  ],
+  "listing_chip_numbers": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{count} numéro",
+        "countPlural=other": "{count} numéros"
+      }
+    }
+  ],
+  "listing_chip_more": "+{count}",
+  "listing_chip_more_lines": "+{count} de plus",
+  "listing_slip_details": "Détails",
+  "listing_slip_details_title": "Détails de l'annonce",
   "market_listings_column_type": "Type",
   "market_listings_column_offering": "Propose",
   "market_listings_column_asking": "Demande",
@@ -2838,7 +2871,6 @@
   "trade_error_payment_method_unaccepted": "Cette annonce n'accepte pas ce moyen de paiement.",
   "market_listings_sell": "Vente",
   "market_listings_buy": "Achat",
-  "market_listings_payment_on_top": "+ {amount} par échange",
   "market_listings_buying_up_to": "Jusqu'à {count}",
   "market_listings_buying_left": "{left} sur {max} restants",
   "market_listings_buying_all_bought": "Tout acheté",

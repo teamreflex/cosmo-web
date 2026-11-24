@@ -2213,7 +2213,37 @@
   "market_listings_filter_artist": "アーティスト",
   "market_listings_filter_member": "メンバー",
   "market_listings_any_artist": "すべてのアーティスト",
-  "market_listings_range_matches": "{count}× 条件に合うものから",
+  "listing_chip_seasons": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=other": "{count}シーズン"
+      }
+    }
+  ],
+  "listing_chip_classes": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=other": "{count}クラス"
+      }
+    }
+  ],
+  "listing_chip_numbers": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=other": "{count}個の番号"
+      }
+    }
+  ],
+  "listing_chip_more": "+{count}",
+  "listing_chip_more_lines": "他{count}件",
+  "listing_slip_details": "詳細",
+  "listing_slip_details_title": "出品の詳細",
   "market_listings_column_type": "種類",
   "market_listings_column_offering": "出品",
   "market_listings_column_asking": "求めるもの",
@@ -2757,7 +2787,6 @@
   "trade_error_payment_method_unaccepted": "この出品では受け付けていない支払い方法です。",
   "market_listings_sell": "販売",
   "market_listings_buy": "購入",
-  "market_listings_payment_on_top": "+ 1回の取引ごとに{amount}",
   "market_listings_buying_up_to": "最大{count}",
   "market_listings_buying_left": "残り{left}/{max}",
   "market_listings_buying_all_bought": "すべて購入済み",

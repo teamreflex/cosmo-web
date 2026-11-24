@@ -2213,7 +2213,37 @@
   "market_listings_filter_artist": "아티스트",
   "market_listings_filter_member": "멤버",
   "market_listings_any_artist": "모든 아티스트",
-  "market_listings_range_matches": "{count}× 조건에 맞는 것 아무거나",
+  "listing_chip_seasons": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=other": "시즌 {count}개"
+      }
+    }
+  ],
+  "listing_chip_classes": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=other": "클래스 {count}개"
+      }
+    }
+  ],
+  "listing_chip_numbers": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=other": "번호 {count}개"
+      }
+    }
+  ],
+  "listing_chip_more": "+{count}",
+  "listing_chip_more_lines": "외 {count}개",
+  "listing_slip_details": "자세히",
+  "listing_slip_details_title": "글 정보",
   "market_listings_column_type": "종류",
   "market_listings_column_offering": "제시",
   "market_listings_column_asking": "요청",
@@ -2757,7 +2787,6 @@
   "trade_error_payment_method_unaccepted": "이 리스팅에서 받지 않는 결제 수단입니다.",
   "market_listings_sell": "판매",
   "market_listings_buy": "구매",
-  "market_listings_payment_on_top": "+ 교환마다 {amount}",
   "market_listings_buying_up_to": "최대 {count}",
   "market_listings_buying_left": "{max}개 중 {left}개 남음",
   "market_listings_buying_all_bought": "모두 구매함",
