@@ -88,12 +88,12 @@ function MyTradesHeader({ tab }: { tab: MyTradesTab }) {
 
   return (
     <div className="border-b border-border">
-      <div className="container flex flex-wrap items-center gap-x-3 gap-y-3 py-3 md:h-14 md:flex-nowrap md:py-0">
+      <div className="container flex h-14 items-center gap-3">
         <h1 className="font-cosmo text-xl leading-none font-black tracking-wide uppercase md:text-2xl">
           {m.my_trades_title()}
         </h1>
         <Tabs
-          className="max-md:basis-full md:ml-auto"
+          className="ml-auto"
           value={tab}
           onValueChange={(value) => {
             const picked = myTradesTabs.find((option) => option === value);

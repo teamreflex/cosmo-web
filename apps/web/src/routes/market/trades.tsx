@@ -54,11 +54,11 @@ function PendingComponent() {
   return (
     <main className="flex flex-col">
       <div className="border-b border-border">
-        <div className="container flex flex-wrap items-center gap-x-3 gap-y-3 py-3 md:h-14 md:flex-nowrap md:py-0">
+        <div className="container flex h-14 items-center gap-3">
           <h1 className="font-cosmo text-xl leading-none font-black tracking-wide uppercase md:text-2xl">
             {m.my_trades_title()}
           </h1>
-          <Skeleton className="h-10 w-44 rounded-sm max-md:basis-full md:ml-auto md:h-9" />
+          <Skeleton className="ml-auto h-10 w-44 rounded-sm md:h-9" />
         </div>
       </div>
       <div className="container py-4">
