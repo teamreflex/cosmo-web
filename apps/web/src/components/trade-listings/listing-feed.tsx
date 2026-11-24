@@ -34,6 +34,7 @@ import { Skeleton } from "../ui/skeleton";
 import ListingFeedHeader from "./listing-feed-header";
 import ListingFeedRow from "./listing-feed-row";
 import ListingFeedSkeleton from "./listing-feed-skeleton";
+import { SlipItems, SlipList } from "./slip";
 
 type Props<TQueryKey extends QueryKey> = {
   options: UseSuspenseInfiniteQueryOptions<
@@ -118,14 +119,14 @@ function Rows<TQueryKey extends QueryKey>({
   }
 
   return (
-    <div className="flex flex-col text-sm md:overflow-clip md:rounded-lg md:border md:bg-card">
+    <SlipList>
       <ListingFeedHeader />
 
-      <ol className="flex flex-col gap-2.5 md:block">
+      <SlipItems render={<ol />}>
         {rows.map((row) => (
           <ListingFeedRow key={row.id} row={row} />
         ))}
-      </ol>
+      </SlipItems>
 
       <Portal to="#pagination">
         <InfiniteQueryNext
@@ -136,7 +137,7 @@ function Rows<TQueryKey extends QueryKey>({
           fetchNextPage={query.fetchNextPage}
         />
       </Portal>
-    </div>
+    </SlipList>
   );
 }
 

@@ -66,6 +66,27 @@ export function listingTakenUnits(listing: {
 }
 
 /**
+ * How many of a listing's trades are in `statuses`, as an int, found
+ * through the items that keep the listing's id: `pending` counts the offers
+ * waiting on its poster, `liveTradeStatuses` the trades under way.
+ */
+export function listingTradeCount(
+  listing: { id: AnyColumn },
+  statuses: readonly TradeStatus[],
+) {
+  return sql<number>`(${qb
+    .select({ count: sql`count(distinct ${poolTrade.id})` })
+    .from(tradeOfferItems)
+    .innerJoin(poolTrade, eq(poolTrade.id, tradeOfferItems.offerId))
+    .where(
+      and(
+        eq(tradeOfferItems.listingId, listing.id),
+        inArray(poolTrade.status, [...statuses]),
+      ),
+    )})::int`.mapWith(Number);
+}
+
+/**
  * What closing a listing judges (listingClosing in @apollo/trades), as
  * columns of a select from `trade_offers`: how many objekts are still in
  * its pool, whether one of its trades is live, whether one completed, and

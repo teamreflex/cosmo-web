@@ -1,12 +1,12 @@
 import { m } from "@/i18n/messages";
 import { formatAmount, partyName } from "@/lib/client/trade-listings";
 import { myTradesQuery } from "@/lib/queries/trades";
-import {
-  type MyTradeRow,
-  type MyTradeSide,
-  type MyTradesTab,
-  myTradesTabs,
-  type TradeDispute,
+import type {
+  MyTradeRow,
+  MyTradeSide,
+  MyTradesPageTab,
+  MyTradesTab,
+  TradeDispute,
 } from "@/lib/universal/trades";
 import { cn } from "@/lib/utils";
 import type { NextStep, TradePart } from "@apollo/trades/lifecycle";
@@ -14,16 +14,25 @@ import type { PaymentStage } from "@apollo/trades/payment";
 import { ParaglideMessage } from "@inlang/paraglide-js-react";
 import { IconArrowsExchange, IconArrowsRightLeft } from "@tabler/icons-react";
 import { useSuspenseInfiniteQuery } from "@tanstack/react-query";
-import { Link, useNavigate } from "@tanstack/react-router";
+import { Link } from "@tanstack/react-router";
+import { Suspense } from "react";
 import { InfiniteQueryNext } from "../infinite-query-pending";
 import Countdown from "../misc/countdown";
 import {
-  Half,
   OfferingCaption,
   PaymentTile,
   SlipDetail,
   Thumbs,
 } from "../trade-listings/listing-feed-row";
+import {
+  Slip,
+  SlipDivider,
+  SlipHalf,
+  SlipItem,
+  SlipItems,
+  SlipList,
+  TradeSlipFooter,
+} from "../trade-listings/slip";
 import { tones } from "../trade-listings/state-tones";
 import { Badge } from "../ui/badge";
 import { buttonVariants } from "../ui/button";
@@ -35,25 +44,36 @@ import {
   EmptyMedia,
   EmptyTitle,
 } from "../ui/empty";
-import { Tabs, TabsList, TabsTrigger } from "../ui/tabs";
 import { Timestamp } from "../ui/timestamp";
+import MyListings from "./my-listings";
+import MyTradesColumnHeader from "./my-trades-column-header";
+import MyTradesHeader from "./my-trades-header";
+import MyTradesSkeleton from "./my-trades-skeleton";
 import { EndedBadge, PartyAvatar } from "./trade-header";
 
 /**
- * The viewer's live or ended trades, a page at a time. Each row opens its
- * trade.
+ * My trades: the title and tabs over the open tab, which suspends on its own
+ * so the header never waits on a tab's rows. Each tab's boundary is keyed
+ * by the tab, so switching to one not cached yet shows its skeleton rather
+ * than holding the previous tab.
  */
-export default function MyTrades({ tab }: { tab: MyTradesTab }) {
+export default function MyTrades({ tab }: { tab: MyTradesPageTab }) {
   return (
     <>
       <MyTradesHeader tab={tab} />
       <div className="container py-4">
-        <TradeList key={tab} tab={tab} />
+        <Suspense key={tab} fallback={<MyTradesSkeleton tab={tab} />}>
+          {tab === "listings" ? <MyListings /> : <TradeList tab={tab} />}
+        </Suspense>
       </div>
     </>
   );
 }
 
+/**
+ * The viewer's live or ended trades, a page at a time. Each row opens its
+ * trade.
+ */
 function TradeList({ tab }: { tab: MyTradesTab }) {
   const query = useSuspenseInfiniteQuery(myTradesQuery(tab));
   const rows = query.data.pages.flatMap((page) => page.rows);
@@ -61,14 +81,14 @@ function TradeList({ tab }: { tab: MyTradesTab }) {
   if (rows.length === 0) return <MyTradesEmpty tab={tab} />;
   return (
     <>
-      <div className="flex flex-col text-sm md:overflow-clip md:rounded-lg md:border md:bg-card">
-        <ColumnHeader tab={tab} />
-        <ul className="flex flex-col gap-2.5 md:block md:*:first:border-t-0">
+      <SlipList>
+        <MyTradesColumnHeader tab={tab} />
+        <SlipItems>
           {rows.map((row) => (
             <TradeRow key={row.id} row={row} />
           ))}
-        </ul>
-      </div>
+        </SlipItems>
+      </SlipList>
       <InfiniteQueryNext
         status={query.status}
         hasNextPage={query.hasNextPage}
@@ -81,149 +101,70 @@ function TradeList({ tab }: { tab: MyTradesTab }) {
 }
 
 /**
- * The title and the tabs, which keep their place in the URL.
- */
-function MyTradesHeader({ tab }: { tab: MyTradesTab }) {
-  const navigate = useNavigate();
-
-  return (
-    <div className="border-b border-border">
-      <div className="container flex h-14 items-center gap-3">
-        <h1 className="font-cosmo text-xl leading-none font-black tracking-wide uppercase md:text-2xl">
-          {m.my_trades_title()}
-        </h1>
-        <Tabs
-          className="ml-auto"
-          value={tab}
-          onValueChange={(value) => {
-            const picked = myTradesTabs.find((option) => option === value);
-            if (picked !== undefined) {
-              void navigate({
-                to: "/market/trades",
-                search: { tab: picked },
-              });
-            }
-          }}
-        >
-          <TabsList aria-label={m.my_trades_tabs()} className="max-md:h-10">
-            <TabsTrigger value="active">{m.my_trades_tab_active()}</TabsTrigger>
-            <TabsTrigger value="finished">
-              {m.my_trades_tab_finished()}
-            </TabsTrigger>
-          </TabsList>
-        </Tabs>
-      </div>
-    </div>
-  );
-}
-
-/**
- * From lg: type, you send, arrow, you get, status, with, time, the fixed
- * columns narrower until xl so a single objekt's name and number fit. Below
- * lg a row is a trade slip like the Listings feed's.
- */
-const columns =
-  "lg:grid-cols-[64px_minmax(0,1fr)_20px_minmax(0,1fr)_150px_114px_96px] xl:grid-cols-[72px_minmax(0,1fr)_20px_minmax(0,1fr)_150px_160px_100px]";
-
-function ColumnHeader({ tab }: { tab: MyTradesTab }) {
-  return (
-    <div
-      aria-hidden
-      className={cn(
-        "sticky top-14 z-20 hidden gap-x-3.5 border-b bg-card/90 px-4 py-2 text-xs font-medium tracking-wide text-muted-foreground backdrop-blur-lg lg:grid",
-        columns,
-      )}
-    >
-      <span>{m.my_trades_column_type()}</span>
-      <span>{m.my_trades_column_send()}</span>
-      <span />
-      <span>{m.my_trades_column_get()}</span>
-      <span>{m.my_trades_column_status()}</span>
-      <span>{m.my_trades_column_with()}</span>
-      <span className="text-right">
-        {tab === "active"
-          ? m.my_trades_column_time()
-          : m.my_trades_column_ended()}
-      </span>
-    </div>
-  );
-}
-
-/**
  * Laid out as a Listings feed row, with the tokens each side sends. Below
  * md the footer holds the other party and the time, with the type and the
  * status under them.
  */
 function TradeRow({ row }: { row: MyTradeRow }) {
   return (
-    <li className="transition-colors md:border-t md:border-border/60 md:hover:bg-secondary/50">
-      <Link
-        to="/trade/$id"
-        params={{ id: row.id }}
-        className={cn(
-          "grid grid-cols-[minmax(0,1fr)_0_minmax(0,1fr)] text-sm outline-none md:grid-cols-[minmax(0,1fr)_16px_minmax(0,1fr)] md:items-center md:gap-x-3.5 md:gap-y-2.5 md:px-4 md:py-3 md:focus-visible:bg-secondary/50",
-          columns,
-          "max-md:overflow-hidden max-md:rounded-[10px] max-md:border max-md:bg-card max-md:hover:bg-secondary max-md:focus-visible:border-ring max-md:focus-visible:bg-secondary",
-        )}
+    <SlipItem className="transition-colors md:hover:bg-secondary/50">
+      <Slip
+        variant="trade"
+        render={<Link to="/trade/$id" params={{ id: row.id }} />}
+        className="outline-none max-md:hover:bg-secondary max-md:focus-visible:border-ring max-md:focus-visible:bg-secondary md:focus-visible:bg-secondary/50"
       >
-        <Half
+        <SlipHalf
+          side="give"
           label={m.my_trades_column_send()}
           thumbs={<SideThumbs side={row.send} />}
-          className="col-start-1 max-md:bg-teal-700/5 lg:col-start-2 max-md:dark:bg-teal-500/5"
         >
           <OfferingCaption items={row.send.items} />
           <PaymentCaption side={row.send} />
-        </Half>
+        </SlipHalf>
 
-        <span
-          aria-hidden
-          className="relative col-start-2 row-start-1 text-muted-foreground max-md:border-l max-md:border-dashed lg:col-start-3"
-        >
+        <SlipDivider aria-hidden>
           <span className="absolute top-13 left-0 z-5 flex size-6 -translate-1/2 items-center justify-center rounded-full border bg-card sm:top-1/2 md:hidden">
             <IconArrowsRightLeft className="size-3.5" />
           </span>
           <IconArrowsRightLeft className="size-4 max-md:hidden" />
-        </span>
+        </SlipDivider>
 
-        <Half
+        <SlipHalf
+          side="get"
           label={m.my_trades_column_get()}
           thumbs={<SideThumbs side={row.get} />}
-          className="col-start-3 max-md:bg-amber-700/5 lg:col-start-4 max-md:dark:bg-amber-500/5"
         >
           <OfferingCaption items={row.get.items} />
           <PaymentCaption side={row.get} />
-        </Half>
+        </SlipHalf>
 
-        <span className="col-span-full row-start-2 flex min-w-0 items-center gap-2 max-md:grid max-md:grid-cols-[minmax(0,1fr)_auto] max-md:gap-y-1.5 max-md:border-t max-md:border-dashed max-md:px-3 max-md:py-2 max-md:text-xs lg:contents">
-          <span className="flex max-md:col-start-1 max-md:row-start-2 lg:col-start-1 lg:row-start-1">
+        <TradeSlipFooter
+          type={
             <Badge variant="outline">
               {row.listingId === null
                 ? m.my_trades_type_offer()
                 : m.my_trades_type_listing()}
             </Badge>
-          </span>
-          {/* a long name gives way rather than wrapping the line */}
-          <span className="flex max-w-48 min-w-0 shrink-0 max-md:col-start-2 max-md:row-start-2 max-md:justify-self-end lg:col-start-5 lg:row-start-1 lg:max-w-none">
-            <Status row={row} />
-          </span>
-          <span className="flex min-w-0 items-center gap-1.5 max-md:col-start-1 max-md:row-start-1 lg:col-start-6 lg:row-start-1">
-            <PartyAvatar
-              party={row.counterparty}
-              className="size-4.5 text-xxs **:p-0.5 md:size-6"
-            />
-            <span
-              className="truncate font-medium"
-              title={partyName(row.counterparty)}
-            >
-              {partyName(row.counterparty)}
-            </span>
-          </span>
-          <span className="ml-auto shrink-0 text-xs text-muted-foreground max-md:col-start-2 max-md:row-start-1 lg:col-start-7 lg:row-start-1 lg:ml-0 lg:text-right">
-            <Time row={row} />
-          </span>
-        </span>
-      </Link>
-    </li>
+          }
+          status={<Status row={row} />}
+          party={
+            <>
+              <PartyAvatar
+                party={row.counterparty}
+                className="size-4.5 text-xxs **:p-0.5 md:size-6"
+              />
+              <span
+                className="truncate font-medium"
+                title={partyName(row.counterparty)}
+              >
+                {partyName(row.counterparty)}
+              </span>
+            </>
+          }
+          time={<Time row={row} />}
+        />
+      </Slip>
+    </SlipItem>
   );
 }
 

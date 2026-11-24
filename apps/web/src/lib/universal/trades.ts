@@ -148,9 +148,13 @@ export type TradeViewer =
   | { kind: "party"; side: TradeSide }
   | { kind: "staff"; report: { id: string; status: ReportStatus } | null };
 
-// the My trades page's tabs: live trades, and those that have ended
+// the My trades tabs that list trades: live trades, and those that have ended
 export const myTradesTabs = ["active", "finished"] as const;
 export type MyTradesTab = (typeof myTradesTabs)[number];
+
+// every My trades tab: the trade tabs, then the viewer's open listings
+export const myTradesPageTabs = [...myTradesTabs, "listings"] as const;
+export type MyTradesPageTab = (typeof myTradesPageTabs)[number];
 
 /**
  * One side of a trade in a My trades row: the objekts it sends, as the

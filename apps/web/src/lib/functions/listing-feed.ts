@@ -1,72 +1,109 @@
 import { toPublicUser } from "@/lib/server/auth.server";
 import { db } from "@/lib/server/db";
 import { feedbackRepColumns } from "@/lib/server/feedback.server";
+import { authenticatedMiddleware } from "@/lib/server/middlewares";
 import {
   freePoolCount,
   hydrateListings,
   listingFeedWhere,
+  openListing,
   postedCount,
   storedWants,
 } from "@/lib/server/trades/feed.server";
 import { toFeedbackRep } from "@/lib/universal/feedback";
 import {
+  type ListingFeedCursor,
   listingFeedInputSchema,
   listingFeedTotalInputSchema,
+  myListingsInputSchema,
 } from "@/lib/universal/schema/listing-feed";
 import {
   type ListingFeedPage,
   listingSize,
+  type MyListingsPage,
 } from "@/lib/universal/trade-listings";
 import { tradeOffers } from "@apollo/database/web/schema";
-import { listingTakenUnits } from "@apollo/database/web/sql";
+import { listingTakenUnits, listingTradeCount } from "@apollo/database/web/sql";
+import { liveTradeStatuses } from "@apollo/database/web/types";
 import { createServerFn } from "@tanstack/react-start";
-import { and, desc, inArray, sql } from "drizzle-orm";
+import { and, desc, eq, inArray, type SQL, sql } from "drizzle-orm";
 
 const PAGE_SIZE = 30;
 
 /**
+ * The ids of one page of the listings `where` matches, most recently posted
+ * or bumped first, keyset-paged on `(bumped_at, id)` after the cursor. It
+ * reads one row past the page's size to say whether there's more.
+ */
+function pageIds(
+  where: SQL | undefined,
+  cursor: ListingFeedCursor | undefined,
+) {
+  return db
+    .select({ id: tradeOffers.id })
+    .from(tradeOffers)
+    .where(
+      cursor === undefined
+        ? where
+        : and(
+            where,
+            sql`(${tradeOffers.bumpedAt}, ${tradeOffers.id}) < (${sql.param(
+              cursor.bumpedAt,
+              tradeOffers.bumpedAt,
+            )}, ${cursor.id})`,
+          ),
+    )
+    .orderBy(desc(tradeOffers.bumpedAt), desc(tradeOffers.id))
+    .limit(PAGE_SIZE + 1);
+}
+
+// the columns and relations every listing slip reads
+const slipColumns = {
+  columns: {
+    id: true,
+    createdAt: true,
+    bumpedAt: true,
+    unitSize: true,
+    maxUnits: true,
+    paymentSide: true,
+    paymentMethods: true,
+    offers: true,
+  },
+  with: {
+    items: { where: { leftAt: { isNull: true } }, orderBy: { id: "asc" } },
+    wants: storedWants,
+  },
+} as const;
+
+/**
+ * Cuts the extra row off a page read through pageIds(), and the cursor
+ * after its last row when that row was there.
+ */
+function toPage<T extends { id: string; bumpedAt: Date }>(rows: T[]) {
+  const page = rows.slice(0, PAGE_SIZE);
+  const last = rows.length > PAGE_SIZE ? page.at(-1) : undefined;
+  return { page, nextCursor: last && { bumpedAt: last.bumpedAt, id: last.id } };
+}
+
+/**
  * One page of the Listings feed: open listings, most recently posted or
- * bumped first, keyset-paged on `(bumped_at, id)`, each with its units
- * and how many of its pool objekts are free, or a buy listing's units its
- * trades hold, counted for the page's rows only. The cursor is the previous page's last place as that page read it,
- * so a listing bumped, claimed from, edited or withdrawn between pages
- * still marks the place; a bumped one moves to the top of a refetch rather
- * than repeating. The page reads one row past its size to say whether
- * there's more.
+ * bumped first, each with its units and how many of its pool objekts are
+ * free, or a buy listing's units its trades hold. The cursor is the
+ * previous page's last place as that page read it, so a listing bumped,
+ * claimed from, edited or withdrawn between pages still marks the place; a
+ * bumped one moves to the top of a refetch rather than repeating.
  */
 export const $fetchListingFeed = createServerFn({ method: "GET" })
   .validator(listingFeedInputSchema)
   .handler(async ({ data }): Promise<ListingFeedPage> => {
-    const where = listingFeedWhere(data);
-    const pageIds = db
-      .select({ id: tradeOffers.id })
-      .from(tradeOffers)
-      .where(
-        data.cursor === undefined
-          ? where
-          : and(
-              where,
-              sql`(${tradeOffers.bumpedAt}, ${tradeOffers.id}) < (${sql.param(
-                data.cursor.bumpedAt,
-                tradeOffers.bumpedAt,
-              )}, ${data.cursor.id})`,
-            ),
-      )
-      .orderBy(desc(tradeOffers.bumpedAt), desc(tradeOffers.id))
-      .limit(PAGE_SIZE + 1);
     const rows = await db.query.tradeOffers.findMany({
-      where: { RAW: (t) => inArray(t.id, pageIds) },
+      where: {
+        RAW: (t) => inArray(t.id, pageIds(listingFeedWhere(data), data.cursor)),
+      },
       columns: {
-        id: true,
-        createdAt: true,
-        bumpedAt: true,
+        ...slipColumns.columns,
         fromUserId: true,
         fromAddress: true,
-        unitSize: true,
-        maxUnits: true,
-        paymentSide: true,
-        paymentMethods: true,
-        offers: true,
       },
       extras: {
         free: (t) => freePoolCount(t),
@@ -74,17 +111,14 @@ export const $fetchListingFeed = createServerFn({ method: "GET" })
         taken: (t) => listingTakenUnits(t),
       },
       with: {
-        items: { where: { leftAt: { isNull: true } }, orderBy: { id: "asc" } },
-        wants: storedWants,
+        ...slipColumns.with,
         fromUser: true,
         fromCosmo: { columns: { username: true } },
         fromStats: { columns: feedbackRepColumns },
       },
       orderBy: { bumpedAt: "desc", id: "desc" },
     });
-    const page = rows.slice(0, PAGE_SIZE);
-    const last = rows.length > PAGE_SIZE ? page.at(-1) : undefined;
-
+    const { page, nextCursor } = toPage(rows);
     const { listings } = await hydrateListings(page);
 
     return {
@@ -100,7 +134,7 @@ export const $fetchListingFeed = createServerFn({ method: "GET" })
         posted: listing.posted,
         free: listing.free,
       })),
-      nextCursor: last && { bumpedAt: last.bumpedAt, id: last.id },
+      nextCursor,
     };
   });
 
@@ -115,4 +149,49 @@ export const $fetchListingFeedTotal = createServerFn({ method: "GET" })
       .from(tradeOffers)
       .where(listingFeedWhere(data));
     return row?.total ?? 0;
+  });
+
+/**
+ * The caller's open listings for My trades, paged as the feed is, each
+ * with the pending offers waiting on them and the trades from it under
+ * way. A poster's open listings go through `trade_offers_from_user_idx`.
+ */
+export const $fetchMyListings = createServerFn({ method: "GET" })
+  .validator(myListingsInputSchema)
+  .middleware([authenticatedMiddleware])
+  .handler(async ({ data, context }): Promise<MyListingsPage> => {
+    const where = and(
+      eq(tradeOffers.fromUserId, context.session.user.id),
+      openListing,
+    );
+    const rows = await db.query.tradeOffers.findMany({
+      where: { RAW: (t) => inArray(t.id, pageIds(where, data.cursor)) },
+      columns: slipColumns.columns,
+      extras: {
+        free: (t) => freePoolCount(t),
+        posted: (t) => postedCount(t.id),
+        taken: (t) => listingTakenUnits(t),
+        pendingOffers: (t) => listingTradeCount(t, ["pending"]),
+        liveTrades: (t) => listingTradeCount(t, liveTradeStatuses),
+      },
+      with: slipColumns.with,
+      orderBy: { bumpedAt: "desc", id: "desc" },
+    });
+    const { page, nextCursor } = toPage(rows);
+    const { listings } = await hydrateListings(page);
+
+    return {
+      rows: listings.map((listing) => ({
+        id: listing.id,
+        createdAt: listing.createdAt,
+        items: listing.items,
+        options: listing.options,
+        units: listingSize(listing),
+        posted: listing.posted,
+        free: listing.free,
+        offers: listing.pendingOffers,
+        liveTrades: listing.liveTrades,
+      })),
+      nextCursor,
+    };
   });

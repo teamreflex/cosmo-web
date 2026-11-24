@@ -73,15 +73,15 @@ Apollo matches people who want to swap objekts and records each swap, but never 
 
 ## Files in this folder
 
-| File                                             | Read it when you change                                                                                                           |
-| ------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------- |
-| [data-model.md](data-model.md)                   | the trade tables, sides, items, wants, units, `updated_at`                                                                        |
-| [listings.md](listings.md)                       | posting, editing, bumping, withdrawing or closing a listing, the composer, the feed, the listing page, claims, offers on listings |
-| [offers.md](offers.md)                           | direct offers, counters, offer windows, what a refusal may reveal                                                                 |
-| [lifecycle.md](lifecycle.md)                     | trade statuses, party actions, ending a trade, timers' decisions, disputes, bans                                                  |
-| [drain.md](drain.md)                             | what an on-chain transfer means for a trade, listing or offer                                                                     |
-| [feedback.md](feedback.md)                       | claim caps, listing limits, rate limits, ratings and notices                                                                      |
-| [notification-emails.md](notification-emails.md) | which notifications are emailed, the opt-out bits, the email task's claim, release and cooldown                                   |
+| File                                             | Read it when you change                                                                                                                                    |
+| ------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [data-model.md](data-model.md)                   | the trade tables, sides, items, wants, units, `updated_at`                                                                                                 |
+| [listings.md](listings.md)                       | posting, editing, bumping, withdrawing or closing a listing, the composer, the feed, My trades' Listings tab, the listing page, claims, offers on listings |
+| [offers.md](offers.md)                           | direct offers, counters, offer windows, what a refusal may reveal                                                                                          |
+| [lifecycle.md](lifecycle.md)                     | trade statuses, party actions, ending a trade, timers' decisions, disputes, bans                                                                           |
+| [drain.md](drain.md)                             | what an on-chain transfer means for a trade, listing or offer                                                                                              |
+| [feedback.md](feedback.md)                       | claim caps, listing limits, rate limits, ratings and notices                                                                                               |
+| [notification-emails.md](notification-emails.md) | which notifications are emailed, the opt-out bits, the email task's claim, release and cooldown                                                            |
 
 ## Where to start
 

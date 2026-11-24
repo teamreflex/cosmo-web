@@ -25,8 +25,9 @@ import type { Objekt } from "@/lib/universal/objekt-conversion";
 import {
   hasRatio,
   type ListingFeedItem,
-  type ListingFeedRow as Row,
+  type ListingFeedRow as FeedRow,
   type ListingFeedWant,
+  type ListingSlip,
 } from "@/lib/universal/trade-listings";
 import { cn } from "@/lib/utils";
 import type { ListingType } from "@apollo/trades/listing";
@@ -39,35 +40,67 @@ import FeedbackBadge from "../feedback/feedback-badge";
 import UserAvatar from "../profile/user-avatar";
 import { Badge } from "../ui/badge";
 import { Timestamp } from "../ui/timestamp";
-import { listingFeedColumns } from "./listing-feed-columns";
 import { RatioText } from "./listing-header";
 import { RangeTile } from "./range-want";
-
-type Props = {
-  row: Row;
-};
+import {
+  ListingSlipFooter,
+  Slip,
+  SlipDivider,
+  SlipHalf,
+  SlipItem,
+  SlipTile,
+} from "./slip";
 
 /**
- * A listing in the feed: a two-halved trade slip below md, one line from
- * md and the header's columns from lg. A ratio (listingRatio()) replaces
- * the arrow and counts the free objekts; a bundle keeps the arrow.
+ * A listing in the feed, ending with its poster and their rating.
+ */
+export default function ListingFeedRow({ row }: { row: FeedRow }) {
+  return (
+    <ListingSlipRow row={row}>
+      {row.poster === null ? (
+        <UserAvatar deleted className="size-4.5 text-xxs md:size-6" />
+      ) : (
+        <UserAvatar
+          username={row.cosmoUsername ?? row.poster.username}
+          className="size-4.5 text-xxs **:p-0.5 md:size-6"
+        />
+      )}
+      {/* the rating follows the name, and sits under it in its lg column */}
+      <span className="flex min-w-0 items-baseline gap-1.5 lg:flex-col lg:gap-0">
+        <span dir="auto" className="max-w-full min-w-0 truncate font-medium">
+          {posterName(row)}
+        </span>
+        <FeedbackBadge variant="compact" rep={row.rep} narrow />
+      </span>
+    </ListingSlipRow>
+  );
+}
+
+/**
+ * A listing as a slip that opens it: two halves over a footer below md,
+ * one line from md and the header's columns from lg. A ratio
+ * (listingRatio()) replaces the arrow and counts the free objekts; a
+ * bundle keeps the arrow. `children` end the slip: after the time on a
+ * phone, and in the last column from lg.
  *
  * No `content-visibility: auto` here: WebKit never painted rows that first
  * laid out under the market notice's scroll lock.
  */
-export default function ListingFeedRow({ row }: Props) {
+export function ListingSlipRow({
+  row,
+  children,
+}: {
+  row: ListingSlip;
+  children: ReactNode;
+}) {
   const [first] = row.options;
   const ratio = pillRatio(row, row.posted);
   return (
-    <li className="transition-colors md:border-t md:border-border/60 md:first:border-t-0 md:hover:bg-secondary/50">
-      <Link
-        to="/market/listing/$id"
-        params={{ id: row.id }}
-        className={cn(
-          "grid grid-cols-[minmax(0,1fr)_0_minmax(0,1fr)] text-sm outline-none md:grid-cols-[minmax(0,1.2fr)_16px_minmax(0,1.4fr)] md:items-center md:gap-x-3.5 md:gap-y-2.5 md:px-4 md:py-3 md:focus-visible:bg-secondary/50",
-          listingFeedColumns,
-          "max-md:overflow-hidden max-md:rounded-[10px] max-md:border max-md:bg-card max-md:hover:bg-secondary max-md:focus-visible:border-ring max-md:focus-visible:bg-secondary",
-        )}
+    <SlipItem className="transition-colors md:hover:bg-secondary/50">
+      <Slip
+        variant="listing"
+        render={<Link to="/market/listing/$id" params={{ id: row.id }} />}
+        className="outline-none max-md:hover:bg-secondary max-md:focus-visible:border-ring max-md:focus-visible:bg-secondary md:focus-visible:bg-secondary/50"
       >
         <OfferingHalf
           row={row}
@@ -75,7 +108,7 @@ export default function ListingFeedRow({ row }: Props) {
           payment={first?.payment?.side === "from" ? first.payment : null}
         />
 
-        <span className="relative col-start-2 row-start-1 text-muted-foreground max-md:border-l max-md:border-dashed md:flex md:justify-center lg:col-start-3">
+        <SlipDivider className="md:flex md:justify-center">
           {ratio === null ? (
             <>
               <span
@@ -91,12 +124,12 @@ export default function ListingFeedRow({ row }: Props) {
               <RatioText ratio={ratio} />
             </span>
           )}
-        </span>
+        </SlipDivider>
 
-        <Half
+        <SlipHalf
+          side="get"
           label={m.market_listings_column_asking()}
           thumbs={<WantThumbs options={row.options} />}
-          className="col-start-3 max-md:bg-amber-700/5 lg:col-start-4 max-md:dark:bg-amber-500/5"
         >
           {first !== undefined && row.options.length === 1 ? (
             <AskingCaption
@@ -106,48 +139,26 @@ export default function ListingFeedRow({ row }: Props) {
           ) : (
             <OptionsCaption options={row.options} />
           )}
-        </Half>
+        </SlipHalf>
 
-        <span className="col-span-full row-start-2 flex min-w-0 items-center gap-1.5 max-md:border-t max-md:border-dashed max-md:px-3 max-md:py-2 max-md:text-xs md:gap-2 lg:contents">
-          <span className="flex items-center gap-2 max-md:contents lg:col-start-1 lg:row-start-1 lg:flex-col lg:items-start lg:gap-1">
-            {/* on a phone the badges end the footer, after the time */}
-            <span className="flex shrink-0 gap-1.5 max-md:order-2 max-md:ml-auto md:contents">
-              {listingTypesOfListing(row).map((type) => (
-                <ListingTypeBadge key={type} type={type} />
-              ))}
-            </span>
-            <span className="shrink-0 text-xs text-muted-foreground max-md:order-1">
+        <ListingSlipFooter
+          types={listingTypesOfListing(row).map((type) => (
+            <ListingTypeBadge key={type} type={type} />
+          ))}
+          time={
+            <>
               <span className="md:hidden">{"· "}</span>
               <Timestamp
                 date={row.createdAt}
                 relative="narrow"
                 className="whitespace-nowrap"
               />
-            </span>
-          </span>
-          <span className="flex min-w-0 items-center gap-2 max-md:contents md:ml-2 lg:col-start-5 lg:row-start-1 lg:ml-0">
-            {row.poster === null ? (
-              <UserAvatar deleted className="size-4.5 text-xxs md:size-6" />
-            ) : (
-              <UserAvatar
-                username={row.cosmoUsername ?? row.poster.username}
-                className="size-4.5 text-xxs **:p-0.5 md:size-6"
-              />
-            )}
-            {/* the rating follows the name, and sits under it in its lg column */}
-            <span className="flex min-w-0 items-baseline gap-1.5 lg:flex-col lg:gap-0">
-              <span
-                dir="auto"
-                className="max-w-full min-w-0 truncate font-medium"
-              >
-                {posterName(row)}
-              </span>
-              <FeedbackBadge variant="compact" rep={row.rep} narrow />
-            </span>
-          </span>
-        </span>
-      </Link>
-    </li>
+            </>
+          }
+          end={children}
+        />
+      </Slip>
+    </SlipItem>
   );
 }
 
@@ -178,14 +189,13 @@ function OfferingHalf({
   row,
   payment,
 }: {
-  row: Row;
+  row: ListingSlip;
   payment: ListingPayment | null;
 }) {
-  const className =
-    "col-start-1 max-md:bg-teal-700/5 lg:col-start-2 max-md:dark:bg-teal-500/5";
   if (row.units.kind === "buy" && payment !== null) {
     return (
-      <Half
+      <SlipHalf
+        side="give"
         label={m.market_listings_column_offering()}
         thumbs={
           <Stack
@@ -194,7 +204,6 @@ function OfferingHalf({
             ]}
           />
         }
-        className={className}
       >
         <SlipTitle>{perUnitPriceText(payment)}</SlipTitle>
         <SlipDetail>
@@ -202,14 +211,14 @@ function OfferingHalf({
             .filter((part) => part !== undefined)
             .join(" · ")}
         </SlipDetail>
-      </Half>
+      </SlipHalf>
     );
   }
   return (
-    <Half
+    <SlipHalf
+      side="give"
       label={m.market_listings_column_offering()}
       thumbs={<Thumbs items={row.items} />}
-      className={className}
     >
       <OfferingCaption
         items={row.items}
@@ -226,7 +235,7 @@ function OfferingHalf({
           })}
         </SlipDetail>
       )}
-    </Half>
+    </SlipHalf>
   );
 }
 
@@ -242,36 +251,6 @@ function perUnitPriceText(payment: ListingPayment) {
   return payment.mode === "price_or_offer"
     ? `${price} · ${m.listing_payment_open_to_offers_tag()}`
     : price;
-}
-
-/**
- * One side of the trade: its images, then its words.
- */
-export function Half({
-  label,
-  thumbs,
-  className,
-  children,
-}: {
-  label: string;
-  thumbs: ReactNode;
-  className: string;
-  children: ReactNode;
-}) {
-  return (
-    <span
-      className={cn(
-        "row-start-1 flex min-w-0 flex-col items-start gap-2 max-md:p-3 sm:flex-row sm:items-center sm:gap-3 md:gap-2.5",
-        className,
-      )}
-    >
-      <span className="sr-only">{label}</span>
-      {thumbs}
-      <span className="flex max-w-full min-w-0 flex-col gap-0.5">
-        {children}
-      </span>
-    </span>
-  );
 }
 
 /**
@@ -379,7 +358,7 @@ function AskingCaption({
  * A listing's options as alternatives, each as optionTitles() reads it: "2
  * objekts or $3.00", over each option's rows in posted order.
  */
-function OptionsCaption({ options }: { options: Row["options"] }) {
+function OptionsCaption({ options }: { options: ListingSlip["options"] }) {
   return (
     <>
       <SlipTitle clamp>{joinOptions(optionTitles(options))}</SlipTitle>
@@ -437,8 +416,6 @@ export function SlipDetail({
   );
 }
 
-const thumbSize = "w-13 sm:w-11 md:w-9";
-
 /**
  * Up to three offered objekts, stacked.
  */
@@ -460,7 +437,7 @@ export function Thumbs({ items }: { items: ListingFeedItem[] }) {
  * its count on a phone when it asks for more than one. An option of the
  * claimer's payment alone has a tile of its currency.
  */
-function WantThumbs({ options }: { options: Row["options"] }) {
+function WantThumbs({ options }: { options: ListingSlip["options"] }) {
   // a payment's tile under another's shows its code at its uncovered end
   const covered = (option: number) =>
     options
@@ -496,10 +473,13 @@ function WantThumbs({ options }: { options: Row["options"] }) {
                   key,
                   count: want.count,
                   thumb: (
-                    <RangeTile
-                      ranges={want.ranges}
-                      label={wantLabel(want)}
-                      className={thumbSize}
+                    <SlipTile
+                      render={
+                        <RangeTile
+                          ranges={want.ranges}
+                          label={wantLabel(want)}
+                        />
+                      }
                     />
                   ),
                 },
@@ -530,13 +510,7 @@ export function PaymentTile({
 }) {
   // the tint sits on the card's colour, so a tile stacked under it never shows through
   return (
-    <span
-      aria-hidden
-      className={cn(
-        "flex aspect-photocard shrink-0 overflow-hidden rounded-[3px] bg-card",
-        thumbSize,
-      )}
-    >
+    <SlipTile aria-hidden className="flex overflow-hidden bg-card">
       <span
         className={cn(
           "flex flex-1 items-center bg-amber-500/15 font-mono text-xxs font-semibold text-amber-700 dark:text-amber-400",
@@ -545,7 +519,7 @@ export function PaymentTile({
       >
         {payment.currency}
       </span>
-    </span>
+    </SlipTile>
   );
 }
 
@@ -586,24 +560,20 @@ function CollectionThumb({
   collection: Objekt.Collection | null;
 }) {
   return collection === null ? (
-    <span
-      className={cn(
-        "aspect-photocard shrink-0 rounded-[3px] bg-muted",
-        thumbSize,
-      )}
-    />
+    <SlipTile className="bg-muted" />
   ) : (
-    <img
-      src={getObjektFrontImageUrl(collection, "xs")}
-      alt=""
-      width={44}
-      height={68}
-      loading="lazy"
-      decoding="async"
-      className={cn(
-        "aspect-photocard shrink-0 rounded-[3px] bg-muted object-cover object-top",
-        thumbSize,
-      )}
+    <SlipTile
+      className="bg-muted object-cover object-top"
+      render={
+        <img
+          src={getObjektFrontImageUrl(collection, "xs")}
+          alt=""
+          width={44}
+          height={68}
+          loading="lazy"
+          decoding="async"
+        />
+      }
     />
   );
 }

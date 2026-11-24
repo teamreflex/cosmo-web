@@ -1,17 +1,20 @@
 import { Error } from "@/components/error-boundary";
 import MyTrades from "@/components/trades/my-trades";
-import { Skeleton } from "@/components/ui/skeleton";
+import MyTradesHeader from "@/components/trades/my-trades-header";
+import MyTradesSkeleton from "@/components/trades/my-trades-skeleton";
 import { m } from "@/i18n/messages";
 import { defineHead } from "@/lib/meta";
 import { currentAccountQuery } from "@/lib/queries/core";
+import { myListingsQuery } from "@/lib/queries/trade-listings";
 import { myTradesQuery } from "@/lib/queries/trades";
-import { myTradesTabs } from "@/lib/universal/trades";
+import { myTradesPageTabs } from "@/lib/universal/trades";
+import { noop } from "@tanstack/react-query";
 import { createFileRoute, redirect } from "@tanstack/react-router";
 import * as z from "zod";
 
 export const Route = createFileRoute("/market/trades")({
   validateSearch: z.object({
-    tab: z.enum(myTradesTabs).default("active").catch("active"),
+    tab: z.enum(myTradesPageTabs).default("active").catch("active"),
   }),
   beforeLoad: async ({ context }) => {
     const account = await context.queryClient.query({
@@ -23,11 +26,13 @@ export const Route = createFileRoute("/market/trades")({
     }
   },
   loaderDeps: ({ search: { tab } }) => ({ tab }),
-  loader: async ({ context, deps }) => {
-    await context.queryClient.infiniteQuery({
-      ...myTradesQuery(deps.tab),
-      staleTime: "static",
-    });
+  // streamed, so the header shows at once and the tab's skeleton holds its place
+  loader: ({ context, deps }) => {
+    const rows =
+      deps.tab === "listings"
+        ? context.queryClient.infiniteQuery(myListingsQuery())
+        : context.queryClient.infiniteQuery(myTradesQuery(deps.tab));
+    void rows.catch(noop);
   },
   head: () =>
     defineHead({
@@ -51,22 +56,13 @@ function RouteComponent() {
 }
 
 function PendingComponent() {
+  const { tab } = Route.useSearch();
+
   return (
     <main className="flex flex-col">
-      <div className="border-b border-border">
-        <div className="container flex h-14 items-center gap-3">
-          <h1 className="font-cosmo text-xl leading-none font-black tracking-wide uppercase md:text-2xl">
-            {m.my_trades_title()}
-          </h1>
-          <Skeleton className="ml-auto h-10 w-44 rounded-sm md:h-9" />
-        </div>
-      </div>
+      <MyTradesHeader tab={tab} />
       <div className="container py-4">
-        <div className="flex flex-col gap-px overflow-clip rounded-lg border">
-          {Array.from({ length: 4 }).map((_, i) => (
-            <Skeleton key={i} className="h-16 rounded-none" />
-          ))}
-        </div>
+        <MyTradesSkeleton tab={tab} />
       </div>
     </main>
   );

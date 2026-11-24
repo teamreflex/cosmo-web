@@ -2575,6 +2575,7 @@
   "my_trades_tabs": "交换分类",
   "my_trades_tab_active": "进行中",
   "my_trades_tab_finished": "已结束",
+  "my_trades_tab_listings": "挂单",
   "my_trades_column_type": "类型",
   "my_trades_column_send": "你发送",
   "my_trades_column_get": "你获得",
@@ -2604,6 +2605,28 @@
   "my_trades_empty_finished": "暂无已结束的交换",
   "my_trades_empty_finished_body": "已结束的交换会显示在这里。",
   "my_trades_error": "无法加载你的交换。",
+  "my_listings_column_activity": "动态",
+  "my_listings_offers": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=other": "{count} 个报价"
+      }
+    }
+  ],
+  "my_listings_live_trades": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=other": "{count} 笔交换"
+      }
+    }
+  ],
+  "my_listings_no_activity": "暂无动态",
+  "my_listings_empty": "没有进行中的挂单",
+  "my_listings_empty_body": "你发布的挂单在关闭前会显示在这里。",
   "chat_title": "聊天",
   "chat_messages_label": "消息",
   "chat_scroll_to_end": "滚动到最新消息",

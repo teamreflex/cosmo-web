@@ -59,7 +59,7 @@ const qb = new QueryBuilder();
  * Written as a literal matching the feed indexes' WHERE, so a generic plan
  * can still prove the partial indexes apply.
  */
-const openListing = sql`${tradeOffers.kind} = 'listing' AND ${tradeOffers.status} = 'open'`;
+export const openListing = sql`${tradeOffers.kind} = 'listing' AND ${tradeOffers.status} = 'open'`;
 
 const offeredColumns = {
   season: { listing: tradeOffers.seasons, item: tradeOfferItems.season },

@@ -1,12 +1,14 @@
+import { $fetchMyListings } from "@/lib/functions/listing-feed";
 import {
   $fetchOfferedTokenRefusals,
   $fetchRangeMatchCounts,
   $fetchTradeListing,
   $fetchTradeTokenStates,
 } from "@/lib/functions/trade-listings";
+import type { ListingFeedCursor } from "@/lib/universal/schema/listing-feed";
 import type { RangeMatchCounts } from "@/lib/universal/trade-listings";
 import type { RangeFilter } from "@apollo/trades/range";
-import { queryOptions } from "@tanstack/react-query";
+import { infiniteQueryOptions, queryOptions } from "@tanstack/react-query";
 
 /**
  * Every listing-page query. Their answers depend on who is signed in, so
@@ -119,3 +121,24 @@ export function rangeMatchCountQueries(
     },
   }));
 }
+
+/**
+ * The viewer's open listings on My trades, a page at a time. Nothing
+ * pushes offers to a poster, so it refetches whenever the window regains
+ * focus.
+ */
+export const myListingsQuery = () =>
+  infiniteQueryOptions({
+    queryKey: [...tradeListingKey, "mine"],
+    queryFn: ({ signal, pageParam }) =>
+      $fetchMyListings({ signal, data: { cursor: pageParam } }),
+    initialPageParam: firstPage,
+    getNextPageParam: (lastPage) => lastPage.nextCursor,
+    refetchOnWindowFocus: "always",
+  });
+
+/**
+ * The first page has no cursor. Typed as the cursor union so the query
+ * infers its page param from it.
+ */
+const firstPage: ListingFeedCursor | undefined = undefined;

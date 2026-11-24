@@ -2575,6 +2575,7 @@
   "my_trades_tabs": "交換分類",
   "my_trades_tab_active": "進行中",
   "my_trades_tab_finished": "已結束",
+  "my_trades_tab_listings": "刊登",
   "my_trades_column_type": "類型",
   "my_trades_column_send": "你傳送",
   "my_trades_column_get": "你獲得",
@@ -2604,6 +2605,28 @@
   "my_trades_empty_finished": "目前沒有已結束的交換",
   "my_trades_empty_finished_body": "已結束的交換會顯示在這裡。",
   "my_trades_error": "無法載入你的交換。",
+  "my_listings_column_activity": "動態",
+  "my_listings_offers": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=other": "{count} 個報價"
+      }
+    }
+  ],
+  "my_listings_live_trades": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=other": "{count} 筆交換"
+      }
+    }
+  ],
+  "my_listings_no_activity": "暫無動態",
+  "my_listings_empty": "沒有進行中的刊登",
+  "my_listings_empty_body": "你發布的刊登在關閉前會顯示在這裡。",
   "chat_title": "聊天",
   "chat_messages_label": "訊息",
   "chat_scroll_to_end": "捲動到最新訊息",

@@ -115,6 +115,15 @@ A listing offers a pool of the poster's tokens in units, or, as a buy listing, a
 - The "Looking for" filter matches a listing when any one want row, so any one option, holds every narrowed value: an exact row's copied values, one of a range row's ranges in `trade_listing_want_ranges` (an empty column matches any value), or one of a choice row's collections in `trade_listing_want_options`, so the member of one range or collection and the season of another don't add up.
 - A range row reads as its ranges joined by "or", and its tile takes an artist's colour and logo only when every range names that one artist (`rangeArtist()`).
 
+## Your listings on My trades
+
+My trades' Listings tab (`$fetchMyListings`, `components/trades/my-listings.tsx`) shows the viewer's open listings as feed slips, paged the same way, ending with what waits on each instead of the poster.
+
+- Only open listings show: a filled listing's trades are on the Finished tab, and a withdrawn one needs nothing.
+- Each row counts its pending offers and its live trades (`listingTradeCount()` in `packages/database/src/web/sql.ts`), found through the items that keep the listing's id, as the poster's tabs count them.
+- `myListingsQuery` sits under `tradeListingKey`, so listing actions and trade actions on a listing's trades refetch it, and an account change clears it.
+- Each tab suspends under its own boundary keyed by the tab, so the header and tabs never wait on rows. Its skeleton (`my-trades-skeleton.tsx`) is built from the same parts as the feed and My trades rows (`components/trade-listings/slip.tsx`), filling their slots with blocks, so a change to a slip's layout belongs in those parts.
+
 ## The listing page
 
 `$fetchTradeListing` answers the page from one read of the listing row: the public `listing` and the session's `viewer`, whose candidate takes its free count from the public pool. If any part fails, the page shows its error.

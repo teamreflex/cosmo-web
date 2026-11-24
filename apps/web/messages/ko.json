@@ -2573,6 +2573,7 @@
   "my_trades_tabs": "표시할 거래",
   "my_trades_tab_active": "진행 중",
   "my_trades_tab_finished": "종료",
+  "my_trades_tab_listings": "리스팅",
   "my_trades_column_type": "종류",
   "my_trades_column_send": "보내는 것",
   "my_trades_column_get": "받는 것",
@@ -2602,6 +2603,28 @@
   "my_trades_empty_finished": "끝난 거래가 없습니다",
   "my_trades_empty_finished_body": "끝난 거래가 여기에 표시됩니다.",
   "my_trades_error": "거래를 불러오지 못했습니다.",
+  "my_listings_column_activity": "활동",
+  "my_listings_offers": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=other": "제안 {count}건"
+      }
+    }
+  ],
+  "my_listings_live_trades": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=other": "교환 {count}건"
+      }
+    }
+  ],
+  "my_listings_no_activity": "활동 없음",
+  "my_listings_empty": "열린 리스팅이 없습니다",
+  "my_listings_empty_body": "게시한 리스팅은 마감될 때까지 여기에 표시됩니다.",
   "chat_title": "채팅",
   "chat_messages_label": "메시지",
   "chat_scroll_to_end": "최신 메시지로 이동",

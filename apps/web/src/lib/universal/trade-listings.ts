@@ -366,27 +366,42 @@ export function listingSize(
 }
 
 /**
- * An open listing in the feed, with its poster's rating, null without a
- * visible rating or a poster. `items` is its pool, empty on a buy listing,
- * `units` how many of them one trade takes for the want rows and payment
- * at their counts or how many units a buy listing pays for (ListingSize),
- * `options` what the claimer can give, one of them, `posted` how many
- * objekts it has ever offered (the pool and the ones that left it), and
- * `free` how many no live trade holds and the poster hasn't locked, which
- * may be fewer than a unit's worth, even 0, while trades or locks hold the
- * rest.
+ * An open listing as a feed slip shows it. `items` is its pool, empty on a
+ * buy listing, `units` how many of them one trade takes for the want rows
+ * and payment at their counts or how many units a buy listing pays for
+ * (ListingSize), `options` what the claimer can give, one of them, `posted`
+ * how many objekts it has ever offered (the pool and the ones that left
+ * it), and `free` how many no live trade holds and the poster hasn't
+ * locked, which may be fewer than a unit's worth, even 0, while trades or
+ * locks hold the rest.
  */
-export type ListingFeedRow = {
+export type ListingSlip = {
   id: string;
   createdAt: Date;
-  poster: PublicUser | null;
-  cosmoUsername: string | null;
-  rep: FeedbackRep | null;
   items: ListingFeedItem[];
   options: ListingOption<ListingFeedWant>[];
   units: ListingSize;
   posted: number;
   free: number;
+};
+
+/**
+ * An open listing in the feed, with its poster and their rating, null
+ * without a visible rating or a poster.
+ */
+export type ListingFeedRow = ListingSlip & {
+  poster: PublicUser | null;
+  cosmoUsername: string | null;
+  rep: FeedbackRep | null;
+};
+
+/**
+ * One of the viewer's own open listings on My trades, with what waits on
+ * it: the pending offers to answer and the trades under way.
+ */
+export type MyListingRow = ListingSlip & {
+  offers: number;
+  liveTrades: number;
 };
 
 /**
@@ -401,6 +416,11 @@ export function hasRatio(unitSize: number, posted: number) {
 
 export type ListingFeedPage = {
   rows: ListingFeedRow[];
+  nextCursor: ListingFeedCursor | undefined;
+};
+
+export type MyListingsPage = {
+  rows: MyListingRow[];
   nextCursor: ListingFeedCursor | undefined;
 };
 

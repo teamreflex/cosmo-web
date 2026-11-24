@@ -2639,6 +2639,7 @@
   "my_trades_tabs": "Quels échanges",
   "my_trades_tab_active": "En cours",
   "my_trades_tab_finished": "Terminés",
+  "my_trades_tab_listings": "Annonces",
   "my_trades_column_type": "Type",
   "my_trades_column_send": "Vous envoyez",
   "my_trades_column_get": "Vous recevez",
@@ -2669,6 +2670,30 @@
   "my_trades_empty_finished": "Aucun échange terminé",
   "my_trades_empty_finished_body": "Les échanges terminés apparaissent ici.",
   "my_trades_error": "Impossible de charger vos échanges.",
+  "my_listings_column_activity": "Activité",
+  "my_listings_offers": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{count} offre",
+        "countPlural=other": "{count} offres"
+      }
+    }
+  ],
+  "my_listings_live_trades": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{count} échange",
+        "countPlural=other": "{count} échanges"
+      }
+    }
+  ],
+  "my_listings_no_activity": "Aucune activité",
+  "my_listings_empty": "Aucune annonce ouverte",
+  "my_listings_empty_body": "Les annonces que vous publiez apparaissent ici jusqu'à leur clôture.",
   "chat_title": "Discussion",
   "chat_messages_label": "Messages",
   "chat_scroll_to_end": "Aller au dernier message",

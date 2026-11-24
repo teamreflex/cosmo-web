@@ -80,3 +80,8 @@ export const listingFeedTotalInputSchema = listingFeedInputSchema.omit({
 });
 
 export type ListingFeedTotalInput = z.infer<typeof listingFeedTotalInputSchema>;
+
+// a page of the viewer's own open listings on My trades
+export const myListingsInputSchema = z.strictObject({
+  cursor: listingFeedCursorSchema.optional(),
+});

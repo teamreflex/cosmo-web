@@ -2630,6 +2630,7 @@
   "my_trades_tabs": "Which trades",
   "my_trades_tab_active": "Active",
   "my_trades_tab_finished": "Finished",
+  "my_trades_tab_listings": "Listings",
   "my_trades_column_type": "Type",
   "my_trades_column_send": "You send",
   "my_trades_column_get": "You get",
@@ -2660,6 +2661,30 @@
   "my_trades_empty_finished": "No finished trades",
   "my_trades_empty_finished_body": "Trades that have ended show up here.",
   "my_trades_error": "Couldn't load your trades.",
+  "my_listings_column_activity": "Activity",
+  "my_listings_offers": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{count} offer",
+        "countPlural=other": "{count} offers"
+      }
+    }
+  ],
+  "my_listings_live_trades": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{count} trade",
+        "countPlural=other": "{count} trades"
+      }
+    }
+  ],
+  "my_listings_no_activity": "No activity",
+  "my_listings_empty": "No open listings",
+  "my_listings_empty_body": "Listings you post show up here until they close.",
   "chat_title": "Chat",
   "chat_messages_label": "Messages",
   "chat_scroll_to_end": "Scroll to the latest message",
