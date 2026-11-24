@@ -2,7 +2,6 @@
 services:
   # postgres for the web app (persistent user data)
   postgres-web:
-    restart: on-failure
     image: postgres:17.6-alpine
     ports:
       - "5435:5432"
@@ -29,7 +28,6 @@ services:
   # pgbouncer for web app (HMR-safe)
   pgbouncer-web:
     image: edoburu/pgbouncer:latest
-    restart: on-failure
     ports:
       - "5433:5432"
     environment:
@@ -60,7 +58,6 @@ services:
 
   # postgres for the indexer (ephemeral blockchain data)
   postgres-indexer:
-    restart: on-failure
     image: postgres:17.6-alpine
     ports:
       - "5434:5432"
@@ -88,7 +85,6 @@ services:
   # pgbouncer for indexer
   pgbouncer-indexer:
     image: edoburu/pgbouncer:latest
-    restart: on-failure
     ports:
       - "5432:5432"
     environment:
@@ -120,7 +116,6 @@ services:
   # valkey (redis-compatible)
   valkey:
     image: valkey/valkey:8-alpine
-    restart: on-failure
     ports:
       - "6379:6379"
     command: valkey-server --save 60 1 --loglevel warning
@@ -138,7 +133,6 @@ services:
   floci:
     # compat variant ships the aws cli that docker/floci/ready.sh uses
     image: floci/floci:2.4.0-compat
-    restart: on-failure
     ports:
       - "9000:4566"
     deploy:
@@ -166,7 +160,6 @@ services:
   # browser inbox for the mail floci captures, at localhost:8025
   mailpit:
     image: axllent/mailpit:v1.31.6
-    restart: on-failure
     ports:
       - "8025:8025"
     deploy:
@@ -181,7 +174,6 @@ services:
     build:
       context: .
       dockerfile: apps/indexer/Dockerfile
-    restart: on-failure
     environment:
       - FORCE_PRETTY_LOGGER=${INDEXER_FORCE_PRETTY_LOGGER}
       - RPC_ENDPOINT=${INDEXER_RPC_ENDPOINT}
@@ -214,7 +206,6 @@ services:
     build:
       context: .
       dockerfile: apps/typesense/Dockerfile
-    restart: on-failure
     ports:
       - "8108:8108"
     environment:
@@ -237,7 +228,6 @@ services:
     build:
       context: .
       dockerfile: apps/schedules/Dockerfile
-    restart: on-failure
     environment:
       - WEB_DATABASE_URL=postgresql://postgres:postgres@pgbouncer-web:5432/web
       - INDEXER_DATABASE_URL=postgresql://postgres:postgres@pgbouncer-indexer:5432/indexer
@@ -277,7 +267,6 @@ services:
     build:
       context: .
       dockerfile: apps/chat/Dockerfile
-    restart: on-failure
     ports:
       - "3001:3001"
     extra_hosts:
@@ -302,7 +291,6 @@ services:
   # browserless.io
   browserless:
     image: ghcr.io/browserless/chromium:latest
-    restart: on-failure
     ports:
       - "5000:3000"
     environment:

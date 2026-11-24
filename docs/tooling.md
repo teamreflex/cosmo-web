@@ -50,6 +50,7 @@ How the monorepo is wired, run locally, linted, formatted and type-checked, plus
 | `chat`              | 3001      | `DEV_CHAT`                       | `apps/chat`; reaches the host's JWKS through `host.docker.internal`                     |
 
 - The web app always runs on the host.
+- No service has a restart policy, so containers run only while `//#services` does. Docker's `on-failure` would start any container that last exited non-zero whenever the daemon starts, even one `docker compose` stopped, and browserless, floci, processor, schedules and chat all exit non-zero when stopped. A crashed container, such as the processor after it throws, stays down until you restart `turbo dev`.
 - Containers get their database, Redis and R2 URLs from `docker-compose.yml`, not from `.env`.
 - Never run a session `SET` through pgbouncer, because in transaction mode it stays on the shared server connection and every later client inherits it. For read-only checks, connect to Postgres directly with `PGOPTIONS='-c default_transaction_read_only=on'`, or wrap the queries in `BEGIN READ ONLY; … ROLLBACK;`.
 - `docker/floci/ready.sh` runs on every floci boot: it creates the bucket and verifies `MAIL_SES_FROM` in `MAIL_SES_REGION`, because SES refuses mail from unverified senders and identities are per region.
