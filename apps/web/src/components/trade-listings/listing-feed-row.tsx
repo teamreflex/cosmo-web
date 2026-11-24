@@ -6,7 +6,6 @@ import {
   buyingText,
   formatAmount,
   joinOptions,
-  listingTypeLabels,
   listingTypesOfListing,
   objektName,
   offeredMembers,
@@ -30,7 +29,6 @@ import {
   type ListingSlip,
 } from "@/lib/universal/trade-listings";
 import { cn } from "@/lib/utils";
-import type { ListingType } from "@apollo/trades/listing";
 import type { ListingPayment } from "@apollo/trades/payment";
 import { formatSerial } from "@apollo/util";
 import { IconArrowRight, IconArrowsRightLeft } from "@tabler/icons-react";
@@ -38,9 +36,9 @@ import { Link } from "@tanstack/react-router";
 import type { ReactNode } from "react";
 import FeedbackBadge from "../feedback/feedback-badge";
 import UserAvatar from "../profile/user-avatar";
-import { Badge } from "../ui/badge";
 import { Timestamp } from "../ui/timestamp";
 import { RatioText } from "./listing-header";
+import ListingTypeBadge from "./listing-type-badge";
 import { RangeTile } from "./range-want";
 import {
   ListingSlipFooter,
@@ -161,24 +159,6 @@ export function ListingSlipRow({
     </SlipItem>
   );
 }
-
-/**
- * One kind a listing row is (listingTypesOf()): a trade, a sale or a buy.
- * A row whose options make it several shows a badge for each.
- */
-function ListingTypeBadge({ type }: { type: ListingType }) {
-  return (
-    <Badge className={listingTypeTones[type]}>
-      {listingTypeLabels[type]()}
-    </Badge>
-  );
-}
-
-const listingTypeTones = {
-  trade: "bg-teal-500/15 text-teal-700 dark:bg-teal-500/18 dark:text-teal-500",
-  sell: "bg-amber-500/15 text-amber-700 dark:bg-amber-500/18 dark:text-amber-500",
-  buy: "bg-sky-500/15 text-sky-700 dark:bg-sky-500/18 dark:text-sky-500",
-} satisfies Record<ListingType, string>;
 
 /**
  * What the listing offers: its objekts, with the poster's payment on top,

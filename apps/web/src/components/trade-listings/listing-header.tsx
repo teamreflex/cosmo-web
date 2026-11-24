@@ -1,6 +1,5 @@
 import { m } from "@/i18n/messages";
 import {
-  listingTypeLabels,
   listingTypesOfListing,
   pillRatio,
   ratioSides,
@@ -15,6 +14,7 @@ import { PartyAvatar, PartyLink } from "../trades/trade-header";
 import { Badge } from "../ui/badge";
 import { Timestamp } from "../ui/timestamp";
 import ListingStateBadge from "./listing-state-badge";
+import ListingTypeBadge from "./listing-type-badge";
 
 type Props = {
   listing: TradeListing;
@@ -67,16 +67,11 @@ export default function ListingHeader({
           </h1>
           <div className="col-start-3 row-start-1 row-end-3 flex gap-1.5 md:row-end-2">
             {listingTypesOfListing(listing).map((type) => (
-              <Badge
+              <ListingTypeBadge
                 key={type}
-                variant="outline"
-                className={cn(
-                  "text-muted-foreground",
-                  ratio !== null && "max-md:hidden",
-                )}
-              >
-                {listingTypeLabels[type]()}
-              </Badge>
+                type={type}
+                className={cn(ratio !== null && "max-md:hidden")}
+              />
             ))}
             <ListingStateBadge status={listing.state.status} />
             {ratio !== null && (
