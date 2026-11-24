@@ -2639,15 +2639,15 @@
   "my_trades_tabs": "Quels échanges",
   "my_trades_tab_active": "En cours",
   "my_trades_tab_finished": "Terminés",
-  "my_trades_column_kind": "Type",
+  "my_trades_column_type": "Type",
   "my_trades_column_send": "Vous envoyez",
   "my_trades_column_get": "Vous recevez",
   "my_trades_column_status": "Statut",
   "my_trades_column_with": "Avec",
   "my_trades_column_time": "Temps restant",
   "my_trades_column_ended": "Terminé",
-  "my_trades_kind_listing": "Annonce",
-  "my_trades_kind_offer": "Offre",
+  "my_trades_type_listing": "Annonce",
+  "my_trades_type_offer": "Offre",
   "my_trades_next_send": [
     {
       "declarations": ["input count", "local countPlural = count: plural"],

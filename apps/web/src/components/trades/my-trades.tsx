@@ -118,7 +118,7 @@ function MyTradesHeader({ tab }: { tab: MyTradesTab }) {
 }
 
 /**
- * From lg: kind, you send, arrow, you get, status, with, time, the fixed
+ * From lg: type, you send, arrow, you get, status, with, time, the fixed
  * columns narrower until xl so a single objekt's name and number fit. Below
  * lg a row is a trade slip like the Listings feed's.
  */
@@ -134,7 +134,7 @@ function ColumnHeader({ tab }: { tab: MyTradesTab }) {
         columns,
       )}
     >
-      <span>{m.my_trades_column_kind()}</span>
+      <span>{m.my_trades_column_type()}</span>
       <span>{m.my_trades_column_send()}</span>
       <span />
       <span>{m.my_trades_column_get()}</span>
@@ -151,7 +151,7 @@ function ColumnHeader({ tab }: { tab: MyTradesTab }) {
 
 /**
  * Laid out as a Listings feed row, with the tokens each side sends. Below
- * md the footer holds the other party and the time, with the kind and the
+ * md the footer holds the other party and the time, with the type and the
  * status under them.
  */
 function TradeRow({ row }: { row: MyTradeRow }) {
@@ -198,8 +198,8 @@ function TradeRow({ row }: { row: MyTradeRow }) {
           <span className="flex max-md:col-start-1 max-md:row-start-2 lg:col-start-1 lg:row-start-1">
             <Badge variant="outline">
               {row.listingId === null
-                ? m.my_trades_kind_offer()
-                : m.my_trades_kind_listing()}
+                ? m.my_trades_type_offer()
+                : m.my_trades_type_listing()}
             </Badge>
           </span>
           {/* a long name gives way rather than wrapping the line */}

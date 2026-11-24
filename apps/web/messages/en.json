@@ -2630,15 +2630,15 @@
   "my_trades_tabs": "Which trades",
   "my_trades_tab_active": "Active",
   "my_trades_tab_finished": "Finished",
-  "my_trades_column_kind": "Kind",
+  "my_trades_column_type": "Type",
   "my_trades_column_send": "You send",
   "my_trades_column_get": "You get",
   "my_trades_column_status": "Status",
   "my_trades_column_with": "With",
   "my_trades_column_time": "Time left",
   "my_trades_column_ended": "Ended",
-  "my_trades_kind_listing": "Listing",
-  "my_trades_kind_offer": "Offer",
+  "my_trades_type_listing": "Listing",
+  "my_trades_type_offer": "Offer",
   "my_trades_next_send": [
     {
       "declarations": ["input count", "local countPlural = count: plural"],

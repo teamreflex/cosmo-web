@@ -2573,15 +2573,15 @@
   "my_trades_tabs": "표시할 거래",
   "my_trades_tab_active": "진행 중",
   "my_trades_tab_finished": "종료",
-  "my_trades_column_kind": "종류",
+  "my_trades_column_type": "종류",
   "my_trades_column_send": "보내는 것",
   "my_trades_column_get": "받는 것",
   "my_trades_column_status": "상태",
   "my_trades_column_with": "상대",
   "my_trades_column_time": "남은 시간",
   "my_trades_column_ended": "종료일",
-  "my_trades_kind_listing": "리스팅",
-  "my_trades_kind_offer": "제안",
+  "my_trades_type_listing": "리스팅",
+  "my_trades_type_offer": "제안",
   "my_trades_next_send": [
     {
       "declarations": ["input count", "local countPlural = count: plural"],

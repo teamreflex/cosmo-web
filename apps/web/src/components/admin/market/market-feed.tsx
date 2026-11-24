@@ -193,7 +193,7 @@ function StatusBadge({ row }: { row: MarketActivityRow }) {
   switch (state.status) {
     case "pending":
       return (
-        <Badge className={tones.waiting}>{m.my_trades_kind_offer()}</Badge>
+        <Badge className={tones.waiting}>{m.my_trades_type_offer()}</Badge>
       );
     case "accepted":
       return (

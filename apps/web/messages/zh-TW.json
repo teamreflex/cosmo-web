@@ -2575,15 +2575,15 @@
   "my_trades_tabs": "交換分類",
   "my_trades_tab_active": "進行中",
   "my_trades_tab_finished": "已結束",
-  "my_trades_column_kind": "類型",
+  "my_trades_column_type": "類型",
   "my_trades_column_send": "你傳送",
   "my_trades_column_get": "你獲得",
   "my_trades_column_status": "狀態",
   "my_trades_column_with": "對方",
   "my_trades_column_time": "剩餘時間",
   "my_trades_column_ended": "結束時間",
-  "my_trades_kind_listing": "刊登",
-  "my_trades_kind_offer": "報價",
+  "my_trades_type_listing": "刊登",
+  "my_trades_type_offer": "報價",
   "my_trades_next_send": [
     {
       "declarations": ["input count", "local countPlural = count: plural"],

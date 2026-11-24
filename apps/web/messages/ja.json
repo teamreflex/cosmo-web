@@ -2573,15 +2573,15 @@
   "my_trades_tabs": "表示するトレード",
   "my_trades_tab_active": "進行中",
   "my_trades_tab_finished": "終了",
-  "my_trades_column_kind": "種類",
+  "my_trades_column_type": "種類",
   "my_trades_column_send": "送るもの",
   "my_trades_column_get": "受け取るもの",
   "my_trades_column_status": "状態",
   "my_trades_column_with": "相手",
   "my_trades_column_time": "残り時間",
   "my_trades_column_ended": "終了日",
-  "my_trades_kind_listing": "出品",
-  "my_trades_kind_offer": "オファー",
+  "my_trades_type_listing": "出品",
+  "my_trades_type_offer": "オファー",
   "my_trades_next_send": [
     {
       "declarations": ["input count", "local countPlural = count: plural"],
