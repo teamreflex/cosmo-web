@@ -110,10 +110,13 @@ export default function ListingFeedRow({ row }: Props) {
 
         <span className="col-span-full row-start-2 flex min-w-0 items-center gap-1.5 max-md:border-t max-md:border-dashed max-md:px-3 max-md:py-2 max-md:text-xs md:gap-2 lg:contents">
           <span className="flex items-center gap-2 max-md:contents lg:col-start-1 lg:row-start-1 lg:flex-col lg:items-start lg:gap-1">
-            {listingTypesOfListing(row).map((type) => (
-              <ListingTypeBadge key={type} type={type} />
-            ))}
-            <span className="shrink-0 text-xs text-muted-foreground max-md:order-last">
+            {/* on a phone the badges end the footer, after the time */}
+            <span className="flex shrink-0 gap-1.5 max-md:order-2 max-md:ml-auto md:contents">
+              {listingTypesOfListing(row).map((type) => (
+                <ListingTypeBadge key={type} type={type} />
+              ))}
+            </span>
+            <span className="shrink-0 text-xs text-muted-foreground max-md:order-1">
               <span className="md:hidden">{"· "}</span>
               <Timestamp
                 date={row.createdAt}
@@ -154,7 +157,7 @@ export default function ListingFeedRow({ row }: Props) {
  */
 function ListingTypeBadge({ type }: { type: ListingType }) {
   return (
-    <Badge className={cn(listingTypeTones[type], "max-md:hidden")}>
+    <Badge className={listingTypeTones[type]}>
       {listingTypeLabels[type]()}
     </Badge>
   );
