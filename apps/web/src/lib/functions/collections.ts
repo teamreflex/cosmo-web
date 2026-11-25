@@ -89,6 +89,7 @@ export const $refetchCollectionFromCosmo = createServerFn({ method: "POST" })
     return {
       artist: metadata.objekt.artists[0] ?? "",
       member: metadata.objekt.member,
+      members: metadata.objekt.members,
       season: metadata.objekt.season,
       collectionNo: metadata.objekt.collectionNo,
       class: metadata.objekt.class,
@@ -126,6 +127,8 @@ export const $updateCollection = createServerFn({ method: "POST" })
       .set({
         artist,
         member: data.member,
+        // collection_members_valid() refuses repeats; sorted as the processor writes them
+        members: [...new Set(data.members)].toSorted(),
         season: data.season,
         class: data.class,
         collectionNo,

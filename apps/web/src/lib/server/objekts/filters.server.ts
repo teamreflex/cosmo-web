@@ -13,7 +13,17 @@ import {
   objekts,
 } from "@apollo/database/indexer/schema";
 import type { RangeFilter } from "@apollo/trades/range";
-import { and, asc, desc, eq, gte, inArray, or, sql } from "drizzle-orm";
+import {
+  and,
+  arrayOverlaps,
+  asc,
+  desc,
+  eq,
+  gte,
+  inArray,
+  or,
+  sql,
+} from "drizzle-orm";
 import type { PgColumn, PgSelect } from "drizzle-orm/pg-core";
 
 /**
@@ -143,11 +153,12 @@ export function withOnlineType(onlineTypes: ValidOnlineType[]) {
 }
 
 /**
- * Filter by member.
+ * Filter by member: a collection matches when it names any of them, so a Unit
+ * collection matches each of its members.
  */
 export function withMember(members: string[] | null | undefined) {
   return members && members.length > 0
-    ? [inArray(collections.member, members)]
+    ? [arrayOverlaps(collections.members, members)]
     : [];
 }
 
@@ -189,7 +200,10 @@ export function withCollections(selected: string[] | null | undefined) {
 export function withRange(filter: RangeFilter) {
   return and(
     ...withSelectedArtists(filter.artist),
-    ...withMember(filter.member),
+    // member, not members, because matchesRange() compares an objekt's single member
+    ...(filter.member.length > 0
+      ? [inArray(collections.member, filter.member)]
+      : []),
     ...withCollections(filter.collectionNo),
     ...withSeason(filter.season),
     ...withClass(filter.class),

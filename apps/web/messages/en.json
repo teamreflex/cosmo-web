@@ -1375,6 +1375,8 @@
   "admin_collection_artist": "Artist",
   "admin_collection_member": "Member",
   "admin_collection_member_placeholder": "Select member",
+  "admin_collection_members": "Members",
+  "admin_collection_members_description": "Every Member trait in the metadata, comma-separated, including a Unit collection's pairing label.",
   "admin_collection_season": "Season",
   "admin_collection_season_placeholder": "Select season",
   "admin_collection_class": "Class",

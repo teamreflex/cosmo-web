@@ -7,7 +7,7 @@ import { and, count, eq, gte, lt, sql } from "drizzle-orm";
 
 interface RawStats {
   timestamp: string;
-  member: string;
+  members: string[];
   artist: string;
   count: number;
   premierCount: number;
@@ -53,14 +53,14 @@ function initializeBreakdown(referenceHours: string[]): HourlyBreakdown[] {
 
 /**
  * Get hourly stats for the given date range.
- * Groups by hour, member, and artist while using filtered
+ * Groups by hour, members, and artist while using filtered
  * aggregates to compute totals in a single query.
  */
 async function getHourlyStats(since: Date, until: Date): Promise<RawStats[]> {
   return indexer
     .select({
       timestamp: sql<string>`date_trunc('hour', ${objekts.mintedAt})::text`,
-      member: collections.member,
+      members: collections.members,
       artist: collections.artist,
       count: count(),
       premierCount: sql`
@@ -82,7 +82,7 @@ async function getHourlyStats(since: Date, until: Date): Promise<RawStats[]> {
     .where(and(gte(objekts.mintedAt, since), lt(objekts.mintedAt, until)))
     .groupBy(
       sql`date_trunc('hour', ${objekts.mintedAt})`,
-      collections.member,
+      collections.members,
       collections.artist,
     )
     .comment({ fn: "getHourlyStats" });
@@ -112,8 +112,6 @@ function processRawStats(
   // Initialize breakdowns and compute stats in a single pass
   for (const stat of rawStats) {
     // Initialize breakdown arrays if needed
-    const memberHours = (memberBreakdown[stat.member] ??=
-      initializeBreakdown(referenceHours));
     const artistHours = (artistBreakdown[stat.artist] ??=
       initializeBreakdown(referenceHours));
 
@@ -127,12 +125,18 @@ function processRawStats(
     const hourKey = `${statDate.getFullYear()}-${statDate.getMonth()}-${statDate.getDate()}-${statDate.getHours()}`;
     const hourIndex = hourIndexMap.get(hourKey);
 
-    const memberHour =
-      hourIndex !== undefined ? memberHours[hourIndex] : undefined;
     const artistHour =
       hourIndex !== undefined ? artistHours[hourIndex] : undefined;
-    if (memberHour) memberHour.count += stat.count;
     if (artistHour) artistHour.count += stat.count;
+
+    // a mint counts once toward the totals and once for each member it names
+    for (const member of stat.members) {
+      const memberHours = (memberBreakdown[member] ??=
+        initializeBreakdown(referenceHours));
+      const memberHour =
+        hourIndex !== undefined ? memberHours[hourIndex] : undefined;
+      if (memberHour) memberHour.count += stat.count;
+    }
   }
 
   return {

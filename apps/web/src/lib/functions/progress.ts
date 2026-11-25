@@ -23,7 +23,15 @@ import {
 } from "@apollo/database/indexer/schema";
 import { Addresses, isEqual } from "@apollo/util";
 import { createServerFn } from "@tanstack/react-start";
-import { and, count, eq, inArray, notInArray, sql } from "drizzle-orm";
+import {
+  and,
+  arrayOverlaps,
+  count,
+  eq,
+  inArray,
+  notInArray,
+  sql,
+} from "drizzle-orm";
 import * as z from "zod";
 
 /**
@@ -189,21 +197,33 @@ export const $fetchMemberCompletion = createServerFn({ method: "GET" })
       return [];
     }
 
-    // the same collections progress_leaderboard counts
-    const totals = await indexer
-      .select({ member: collections.member, total: count() })
+    // the same collections progress_leaderboard counts, once per member
+    const counted = indexer
+      .select({
+        member: sql<string>`unnest(${collections.members})`.as("member"),
+      })
       .from(collections)
       .where(
         and(
-          inArray(
-            collections.member,
+          arrayOverlaps(
+            collections.members,
             owned.map((row) => row.member),
           ),
           notInArray(collections.class, ["Welcome", "Zero"]),
           eq(collections.unobtainable, false),
         ),
       )
-      .groupBy(collections.member)
+      .as("counted");
+    const totals = await indexer
+      .select({ member: counted.member, total: count() })
+      .from(counted)
+      .where(
+        inArray(
+          counted.member,
+          owned.map((row) => row.member),
+        ),
+      )
+      .groupBy(counted.member)
       .comment({ fn: "fetchMemberCompletion" });
 
     const totalMap = new Map(totals.map((row) => [row.member, row.total]));
@@ -227,7 +247,7 @@ export const $fetchArtistStatsByAddress = createServerFn({ method: "GET" })
     const stats = await indexer
       .select({
         season: collections.season,
-        member: collections.member,
+        members: collections.members,
         artist: collections.artist,
         class: collections.class,
         count: count(),
@@ -237,7 +257,7 @@ export const $fetchArtistStatsByAddress = createServerFn({ method: "GET" })
       .where(eq(objekts.owner, data.address.toLowerCase()))
       .groupBy(
         collections.season,
-        collections.member,
+        collections.members,
         collections.artist,
         collections.class,
       )
@@ -266,9 +286,11 @@ export const $fetchArtistStatsByAddress = createServerFn({ method: "GET" })
       const currentSeasonCount = artistStats.seasons.get(record.season) ?? 0;
       artistStats.seasons.set(record.season, currentSeasonCount + record.count);
 
-      // update member count
-      const currentMemberCount = artistStats.members.get(record.member) ?? 0;
-      artistStats.members.set(record.member, currentMemberCount + record.count);
+      // update the count of each member the collection names
+      for (const member of record.members) {
+        const currentMemberCount = artistStats.members.get(member) ?? 0;
+        artistStats.members.set(member, currentMemberCount + record.count);
+      }
 
       // update class count
       const currentClassCount = artistStats.classes.get(record.class) ?? 0;
