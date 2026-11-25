@@ -8,13 +8,15 @@ import type { AdminOptions } from "better-auth/plugins/admin";
  */
 export const statement = {
   trade: [
-    "read-any",
-    "cancel-any",
+    "view",
+    "read-chat",
+    "read-chat-global",
+    "cancel",
     "resolve-dispute",
     "remove-message",
     "message",
   ],
-  feedback: ["remove-any"],
+  feedback: ["remove"],
   report: ["read", "resolve", "escalate"],
   user: ["ban", "set-role"],
   site: ["manage"],
@@ -28,7 +30,15 @@ export const roles = {
   user: ac.newRole({}),
   tester: ac.newRole({}),
   moderator: ac.newRole({
-    trade: statement.trade,
+    // every trade but read-chat-global, which reads chats with no open report
+    trade: [
+      "view",
+      "read-chat",
+      "cancel",
+      "resolve-dispute",
+      "remove-message",
+      "message",
+    ],
     feedback: statement.feedback,
     report: statement.report,
   }),

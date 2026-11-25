@@ -27,7 +27,7 @@ import { and, desc, eq, sql } from "drizzle-orm";
  * latest change.
  */
 export const $fetchMarketActivity = createServerFn({ method: "GET" })
-  .middleware([staffMiddleware({ trade: ["read-any"] })])
+  .middleware([staffMiddleware({ trade: ["view"] })])
   .validator(marketActivityInputSchema)
   .handler(({ data }) => fetchMarketActivity(data));
 
@@ -35,7 +35,7 @@ export const $fetchMarketActivity = createServerFn({ method: "GET" })
  * The market's last 24 hours in counts, for the Market activity page.
  */
 export const $fetchMarketSummary = createServerFn({ method: "GET" })
-  .middleware([staffMiddleware({ trade: ["read-any"] })])
+  .middleware([staffMiddleware({ trade: ["view"] })])
   .handler(() => fetchMarketSummary());
 
 /**
@@ -63,7 +63,7 @@ export const $staffCompleteTrade = createServerFn({ method: "POST" })
  * Both parties are told; for a disputed trade, that the dispute was resolved.
  */
 export const $staffCancelTrade = createServerFn({ method: "POST" })
-  .middleware([staffMiddleware({ trade: ["cancel-any"] })])
+  .middleware([staffMiddleware({ trade: ["cancel"] })])
   .validator(staffTradeInputSchema)
   .handler(async ({ data, context }) => {
     const staffId = context.session.user.id;

@@ -50,7 +50,7 @@ export function getAdminItems(): AdminItem[] {
       title: m.admin_market_nav(),
       url: "/admin/market",
       icon: IconArrowsExchange,
-      permissions: [{ trade: ["read-any"] }],
+      permissions: [{ trade: ["view"] }],
     },
     {
       title: m.admin_accounts_title(),

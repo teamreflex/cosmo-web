@@ -61,7 +61,7 @@ One `reports` table holds every report. `target_type` says what was reported, an
 
 - The filter applies to the counts, the queue, the detail, and to resolve, dismiss and escalate.
 - A hidden id answers `report_about_you` when the report is about the caller, else `report_not_found`.
-- The address check covers a staff member who deleted their account and relinked the same COSMO account, because trades and ratings keep their pinned addresses.
+- The address check covers a staff member who deleted their account and relinked the same COSMO account, because trades and ratings keep their pinned addresses. `$fetchTrade` and chat refuse them such a trade the same way (`tradeReadViewer()`, `canJoinChat()`).
 - Staff can't act on their own trades or ratings either: `actOnTrade()` and `$removeFeedback` refuse `trade_own`.
 - The web hides a report about the caller's own message first, so the report page never asks chat for it; chat's own `ReportedMessage` rule is in [apps/chat/README.md](../apps/chat/README.md#who-may-do-what).
 
@@ -81,12 +81,12 @@ Message reports are created only through chat. The flow is drawn in [`apps/chat/
 - Chat stores the report and its evidence copy in one transaction. `report_messages` holds the same ciphertext as the message, keyed by report id.
 - The copy has no foreign key to the message, trade or sender, so it outlives staff removal, chat retention and account deletion.
 - The web app never reads message text. The report page fetches the decrypted copy from chat's `ReportedMessage` (`report: read`).
-- An open message report also lets staff join that trade's chat ([`apps/chat/README.md`](../apps/chat/README.md#who-may-do-what)).
+- An open message report also lets staff with `trade: read-chat` read that trade's chat, and write to and remove from it ([`apps/chat/README.md`](../apps/chat/README.md#who-may-do-what)).
 
 ### Feedback reports
 
 - Any signed-in user except the rating's author can report a rating, including the rated party.
-- From the report, staff with `feedback: remove-any` remove the rating (`$removeFeedback`, `lib/functions/feedback.ts`). Removal stamps `removed_at` and takes a scored rating back out of the stats ([`trades/feedback.md`](trades/feedback.md)).
+- From the report, staff with `feedback: remove` remove the rating (`$removeFeedback`, `lib/functions/feedback.ts`). Removal stamps `removed_at` and takes a scored rating back out of the stats ([`trades/feedback.md`](trades/feedback.md)).
 - `$removeFeedback` has its own staff rate limit, `feedback-remove:<staff>` ([`tooling.md`](tooling.md#rate-limits)).
 - The report page shows the rating whether or not it has been removed.
 
@@ -109,7 +109,7 @@ What each role sees in the action bar (`components/admin/reports/report-actions.
 | Resolve, Dismiss             | `report: resolve`, on an open or escalated report that isn't a trade report                  |
 | Complete, Cancel, Extend     | a current dispute; see [`trades/lifecycle.md`](trades/lifecycle.md)                          |
 | Remove message               | `trade: remove-message`, on an open or escalated message report whose message is still there |
-| Remove rating                | `feedback: remove-any`, on an open or escalated feedback report whose rating is still there  |
+| Remove rating                | `feedback: remove`, on an open or escalated feedback report whose rating is still there      |
 
 ## Admin tools
 
@@ -119,7 +119,7 @@ The `/admin` shell opens for `report: read`, so moderators reach the report queu
 | -------------------- | ------------------------------------ | ------------------------------------------------------------------------------------------------------- | ------------------------------------------------- |
 | `/admin/reports`     | `report: read`                       | the report queue and actions, above                                                                     | `reports.ts`, `staff-users.ts`, `staff-trades.ts` |
 | `/admin/audit`       | `audit: read`                        | the staff audit log, filtered by staff member and action                                                | `staff-audit.ts`                                  |
-| `/admin/market`      | `trade: read-any`                    | every trade and offer by its latest change, refreshed by hand, over the last 24 hours in counts         | `staff-trades.ts`                                 |
+| `/admin/market`      | `trade: view`                        | every trade and offer by its latest change, refreshed by hand, over the last 24 hours in counts         | `staff-trades.ts`                                 |
 | `/admin/accounts`    | `user: set-role` or `cosmo: history` | the role card ([`auth.md`](auth.md#set-role)) and the COSMO link history ([`accounts.md`](accounts.md)) | `staff-users.ts`, `cosmo-link-history.ts`         |
 | `/admin/api-keys`    | `site: manage`                       | issue, rename, disable and delete API keys ([`auth.md`](auth.md#api-keys))                              | `api-keys.ts`                                     |
 | `/admin/collections` | `site: manage`                       | edit a collection, refetch its metadata from COSMO, re-mirror its images, upload front media            | `collections.ts`                                  |

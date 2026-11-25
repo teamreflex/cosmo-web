@@ -85,7 +85,7 @@ Keyed per user in Redis, inline in `src/handlers.ts`.
 | `canary.test.ts`       | a body appears only in the streams and replies that asked for it, never in logs, rows, notifications or reports                                                         |
 | `join.test.ts`         | history then `CaughtUp`, history read a page at a time and each page under its own access check, rejoin by `afterId` without gaps, `TokenExpired` at `exp`, disconnects |
 | `messages.test.ts`     | who a send notifies, AAD binding, isolation between trades, the send limit, report refusals                                                                             |
-| `staff.test.ts`        | staff access through reports, audit under the right report, `Remove`, staff messages                                                                                    |
+| `staff.test.ts`        | `read-chat` and `read-chat-global` access, demotion and relinked staff, audit under the right report, `Remove`, staff messages                                          |
 | `tokens.test.ts`       | forged, expired, banned and impersonated tokens; the role comes from the database                                                                                       |
 | `remote-keys.test.ts`  | the live key-set layer over http on a random port, which needs the `effect` patch; a redirect refused                                                                   |
 | `redis-events.test.ts` | trade updates signal, user events end calls                                                                                                                             |

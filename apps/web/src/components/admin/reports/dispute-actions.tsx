@@ -108,7 +108,7 @@ export default function DisputeActions({ report, trade }: Props) {
   });
 
   const canSettle = hasPermission({ trade: ["resolve-dispute"] });
-  const canCancel = hasPermission({ trade: ["cancel-any"] });
+  const canCancel = hasPermission({ trade: ["cancel"] });
   const { view } = trade;
   // only an accepted trade has a deadline, and only one can be disputed
   if ((!canSettle && !canCancel) || view.stage === "offer") {

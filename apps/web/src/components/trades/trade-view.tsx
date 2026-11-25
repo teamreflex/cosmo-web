@@ -98,7 +98,13 @@ type Props = {
  */
 export default function TradeView({ trade, viewer }: Props) {
   if (viewer.kind === "staff") {
-    return <StaffView trade={trade} report={viewer.report} />;
+    return (
+      <StaffView
+        trade={trade}
+        report={viewer.report}
+        chatReportId={viewer.chatReportId}
+      />
+    );
   }
   return trade.stage === "offer" ? (
     <OfferView trade={trade} side={viewer.side} />
@@ -327,13 +333,15 @@ function OfferView({ trade, side }: { trade: OfferTrade; side: TradeSide }) {
 function StaffView({
   trade,
   report,
+  chatReportId,
 }: {
   trade: Trade;
   report: Extract<TradeViewer, { kind: "staff" }>["report"];
+  chatReportId: string | null;
 }) {
   const hasPermission = useHasPermission();
   const [cancelOpen, setCancelOpen] = useState(false);
-  const canCancel = hasPermission({ trade: ["cancel-any"] });
+  const canCancel = hasPermission({ trade: ["cancel"] });
   const cancellable =
     canCancel && transition(trade.state, { type: "staff_cancel" }).ok;
   // once the trade can't be cancelled, the dialog closes for good
@@ -344,6 +352,7 @@ function StaffView({
       <TradeLayout
         trade={trade}
         side={null}
+        chatReportId={chatReportId ?? undefined}
         banner={
           <Alert variant="destructive" role="status">
             <IconEye />
@@ -421,6 +430,7 @@ type TradeTab = (typeof tradeTabs)[number];
 function TradeLayout({
   trade,
   side,
+  chatReportId,
   onLeave,
   banner,
   strip,
@@ -429,6 +439,8 @@ function TradeLayout({
   trade: Trade;
   /** the viewer's side, or null for staff */
   side: TradeSide | null;
+  /** staff only: the open report they write to the chat under */
+  chatReportId?: string;
   /** opens the party's leave-feedback dialog */
   onLeave?: (feedbackWindow: FeedbackWindow) => void;
   banner?: ReactNode;
@@ -538,6 +550,7 @@ function TradeLayout({
                 <BrowserChatPanel
                   trade={trade}
                   side={side}
+                  reportId={chatReportId}
                   className={cn(chatHeight, !chatTab && "max-lg:hidden")}
                   onIncoming={() => {
                     if (!chatTab) setUnread((total) => total + 1);

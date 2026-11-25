@@ -35,7 +35,7 @@ export const Route = createFileRoute("/admin/market")({
     } satisfies MarketActivityFilters,
   }),
   beforeLoad: ({ context }) =>
-    requirePermission(context.role, [{ trade: ["read-any"] }]),
+    requirePermission(context.role, [{ trade: ["view"] }]),
   notFoundComponent: AdminNoAccess,
   loader: async ({ context }) => {
     await Promise.all([

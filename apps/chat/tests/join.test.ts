@@ -17,7 +17,7 @@ import {
   TEST_NOW,
   TRADE,
 } from "./harness";
-import { makeState, type MemoryReport, type MemoryState } from "./memory-store";
+import { makeState, type MemoryState } from "./memory-store";
 
 let signer: Signer;
 beforeAll(async () => {
@@ -132,32 +132,25 @@ describe("Join", () => {
     );
   });
 
-  test("staff who lose access between pages get no later page", async () => {
+  test("a viewer who loses access between pages gets no later page", async () => {
     const state = world();
     addEvents(state, 2 * PAGE);
-    const report: MemoryReport = {
-      id: "dispute",
-      reporterId: "alice",
-      targetType: "trade",
-      targetId: TRADE,
-      status: "open",
-      reason: "not_responding",
-      note: null,
-    };
-    state.reports.push(report);
-    const mod = await mint(signer, { sub: "mod" });
+    const alice = await mint(signer, { sub: "alice" });
     await run(
       state,
       signer,
       Effect.gen(function* () {
-        const m = yield* client(mod);
+        const a = yield* client(alice);
         const ids: number[] = [];
-        // the report closes while the first page is still being taken
+        // alice's side is unlinked while the first page is still being taken
         const ended = yield* outcome(
-          m.Join({ tradeId: TRADE }).pipe(
+          a.Join({ tradeId: TRADE }).pipe(
             Stream.runForEach((item) =>
               Effect.sync(() => {
-                report.status = "resolved";
+                const trade = state.trades.get(TRADE);
+                if (trade !== undefined) {
+                  state.trades.set(TRADE, { ...trade, fromUserId: null });
+                }
                 if (item._tag !== "CaughtUp") {
                   ids.push(item.id);
                 }
@@ -165,7 +158,7 @@ describe("Join", () => {
             ),
           ),
         );
-        expect(ended).toBe("StaffAccessRequired");
+        expect(ended).toBe("ChatNotFound");
         expect(ids).toEqual(state.rows.slice(0, PAGE).map((row) => row.id));
       }),
     );

@@ -140,7 +140,7 @@ export const $leaveFeedback = createServerFn({ method: "POST" })
  * as their own; one that doesn't exist answers as not found.
  */
 export const $removeFeedback = createServerFn({ method: "POST" })
-  .middleware([staffMiddleware({ feedback: ["remove-any"] })])
+  .middleware([staffMiddleware({ feedback: ["remove"] })])
   .validator(removeFeedbackSchema)
   .handler(async ({ data, context }) => {
     const staffId = context.session.user.id;

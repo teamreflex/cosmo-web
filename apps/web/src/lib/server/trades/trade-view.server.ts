@@ -141,10 +141,31 @@ type TradeReader = { kind: "user"; userId: string } | { kind: "staff" };
 
 /**
  * The reader against the trade's parties. A user who is a party reads it as
- * one even when they are staff; anyone else reads it as staff, and the
- * caller decides whether they may.
+ * one even when they are staff. A user whose linked COSMO account is pinned
+ * on the trade without being a party deleted the account that was, so the
+ * trade is still their own, never one to read as staff. Anyone else reads
+ * it as staff, and the caller decides whether they may.
  */
-type TradeReadViewer = { kind: "party"; side: TradeSide } | { kind: "staff" };
+type TradeReadViewer =
+  { kind: "party"; side: TradeSide } | { kind: "former" } | { kind: "staff" };
+
+function tradeReadViewer(
+  reader: TradeReader,
+  row: {
+    fromUserId: string | null;
+    toUserId: string | null;
+    fromCosmo: { userId: string | null } | null;
+    toCosmo: { userId: string | null } | null;
+  },
+): TradeReadViewer {
+  if (reader.kind === "staff") return { kind: "staff" };
+  if (row.fromUserId === reader.userId) return { kind: "party", side: "from" };
+  if (row.toUserId === reader.userId) return { kind: "party", side: "to" };
+  return row.fromCosmo?.userId === reader.userId ||
+    row.toCosmo?.userId === reader.userId
+    ? { kind: "former" }
+    : { kind: "staff" };
+}
 
 /**
  * A trade as its page shows it, with its dispute report for staff and who
@@ -237,8 +258,8 @@ export async function readTradeView(
        */
       fromUser: true,
       toUser: true,
-      fromCosmo: { columns: { username: true } },
-      toCosmo: { columns: { username: true } },
+      fromCosmo: { columns: { username: true, userId: true } },
+      toCosmo: { columns: { username: true, userId: true } },
       fromStats: { columns: feedbackRepColumns },
       toStats: { columns: feedbackRepColumns },
       disputeReport: { columns: { id: true, status: true } },
@@ -290,12 +311,7 @@ export async function readTradeView(
     };
   };
 
-  const viewer: TradeReadViewer =
-    reader.kind === "user" && row.fromUserId === reader.userId
-      ? { kind: "party", side: "from" }
-      : reader.kind === "user" && row.toUserId === reader.userId
-        ? { kind: "party", side: "to" }
-        : { kind: "staff" };
+  const viewer = tradeReadViewer(reader, row);
   const state = tradeState(row, row.items);
 
   // a trade gets its deadline when it's accepted; until then it's an offer
@@ -379,9 +395,8 @@ export async function readTradeView(
     }),
     events,
     feedback:
-      viewer.kind === "staff"
-        ? { state: "none" }
-        : tradeFeedbackView({
+      viewer.kind === "party"
+        ? tradeFeedbackView({
             state,
             side: viewer.side,
             endedAt: row.endedAt,
@@ -389,7 +404,8 @@ export async function readTradeView(
             rows: row.feedback,
             counterpartExists:
               (viewer.side === "from" ? row.toUser : row.fromUser) !== null,
-          }),
+          })
+        : { state: "none" },
   };
   return { trade, disputeReport: row.disputeReport, viewer };
 }

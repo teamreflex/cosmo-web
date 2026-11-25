@@ -229,6 +229,41 @@ export async function fetchReportCounts(
 }
 
 /**
+ * The oldest open report on the trade or one of its messages, which staff
+ * write to the trade's chat under, as `openReport()` in apps/chat picks it.
+ */
+export async function fetchTradeChatReport(tradeId: string) {
+  const [row] = await db
+    .select({ id: reports.id })
+    .from(reports)
+    .where(
+      and(
+        inArray(reports.status, [...openReportStatuses]),
+        or(
+          and(eq(reports.targetType, "trade"), eq(reports.targetId, tradeId)),
+          and(
+            eq(reports.targetType, "message"),
+            exists(
+              db
+                .select({ id: reportMessages.reportId })
+                .from(reportMessages)
+                .where(
+                  and(
+                    eq(reportMessages.reportId, reports.id),
+                    eq(reportMessages.tradeId, tradeId),
+                  ),
+                ),
+            ),
+          ),
+        ),
+      ),
+    )
+    .orderBy(reports.createdAt)
+    .limit(1);
+  return row?.id ?? null;
+}
+
+/**
  * One page of the staff member's queue, newest first, keyset-paged on the
  * report id like the Listings feed: the cursor is the previous page's last
  * id, looked up whatever its status is now, so a report closed between

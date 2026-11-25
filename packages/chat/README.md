@@ -20,7 +20,7 @@ Every RPC runs behind the `ChatAuth` middleware, so any call can also fail with 
 
 ## Rules
 
-- `src/policy.ts` is the only place chat access is decided. The server calls it with rows it read; the web app mirrors `canSendChat` only to hide the composer.
+- `src/policy.ts` is the only place chat access is decided. The server calls it with rows it read; the web app mirrors `canSendChat` only to hide the composer, with `fetchTradeChatReport()` (`apps/web/src/lib/server/reports.server.ts`) standing in for chat's `openReport()`.
 - `MessageBody` sanitises on decode, then checks 1 to `MAX_MESSAGE_LENGTH` characters, and is `Redacted` so logs and decode errors print `<redacted>`. The web composer runs the same `sanitizeMessage()` before sending.
 - `sanitizeMessage()` strips bidi and control characters (except tab and newline), trims, and returns `""` when nothing visible remains, so invisible-only messages are refused.
 - `KnownTradeEvent` in `src/items.ts` is a hand-kept mirror of `TradeEvent` in `packages/database/src/web/types.ts`. Add every new event kind to both, because nothing checks them and a missing kind decodes as the loose `{ type: string }` shape the client shows as unknown.

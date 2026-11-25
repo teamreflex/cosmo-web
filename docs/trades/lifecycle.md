@@ -26,7 +26,7 @@
 | `accepted`               | `cancel`, nothing sent, arrived or marked paid  | a party not owed an unconfirmed payment | `cancelled`                                        |
 | `accepted`               | `dispute`, before the deadline                  | a party, or a ban                       | `disputed`                                         |
 | `accepted`               | `time_out`, deadline at or before the watermark | `trade-timers`                          | `timed_out` or `disputed`                          |
-| `accepted` or `disputed` | `staff_cancel`                                  | staff with `trade: ["cancel-any"]`      | `cancelled`                                        |
+| `accepted` or `disputed` | `staff_cancel`                                  | staff with `trade: ["cancel"]`          | `cancelled`                                        |
 | `disputed`               | `staff_complete`                                | staff with `trade: ["resolve-dispute"]` | `completed`                                        |
 | `disputed`               | `staff_extend`                                  | staff with `trade: ["resolve-dispute"]` | `accepted`, or `completed` when everything arrived |
 
@@ -95,7 +95,7 @@ Staff act through `lib/functions/staff-trades.ts` and `actOnTrade()` in `lib/ser
 - `$staffCompleteTrade` completes a disputed trade whatever its items have done.
 - `$staffExtendTradeDeadline` gives a disputed trade a new deadline from `extendedDeadline()`: the time it had left when it was last frozen, plus 24, 48 or 72 hours. It returns to `accepted` with `dispute_report_id` cleared.
 - An extend completes the trade instead when everything has arrived. Otherwise it is refused `trade_party_banned` while a party is banned, because they couldn't sign in to finish it.
-- `/admin/reports` offers complete and extend to `resolve-dispute` holders, and cancel to `cancel-any` holders.
+- `/admin/reports` offers complete and extend to `resolve-dispute` holders, and cancel to `cancel` holders.
 - Banning the poster is the only way staff remove a listing.
 
 ## Bans and account deletion

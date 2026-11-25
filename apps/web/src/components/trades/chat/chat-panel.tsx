@@ -109,7 +109,7 @@ type Props = {
   trade: TradeView;
   // the viewer's side, or null for staff
   side: TradeSide | null;
-  // the report page staff read it from, which their messages are audited under
+  // staff only: the open report they write under; without one they only read
   reportId?: string;
   // a message from the other party or staff arrived after the history
   onIncoming?: () => void;
@@ -118,10 +118,10 @@ type Props = {
 
 /**
  * A trade's chat: its messages and events as they happen, and a composer
- * while the trade is live. Staff read it while the trade or one of its
- * messages has an open report, and with `staffMessaging` also write to both
- * parties, ended trades included. A trade event refetches the trade, so the
- * page around it stays current.
+ * while the trade is live. Staff read it with `globalChatReading`, or with
+ * `chatReading` while it has an open report, and with `staffMessaging` write
+ * to both parties under that report, ended trades included. A trade event
+ * refetches the trade, so the page around it stays current.
  */
 export default function ChatPanel({
   trade,
@@ -133,10 +133,10 @@ export default function ChatPanel({
   const result = useAtomValue(conversationAtom(trade.id));
   const retry = useAtomRefresh(conversationAtom(trade.id));
   const hasPermission = useHasPermission();
-  // as canSendChat decides; staff only see the chat under an open report
+  // as canSendChat decides
   const canSend =
     side === null
-      ? hasPermission(staffMessaging)
+      ? reportId !== undefined && hasPermission(staffMessaging)
       : trade.state.status === "accepted" || trade.state.status === "disputed";
   const failed = AsyncResult.isFailure(result);
   const conversation = AsyncResult.isSuccess(result)
@@ -624,7 +624,7 @@ const errorText = {
   too_long: () => m.chat_too_long({ max: formatCount(MAX_MESSAGE_LENGTH) }),
   rate_limited: m.chat_rate_limited,
   read_only: m.chat_send_read_only,
-  closed_to_staff: m.chat_send_closed_to_staff,
+  no_open_report: m.chat_send_no_open_report,
   failed: m.chat_send_failed,
 };
 type SendFailure = Exclude<keyof typeof errorText, "too_long">;
@@ -682,14 +682,14 @@ function Composer({
           setFailure("rate_limited");
           return;
         case "ChatReadOnly":
-          // the trade ended meanwhile; the refetched page drops the composer
+        case "StaffAccessRequired":
+          // the trade ended or the report closed meanwhile; the refetched page drops the composer
           void queryClient.invalidateQueries({
             queryKey: tradeQuery(tradeId).queryKey,
           });
-          setFailure("read_only");
-          return;
-        case "StaffAccessRequired":
-          setFailure("closed_to_staff");
+          setFailure(
+            reason._tag === "ChatReadOnly" ? "read_only" : "no_open_report",
+          );
           return;
         default:
           setFailure("failed");
@@ -935,7 +935,7 @@ function ChatEnded({
   closed,
   onRetry,
 }: {
-  // the viewer is staff and the trade has no open report
+  // the viewer holds only chatReading and the trade has no open report
   closed: boolean;
   onRetry: () => void;
 }) {

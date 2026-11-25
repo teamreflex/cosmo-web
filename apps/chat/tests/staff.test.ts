@@ -1,5 +1,5 @@
 import { beforeAll, describe, expect, test } from "bun:test";
-import { Effect, Redacted } from "effect";
+import { Effect, Redacted, Stream } from "effect";
 import { TradeChannels } from "../src/channels";
 import {
   client,
@@ -9,6 +9,7 @@ import {
   outcome,
   run,
   seed,
+  sessionOf,
   type Signer,
   TRADE,
 } from "./harness";
@@ -18,7 +19,7 @@ let signer: Signer;
 const tokens: Record<string, string> = {};
 beforeAll(async () => {
   signer = await makeSigner();
-  for (const user of ["alice", "bob", "mod"]) {
+  for (const user of ["alice", "bob", "mod", "admin"]) {
     tokens[user] = await mint(signer, { sub: user });
   }
 });
@@ -44,7 +45,7 @@ function openDispute(state: MemoryState) {
 }
 
 describe("staff", () => {
-  test("access ends when the last open report closes", async () => {
+  test("read-chat ends when the last open report closes", async () => {
     const state = world();
     openDispute(state);
     await run(
@@ -65,6 +66,107 @@ describe("staff", () => {
         expect(yield* stream.failure).toMatchObject({
           _tag: "StaffAccessRequired",
         });
+      }),
+    );
+  });
+
+  test("read-chat-global keeps reading once the last open report closes, but stops writing", async () => {
+    const state = world();
+    openDispute(state);
+    await run(
+      state,
+      signer,
+      Effect.gen(function* () {
+        const channels = yield* TradeChannels;
+        const alice = yield* client(token("alice"));
+        yield* alice.Send({ tradeId: TRADE, body: Redacted.make("ready") });
+        const admin = yield* client(token("admin"));
+        const stream = yield* collect(admin.Join({ tradeId: TRADE }));
+        yield* stream.take(1);
+        for (const report of state.reports) {
+          report.status = "resolved";
+        }
+        yield* channels.changed(TRADE);
+        const { messageId } = yield* alice.Send({
+          tradeId: TRADE,
+          body: Redacted.make("still there?"),
+        });
+        const [message] = yield* stream.take(1);
+        expect(message).toMatchObject({ _tag: "Message", id: messageId });
+        expect(
+          yield* outcome(
+            admin.Send({ tradeId: TRADE, body: Redacted.make("hello") }),
+          ),
+        ).toBe("StaffAccessRequired");
+        expect(yield* outcome(admin.Remove({ messageId }))).toBe(
+          "StaffAccessRequired",
+        );
+        expect(state.audit).toEqual([]);
+      }),
+    );
+  });
+
+  test("with no report, read-chat-global reads and read-chat is refused", async () => {
+    const state = world();
+    await run(
+      state,
+      signer,
+      Effect.gen(function* () {
+        const alice = yield* client(token("alice"));
+        yield* alice.Send({ tradeId: TRADE, body: Redacted.make("hi") });
+        const admin = yield* client(token("admin"));
+        const [message] = yield* Stream.runCollect(
+          admin.Join({ tradeId: TRADE }).pipe(Stream.take(1)),
+        );
+        expect(message).toMatchObject({ _tag: "Message", sender: "from" });
+        const mod = yield* client(token("mod"));
+        expect(
+          yield* outcome(Stream.runDrain(mod.Join({ tradeId: TRADE }))),
+        ).toBe("StaffAccessRequired");
+      }),
+    );
+  });
+
+  test("a demotion ends a staff read at its next check", async () => {
+    const state = world();
+    await run(
+      state,
+      signer,
+      Effect.gen(function* () {
+        const channels = yield* TradeChannels;
+        const alice = yield* client(token("alice"));
+        yield* alice.Send({ tradeId: TRADE, body: Redacted.make("hi") });
+        const admin = yield* client(token("admin"));
+        const stream = yield* collect(admin.Join({ tradeId: TRADE }));
+        yield* stream.take(1);
+        // no user event: only the role read at the next check ends it
+        const session = state.sessions.get(sessionOf("admin"));
+        if (session !== undefined) {
+          state.sessions.set(sessionOf("admin"), { ...session, role: "user" });
+        }
+        yield* channels.changed(TRADE);
+        expect(yield* stream.failure).toMatchObject({ _tag: "ChatNotFound" });
+      }),
+    );
+  });
+
+  test("staff whose linked COSMO account is pinned on the trade can't join it", async () => {
+    const state = world();
+    openDispute(state);
+    state.relinks.push({ tradeId: TRADE, userId: "admin" });
+    await run(
+      state,
+      signer,
+      Effect.gen(function* () {
+        const admin = yield* client(token("admin"));
+        expect(
+          yield* outcome(Stream.runDrain(admin.Join({ tradeId: TRADE }))),
+        ).toBe("ChatNotFound");
+        expect(
+          yield* outcome(
+            admin.Send({ tradeId: TRADE, body: Redacted.make("hello") }),
+          ),
+        ).toBe("ChatNotFound");
       }),
     );
   });

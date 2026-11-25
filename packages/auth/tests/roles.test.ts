@@ -31,11 +31,19 @@ const auth = betterAuth({
  */
 const rows = [
   {
-    permissions: { trade: ["read-any"] },
+    permissions: { trade: ["view"] },
     expected: { user: false, tester: false, moderator: true, admin: true },
   },
   {
-    permissions: { trade: ["cancel-any"] },
+    permissions: { trade: ["read-chat"] },
+    expected: { user: false, tester: false, moderator: true, admin: true },
+  },
+  {
+    permissions: { trade: ["read-chat-global"] },
+    expected: { user: false, tester: false, moderator: false, admin: true },
+  },
+  {
+    permissions: { trade: ["cancel"] },
     expected: { user: false, tester: false, moderator: true, admin: true },
   },
   {
@@ -51,7 +59,7 @@ const rows = [
     expected: { user: false, tester: false, moderator: true, admin: true },
   },
   {
-    permissions: { feedback: ["remove-any"] },
+    permissions: { feedback: ["remove"] },
     expected: { user: false, tester: false, moderator: true, admin: true },
   },
   {

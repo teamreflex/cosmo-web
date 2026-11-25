@@ -91,15 +91,17 @@ When a plugin adds tables or columns:
 
 Roles and the access-control `statement` are defined once in `packages/auth/src/index.ts` ([`packages/auth/README.md`](../packages/auth/README.md)). Each role holds every permission of the roles ranked below it.
 
-| Permission                                                              | user | tester | moderator | admin |
-| ----------------------------------------------------------------------- | ---- | ------ | --------- | ----- |
-| `trade: read-any, cancel-any, resolve-dispute, remove-message, message` |      |        | x         | x     |
-| `feedback: remove-any`                                                  |      |        | x         | x     |
-| `report: read, resolve, escalate`                                       |      |        | x         | x     |
-| `user: ban, set-role`                                                   |      |        |           | x     |
-| `site: manage`, `audit: read`, `cosmo: history`                         |      |        |           | x     |
+| Permission                                                                 | user | tester | moderator | admin |
+| -------------------------------------------------------------------------- | ---- | ------ | --------- | ----- |
+| `trade: view, read-chat, cancel, resolve-dispute, remove-message, message` |      |        | x         | x     |
+| `trade: read-chat-global`                                                  |      |        |           | x     |
+| `feedback: remove`                                                         |      |        | x         | x     |
+| `report: read, resolve, escalate`                                          |      |        | x         | x     |
+| `user: ban, set-role`                                                      |      |        |           | x     |
+| `site: manage`, `audit: read`, `cosmo: history`                            |      |        |           | x     |
 
 - A tester holds exactly what a user holds.
+- What `trade: read-chat` and `read-chat-global` each open is in [`apps/chat/README.md`](../apps/chat/README.md#who-may-do-what).
 - Signed-out visitors are checked as `user`.
 - Never set `adminUserIds` in `adminPluginOptions`, because it bypasses every permission check.
 - Impersonation and session management are absent from the statement, so no role can be granted them. apps/chat also refuses impersonated sessions.

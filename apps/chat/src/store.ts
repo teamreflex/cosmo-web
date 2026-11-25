@@ -1,5 +1,5 @@
 import type { Role } from "@apollo/auth";
-import type { ChatAccess, ChatTrade } from "@apollo/chat/policy";
+import type { ChatTrade, SendAccess } from "@apollo/chat/policy";
 import { session, user } from "@apollo/database/auth";
 import {
   cosmoAccounts,
@@ -103,11 +103,15 @@ export class ChatStore extends Context.Service<
   ChatStore,
   {
     readonly session: (sessionId: string) => Store<StoredSession | null>;
-    readonly trade: (tradeId: string) => Store<StoredTrade | null>;
+    // the trade as `viewerId` stands to it
+    readonly trade: (
+      tradeId: string,
+      viewerId: string,
+    ) => Store<StoredTrade | null>;
     /**
      * An open or escalated report on the trade (a dispute) or on one of its
-     * messages: what lets staff read the chat. `preferredId` wins while it's
-     * one of them (the report staff act from), else the oldest.
+     * messages: what staff read and write the chat under. `preferredId` wins
+     * while it's one of them (the report staff act from), else the oldest.
      */
     readonly openReport: (
       tradeId: string,
@@ -128,7 +132,7 @@ export class ChatStore extends Context.Service<
     readonly insertMessage: (message: {
       tradeId: string;
       senderId: string;
-      as: ChatAccess;
+      as: SendAccess;
       recipientIds: ReadonlyArray<string>;
       body: Uint8Array;
     }) => Store<number>;
@@ -249,13 +253,27 @@ function makeDrizzleStore(db: DatabaseWeb["Service"]): ChatStore["Service"] {
           failed,
         ),
 
-    trade: (tradeId) =>
+    trade: (tradeId, viewerId) =>
       db
         .select({
           id: tradeOffers.id,
           status: tradeOffers.status,
           fromUserId: tradeOffers.fromUserId,
           toUserId: tradeOffers.toUserId,
+          viewerPinned: sql<boolean>`${exists(
+            db
+              .select({ id: cosmoAccounts.id })
+              .from(cosmoAccounts)
+              .where(
+                and(
+                  eq(cosmoAccounts.userId, viewerId),
+                  or(
+                    eq(cosmoAccounts.address, tradeOffers.fromAddress),
+                    eq(cosmoAccounts.address, tradeOffers.toAddress),
+                  ),
+                ),
+              ),
+          )}`,
         })
         .from(tradeOffers)
         .where(and(eq(tradeOffers.id, tradeId), eq(tradeOffers.kind, "trade")))

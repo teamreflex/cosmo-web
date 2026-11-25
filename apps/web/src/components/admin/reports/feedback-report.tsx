@@ -107,7 +107,7 @@ function RemoveFeedback({
   const queryClient = useQueryClient();
   const [removing, setRemoving] = useState(false);
 
-  if (!hasPermission({ feedback: ["remove-any"] })) return null;
+  if (!hasPermission({ feedback: ["remove"] })) return null;
 
   return (
     <>

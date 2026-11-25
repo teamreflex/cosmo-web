@@ -142,11 +142,16 @@ export type TradeView = TradeStage & {
 
 /**
  * Who is looking at a trade: one of its parties, or staff reading it, with
- * the dispute report it is under, if any.
+ * the dispute report it is under, if any, and the open report they write
+ * to its chat under, if any.
  */
 export type TradeViewer =
   | { kind: "party"; side: TradeSide }
-  | { kind: "staff"; report: { id: string; status: ReportStatus } | null };
+  | {
+      kind: "staff";
+      report: { id: string; status: ReportStatus } | null;
+      chatReportId: string | null;
+    };
 
 // the My trades tabs that list trades: live trades, and those that have ended
 export const myTradesTabs = ["active", "finished"] as const;

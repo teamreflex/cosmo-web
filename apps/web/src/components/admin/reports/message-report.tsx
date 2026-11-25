@@ -9,6 +9,7 @@ import type {
   AdminReportDetail,
   ReportTargetMessage,
 } from "@/lib/universal/reports";
+import { chatReaders } from "@apollo/chat/policy";
 import { useAtomRefresh, useAtomSet, useAtomValue } from "@effect/atom-react";
 import { IconLoader2 } from "@tabler/icons-react";
 import { useQueryClient } from "@tanstack/react-query";
@@ -24,13 +25,16 @@ type Props = {
 
 /**
  * The parts of a message report that come from chat: the report's own copy
- * of the message, which outlives removal and retention, Remove message, and
- * the trade's chat, read-only. Loaded only with a message report.
+ * of the message, which outlives removal and retention, Remove message, and,
+ * for staff who may read it, the trade's chat, which they write to under the
+ * report while it's open. Loaded only with a message report.
  */
 export default function MessageReport({ report, message }: Props) {
   const result = useAtomValue(reportedMessageAtom(report.id));
   const retry = useAtomRefresh(reportedMessageAtom(report.id));
   const open = report.status === "open" || report.status === "escalated";
+  const hasPermission = useHasPermission();
+  const readsChat = chatReaders.some(hasPermission);
 
   return (
     <>
@@ -65,11 +69,11 @@ export default function MessageReport({ report, message }: Props) {
       ) : (
         open && <RemoveMessage messageId={message.id} reportId={report.id} />
       )}
-      {message.trade !== null && (
+      {message.trade !== null && readsChat && (
         <ChatPanel
           trade={message.trade}
           side={null}
-          reportId={report.id}
+          reportId={open ? report.id : undefined}
           className="h-96"
         />
       )}

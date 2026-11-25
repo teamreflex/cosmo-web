@@ -48,7 +48,9 @@ export type MemoryRow =
  */
 export type MemoryState = {
   sessions: Map<string, StoredSession>;
-  trades: Map<string, StoredTrade>;
+  trades: Map<string, Omit<StoredTrade, "viewerPinned">>;
+  // users whose linked COSMO account is pinned on a trade they aren't a party to
+  relinks: { tradeId: string; userId: string }[];
   names: Map<string, string>;
   rows: MemoryRow[];
   reports: MemoryReport[];
@@ -65,6 +67,7 @@ export function makeState(): MemoryState {
   return {
     sessions: new Map(),
     trades: new Map(),
+    relinks: [],
     names: new Map(),
     rows: [],
     reports: [],
@@ -116,7 +119,19 @@ export function memoryStoreLayer(state: MemoryState) {
   const store: ChatStore["Service"] = {
     session: (sessionId) =>
       Effect.sync(() => state.sessions.get(sessionId) ?? null),
-    trade: (tradeId) => Effect.sync(() => state.trades.get(tradeId) ?? null),
+    trade: (tradeId, viewerId) =>
+      Effect.sync(() => {
+        const trade = state.trades.get(tradeId);
+        return trade === undefined
+          ? null
+          : {
+              ...trade,
+              viewerPinned: state.relinks.some(
+                (relink) =>
+                  relink.tradeId === tradeId && relink.userId === viewerId,
+              ),
+            };
+      }),
     openReport: (tradeId, preferredId) =>
       Effect.sync(() => {
         const open = state.reports.filter(

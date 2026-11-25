@@ -47,7 +47,10 @@ export class ChatNotFound extends Schema.TaggedError<ChatNotFound>()(
   override readonly [ErrorReporter.ignore] = true;
 }
 
-// staff read a chat only while it has an open report or dispute
+/**
+ * Staff without `globalChatReading` read a chat, and staff write to or
+ * remove from one, only while it has an open report or dispute.
+ */
 export class StaffAccessRequired extends Schema.TaggedError<StaffAccessRequired>()(
   "StaffAccessRequired",
   {},

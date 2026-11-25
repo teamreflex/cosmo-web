@@ -1,4 +1,5 @@
 import { can } from "@apollo/auth";
+import { isBanActive } from "@apollo/auth/guard";
 import {
   AlreadyReported,
   ChatNotFound,
@@ -17,7 +18,7 @@ import {
   type ChatViewer,
 } from "@apollo/chat/policy";
 import { ChatRpcs, CurrentUser } from "@apollo/chat/protocol";
-import { Duration, Effect, Option, Ref, Stream } from "effect";
+import { Clock, Duration, Effect, Option, Ref, Stream } from "effect";
 import { RateLimiter } from "effect/persistence";
 import { TradeChannels } from "./channels";
 import { MessageCipher } from "./cipher";
@@ -80,7 +81,7 @@ export const HandlersLive = ChatRpcs.toLayer(
       tradeId: string,
       reportId: string | null = null,
     ) {
-      const trade = yield* unavailable(store.trade(tradeId));
+      const trade = yield* unavailable(store.trade(tradeId, viewer.userId));
       if (trade === null) {
         return yield* new ChatNotFound();
       }
@@ -89,6 +90,26 @@ export const HandlersLive = ChatRpcs.toLayer(
       );
       const access = yield* canJoinChat(viewer, trade, openReport);
       return { trade, access };
+    });
+
+    /**
+     * The viewer with the role the database holds now. A Join's later checks
+     * read it again, so a demotion or ban ends a staff read even when the
+     * user event announcing it is lost. A session that has ended or been
+     * banned reads as a plain user, which still reads as a party.
+     */
+    const currentViewer = Effect.fn("chat/currentViewer")(function* (caller: {
+      userId: string;
+      sessionId: string;
+    }) {
+      const found = yield* unavailable(store.session(caller.sessionId));
+      const now = new Date(yield* Clock.currentTimeMillis);
+      const active =
+        found !== null && found.expiresAt > now && !isBanActive(found, now);
+      return {
+        userId: caller.userId,
+        role: active ? found.role : "user",
+      } satisfies ChatViewer;
     });
 
     /**
@@ -134,8 +155,9 @@ export const HandlersLive = ChatRpcs.toLayer(
        * committed after the read is missed, and says when that history is
        * all sent. Each signal then reads the trade's own rows past the last
        * id sent: an id is sent once, and only ever to a stream on its own
-       * trade. Every page is read under its own access check, so staff lose
-       * the chat when its last open report closes.
+       * trade. Every page is read under its own access check, with the
+       * viewer's role read again, so a viewer who loses the chat mid-read
+       * gets no later page.
        */
       Join: ({ tradeId, afterId }) =>
         Stream.unwrap(
@@ -147,7 +169,8 @@ export const HandlersLive = ChatRpcs.toLayer(
 
             const signals = yield* channels.subscribe(tradeId);
             const last = yield* Ref.make(afterId ?? 0);
-            const recheck = readAccess(viewer, tradeId).pipe(
+            const recheck = currentViewer(viewer).pipe(
+              Effect.flatMap((current) => readAccess(current, tradeId)),
               Effect.map((current) => current.trade),
             );
             /**
@@ -289,7 +312,9 @@ export const HandlersLive = ChatRpcs.toLayer(
           if (copy === null || copy.senderId === viewer.userId) {
             return yield* new ReportNotFound();
           }
-          const trade = yield* unavailable(store.trade(copy.tradeId));
+          const trade = yield* unavailable(
+            store.trade(copy.tradeId, viewer.userId),
+          );
           return {
             messageId: copy.messageId,
             tradeId: copy.tradeId,

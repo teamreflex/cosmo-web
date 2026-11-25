@@ -37,7 +37,7 @@ The limits on posting, editing, claiming, cancelling, disputing and rating are i
 - A rating counts toward the score only when the trade completed, a token arrived or a payment was confirmed (`feedbackScored()`), so a staff-cancelled trade with nothing sent stays on record without farming score.
 - `user_feedback_stats` is keyed by COSMO address, so ratings follow the address across account deletion and relinking ([docs/accounts.md](../accounts.md)).
 - The stats are updated by one atomic upsert in the rating's transaction (`addFeedbackStats()`), so concurrent ratings of one address queue on its row. The score is positives minus negatives.
-- Staff with `feedback: ["remove-any"]` remove a rating by stamping `removed_at`, which takes a scored rating back out of the stats.
+- Staff with `feedback: ["remove"]` remove a rating by stamping `removed_at`, which takes a scored rating back out of the stats.
 - Ratings show on `/@{username}/feedback`, with badges on listings and trades.
 
 ## Notices

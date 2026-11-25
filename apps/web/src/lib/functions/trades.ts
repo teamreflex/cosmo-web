@@ -2,6 +2,7 @@ import { db } from "@/lib/server/db";
 import { alertDispute } from "@/lib/server/discord.server";
 import { authenticatedMiddleware } from "@/lib/server/middlewares";
 import { consumeRateLimit } from "@/lib/server/rate-limit.server";
+import { fetchTradeChatReport } from "@/lib/server/reports.server";
 import { publishTradeUpdates } from "@/lib/server/trade-events.server";
 import {
   foldTradeItems,
@@ -41,6 +42,7 @@ import {
   type TradeViewer,
 } from "@/lib/universal/trades";
 import { can, parseRole } from "@apollo/auth";
+import { chatReaders } from "@apollo/chat/policy";
 import {
   cosmoAccounts,
   tradeMessages,
@@ -78,9 +80,11 @@ import {
 
 /**
  * A trade the caller is part of, with their side, or for staff who may read
- * any trade, the trade with its dispute report. Anyone else gets null, so a
- * trade's existence never leaks. Direct offers show from the moment they're
- * sent.
+ * any trade, the trade with its dispute report and, when they may read its
+ * chat, the open report they write to it under. A staff member whose linked
+ * COSMO account is pinned on the trade isn't a party any more, and gets null
+ * like anyone else, so a trade's existence never leaks. Direct offers show
+ * from the moment they're sent.
  */
 export const $fetchTrade = createServerFn({ method: "GET" })
   .validator(tradeIdInputSchema)
@@ -98,12 +102,22 @@ export const $fetchTrade = createServerFn({ method: "GET" })
       if (viewer.kind === "party") {
         return { trade, viewer };
       }
-      return can(parseRole(role), { trade: ["read-any"] })
-        ? {
-            trade,
-            viewer: { kind: "staff", report: read.disputeReport },
-          }
-        : null;
+      const staffRole = parseRole(role);
+      if (viewer.kind === "former" || !can(staffRole, { trade: ["view"] })) {
+        return null;
+      }
+      return {
+        trade,
+        viewer: {
+          kind: "staff",
+          report: read.disputeReport,
+          chatReportId: chatReaders.some((permissions) =>
+            can(staffRole, permissions),
+          )
+            ? await fetchTradeChatReport(data.tradeId)
+            : null,
+        },
+      };
     },
   );
 
