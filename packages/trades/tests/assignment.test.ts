@@ -28,6 +28,7 @@ function objekt(
       `${attributes.season}-${attributes.member}-${attributes.collectionNo}`.toLowerCase(),
     artist: attributes.artist,
     member: attributes.member,
+    members: overrides.members ?? [attributes.member],
     collectionNo: attributes.collectionNo,
     season: attributes.season,
     class: attributes.class,

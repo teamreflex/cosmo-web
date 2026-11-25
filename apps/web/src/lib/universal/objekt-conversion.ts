@@ -12,6 +12,8 @@ export namespace Objekt {
     // the artist's id lowercased, as the indexer stores it
     artist: string;
     member: string;
+    // every member the collection names; a Unit collection's member is its pairing label
+    members: string[];
     season: string;
     class: string;
     collectionNo: string;
@@ -65,6 +67,7 @@ export namespace Objekt {
       id: objekt.id,
       artist: objekt.artist.toLowerCase(),
       member: objekt.member,
+      members: objekt.members,
       season: objekt.season,
       class: objekt.class,
       collectionNo: objekt.collectionNo,

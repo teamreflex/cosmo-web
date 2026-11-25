@@ -62,7 +62,7 @@ export const openListing = sql`${tradeOffers.kind} = 'listing' AND ${tradeOffers
 
 const offeredColumns = {
   season: { listing: tradeOffers.seasons, item: tradeOfferItems.season },
-  member: { listing: tradeOffers.members, item: tradeOfferItems.member },
+  member: { listing: tradeOffers.members, item: tradeOfferItems.members },
   class: { listing: tradeOffers.classes, item: tradeOfferItems.class },
   on_offline: {
     listing: tradeOffers.onOfflines,
@@ -78,9 +78,9 @@ const wantColumns = {
     option: tradeListingWantOptions.season,
   },
   member: {
-    exact: tradeListingWants.member,
+    exact: tradeListingWants.members,
     range: tradeListingWantRanges.members,
-    option: tradeListingWantOptions.member,
+    option: tradeListingWantOptions.members,
   },
   class: {
     exact: tradeListingWants.class,
@@ -139,8 +139,11 @@ function offeredConditions(
   const item = and(
     eq(tradeOfferItems.offerId, tradeOffers.id),
     isNull(tradeOfferItems.leftAt),
+    // members match when any member the item's collection names is one of the values
     ...columns.map(({ column, values }) =>
-      inArray(offeredColumns[column].item, values),
+      column === "member"
+        ? arrayOverlaps(offeredColumns.member.item, values)
+        : inArray(offeredColumns[column].item, values),
     ),
     ...(artists.length ? [inArray(tradeOfferItems.artist, artists)] : []),
   );
@@ -171,7 +174,9 @@ function lookingForConditions(side: FeedSide) {
   const exact = and(
     eq(tradeListingWants.kind, "exact"),
     ...columns.map(({ column, values }) =>
-      inArray(wantColumns[column].exact, values),
+      column === "member"
+        ? arrayOverlaps(wantColumns.member.exact, values)
+        : inArray(wantColumns[column].exact, values),
     ),
   );
   const range = and(
@@ -201,7 +206,9 @@ function lookingForConditions(side: FeedSide) {
           and(
             eq(tradeListingWantOptions.wantId, tradeListingWants.id),
             ...columns.map(({ column, values }) =>
-              inArray(wantColumns[column].option, values),
+              column === "member"
+                ? arrayOverlaps(wantColumns.member.option, values)
+                : inArray(wantColumns[column].option, values),
             ),
           ),
         ),
@@ -431,6 +438,7 @@ export async function readIndexed(slugs: string[], tokenIds: number[]) {
                   slug: collection.slug,
                   artist: collection.artist,
                   member: collection.member,
+                  members: collection.members,
                   collectionNo: collection.collectionNo,
                   season: collection.season,
                   class: collection.class,

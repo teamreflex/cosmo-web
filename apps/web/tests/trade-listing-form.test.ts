@@ -39,6 +39,7 @@ const attributes = (slug: string, member: string, artist = "artms") => ({
   slug,
   artist,
   member,
+  members: [member],
   season: "Atom02",
   class: "Special",
   onOffline: "online",

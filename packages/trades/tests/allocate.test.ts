@@ -29,6 +29,7 @@ function objekt(
     slug: `${season}-${member}-${collectionNo}`.toLowerCase(),
     artist: "artms",
     member,
+    members: [member],
     collectionNo,
     season,
     class: collectionNo.startsWith("1") ? "First" : "Double",

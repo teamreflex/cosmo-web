@@ -200,10 +200,7 @@ export function withCollections(selected: string[] | null | undefined) {
 export function withRange(filter: RangeFilter) {
   return and(
     ...withSelectedArtists(filter.artist),
-    // member, not members, because matchesRange() compares an objekt's single member
-    ...(filter.member.length > 0
-      ? [inArray(collections.member, filter.member)]
-      : []),
+    ...withMember(filter.member),
     ...withCollections(filter.collectionNo),
     ...withSeason(filter.season),
     ...withClass(filter.class),
