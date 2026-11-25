@@ -49,7 +49,7 @@ export async function getTypesenseResults({
     .search(
       {
         q: query,
-        query_by: "member,description,season,shortCode",
+        query_by: "members,description,season,shortCode",
         query_by_weights: "3,2,1,1",
         sort_by: buildSortBy(supportedSort(filters.sort, collectionSorts)),
         page: page,
@@ -81,7 +81,7 @@ export async function searchCollections(query: string) {
   const result = await typesense.collections("collections").documents().search(
     {
       q: query,
-      query_by: "member,collectionNo,season,shortCode,description",
+      query_by: "members,collectionNo,season,shortCode,description",
       query_by_weights: "3,3,2,1,1",
       sort_by: "_text_match:desc,createdAt:desc",
       per_page: 20,
@@ -128,9 +128,9 @@ function buildFilterBy(filters: CosmoFilters, artists: string[]) {
     allFilters.push(`artist:[${artists.join(",")}]`);
   }
 
-  // member filter
+  // member filter, matching any member a collection names
   if (filters.member && filters.member.length > 0) {
-    allFilters.push(`member:[${filters.member.join(",")}]`);
+    allFilters.push(`members:[${filters.member.join(",")}]`);
   }
 
   // season filter

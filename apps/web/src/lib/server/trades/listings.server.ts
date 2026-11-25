@@ -430,7 +430,8 @@ export function listingArrays(offered: InventoryObjekt[]) {
     slugs: distinct(offered.map((token) => token.slug)),
     artists: distinct(offered.map((token) => token.artist)),
     seasons: distinct(offered.map((token) => token.season)),
-    members: distinct(offered.map((token) => token.member)),
+    // every member the offered collections name, as the feed's member filter matches items
+    members: distinct(offered.flatMap((token) => token.members)),
     classes: distinct(offered.map((token) => token.class)),
     onOfflines: distinct(offered.map((token) => token.onOffline)),
   };

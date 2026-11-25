@@ -1,0 +1,215 @@
+{
+  "type": "diff",
+  "version": "10",
+  "dialect": "postgres",
+  "id": "441fbd56-5802-45ec-b08f-e4d8b5781bbf",
+  "prevIds": [
+    "f447e7cb-9536-4949-845b-ee75676a6ac9"
+  ],
+  "footprints": [
+    {
+      "statementType": "add_column",
+      "statementTarget": [
+        "column",
+        "public",
+        "trade_listing_want_options",
+        "members"
+      ],
+      "writes": [
+        "s|col|public.trade_listing_want_options.members",
+        "n|col|public.trade_listing_want_options.members",
+        "e|col|public.trade_listing_want_options.members"
+      ],
+      "reads": [
+        "n|tbl|public.trade_listing_want_options",
+        "n|sch|public"
+      ]
+    },
+    {
+      "statementType": "add_column",
+      "statementTarget": [
+        "column",
+        "public",
+        "trade_listing_wants",
+        "members"
+      ],
+      "writes": [
+        "s|col|public.trade_listing_wants.members",
+        "n|col|public.trade_listing_wants.members",
+        "e|col|public.trade_listing_wants.members"
+      ],
+      "reads": [
+        "n|tbl|public.trade_listing_wants",
+        "n|sch|public"
+      ]
+    },
+    {
+      "statementType": "add_column",
+      "statementTarget": [
+        "column",
+        "public",
+        "trade_offer_items",
+        "members"
+      ],
+      "writes": [
+        "s|col|public.trade_offer_items.members",
+        "n|col|public.trade_offer_items.members",
+        "e|col|public.trade_offer_items.members"
+      ],
+      "reads": [
+        "n|tbl|public.trade_offer_items",
+        "n|sch|public"
+      ]
+    },
+    {
+      "statementType": "alter_check",
+      "statementTarget": [
+        "table",
+        "public",
+        "trade_listing_wants"
+      ],
+      "writes": [
+        "s|ck|public.trade_listing_wants.trade_listing_wants_shape_chk"
+      ],
+      "reads": [
+        "n|tbl|public.trade_listing_wants",
+        "n|sch|public",
+        "n|col|public.trade_listing_wants.kind",
+        "n|col|public.trade_listing_wants.count",
+        "n|col|public.trade_listing_wants.slug",
+        "n|col|public.trade_listing_wants.artist",
+        "n|col|public.trade_listing_wants.member",
+        "n|col|public.trade_listing_wants.members",
+        "n|col|public.trade_listing_wants.season",
+        "n|col|public.trade_listing_wants.class",
+        "n|col|public.trade_listing_wants.on_offline",
+        "n|col|public.trade_listing_wants.amount",
+        "n|col|public.trade_listing_wants.currency",
+        "e|col|public.trade_listing_wants.kind",
+        "e|col|public.trade_listing_wants.count",
+        "e|col|public.trade_listing_wants.slug",
+        "e|col|public.trade_listing_wants.artist",
+        "e|col|public.trade_listing_wants.member",
+        "e|col|public.trade_listing_wants.season",
+        "e|col|public.trade_listing_wants.class",
+        "e|col|public.trade_listing_wants.on_offline",
+        "e|col|public.trade_listing_wants.amount",
+        "e|col|public.trade_listing_wants.currency"
+      ],
+      "sqlHash": "49a5a84f2ae74c54"
+    },
+    {
+      "statementType": "alter_check",
+      "statementTarget": [
+        "table",
+        "public",
+        "trade_offer_items"
+      ],
+      "writes": [
+        "s|ck|public.trade_offer_items.trade_offer_items_objekt_chk"
+      ],
+      "reads": [
+        "n|tbl|public.trade_offer_items",
+        "n|sch|public",
+        "n|col|public.trade_offer_items.kind",
+        "n|col|public.trade_offer_items.token_id",
+        "n|col|public.trade_offer_items.slug",
+        "n|col|public.trade_offer_items.artist",
+        "n|col|public.trade_offer_items.member",
+        "n|col|public.trade_offer_items.members",
+        "n|col|public.trade_offer_items.season",
+        "n|col|public.trade_offer_items.class",
+        "n|col|public.trade_offer_items.on_offline",
+        "n|col|public.trade_offer_items.amount",
+        "n|col|public.trade_offer_items.currency",
+        "n|col|public.trade_offer_items.method",
+        "n|col|public.trade_offer_items.marked_paid_at",
+        "n|col|public.trade_offer_items.confirmed_at",
+        "n|col|public.trade_offer_items.transferred_at",
+        "n|col|public.trade_offer_items.tx_hash",
+        "n|col|public.trade_offer_items.live",
+        "e|col|public.trade_offer_items.kind",
+        "e|col|public.trade_offer_items.token_id",
+        "e|col|public.trade_offer_items.slug",
+        "e|col|public.trade_offer_items.artist",
+        "e|col|public.trade_offer_items.member",
+        "e|col|public.trade_offer_items.season",
+        "e|col|public.trade_offer_items.class",
+        "e|col|public.trade_offer_items.on_offline",
+        "e|col|public.trade_offer_items.amount",
+        "e|col|public.trade_offer_items.currency",
+        "e|col|public.trade_offer_items.method",
+        "e|col|public.trade_offer_items.marked_paid_at",
+        "e|col|public.trade_offer_items.confirmed_at",
+        "e|col|public.trade_offer_items.transferred_at",
+        "e|col|public.trade_offer_items.tx_hash",
+        "e|col|public.trade_offer_items.live"
+      ],
+      "sqlHash": "34257e60831b350e"
+    }
+  ],
+  "deltas": [
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "trade_listing_want_options",
+        "name": "members",
+        "type": "varchar(32)",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 1,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "trade_listing_wants",
+        "name": "members",
+        "type": "varchar(32)",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 1,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "trade_offer_items",
+        "name": "members",
+        "type": "varchar(32)",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 1,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "alter",
+      "key": "checks\u0000[\"public\",\"trade_listing_wants\",\"trade_listing_wants_shape_chk\"]",
+      "set": {
+        "value": "CASE \"kind\"\n        WHEN 'exact' THEN coalesce(\"count\", 0) > 0 AND num_nulls(\"slug\", \"artist\", \"member\", \"members\", \"season\", \"class\", \"on_offline\") = 0 AND cardinality(\"members\") > 0 AND num_nonnulls(\"amount\", \"currency\") = 0\n        WHEN 'range' THEN coalesce(\"count\", 0) > 0 AND num_nonnulls(\"slug\", \"artist\", \"member\", \"members\", \"season\", \"class\", \"on_offline\", \"amount\", \"currency\") = 0\n        WHEN 'choice' THEN coalesce(\"count\", 0) > 0 AND num_nonnulls(\"slug\", \"artist\", \"member\", \"members\", \"season\", \"class\", \"on_offline\", \"amount\", \"currency\") = 0\n        ELSE coalesce(\"amount\", 1) > 0 AND \"currency\" IS NOT NULL AND num_nonnulls(\"count\", \"slug\", \"artist\", \"member\", \"members\", \"season\", \"class\", \"on_offline\") = 0\n      END"
+      }
+    },
+    {
+      "op": "alter",
+      "key": "checks\u0000[\"public\",\"trade_offer_items\",\"trade_offer_items_objekt_chk\"]",
+      "set": {
+        "value": "CASE \"kind\" WHEN 'objekt' THEN num_nulls(\"token_id\", \"slug\", \"artist\", \"member\", \"members\", \"season\", \"class\", \"on_offline\") = 0 AND cardinality(\"members\") > 0 AND num_nonnulls(\"amount\", \"currency\", \"method\", \"marked_paid_at\", \"confirmed_at\") = 0 ELSE num_nonnulls(\"token_id\", \"slug\", \"artist\", \"member\", \"members\", \"season\", \"class\", \"on_offline\", \"transferred_at\", \"tx_hash\") = 0 AND coalesce(\"amount\", 0) > 0 AND \"currency\" IS NOT NULL AND NOT \"live\" END"
+      }
+    }
+  ]
+}

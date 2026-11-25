@@ -56,7 +56,8 @@ export const setupTypesenseCollection = Effect.gen(function* () {
       existing.fields?.some((f) => f.name === "memberSortOrder") &&
       existing.fields?.some((f) => f.name === "collectionNo" && f.sort) &&
       existing.fields?.some((f) => f.name === "frontImageVersion") &&
-      existing.fields?.some((f) => f.name === "unobtainable");
+      existing.fields?.some((f) => f.name === "unobtainable") &&
+      existing.fields?.some((f) => f.name === "members");
 
     if (upToDate) {
       return void 0;
@@ -92,6 +93,14 @@ export const setupTypesenseCollection = Effect.gen(function* () {
           {
             name: "member",
             type: "string",
+            index: true,
+            facet: true,
+          },
+          {
+            // every member the collection names; a Unit collection lists each
+            // member and its pairing label, so filters and search match on it
+            name: "members",
+            type: "string[]",
             index: true,
             facet: true,
           },

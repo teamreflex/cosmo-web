@@ -921,6 +921,8 @@ export const tradeOfferItems = pgTable(
     slug: varchar("slug", { length: 255 }),
     artist: varchar("artist", { length: 32 }),
     member: varchar("member", { length: 32 }),
+    // every member the collection names, which the member filters match on
+    members: varchar("members", { length: 32 }).array(),
     season: varchar("season", { length: 32 }),
     class: varchar("class", { length: 8 }),
     onOffline: varchar("on_offline", { length: 16 }),
@@ -953,7 +955,7 @@ export const tradeOfferItems = pgTable(
     index("trade_offer_items_listing_idx").on(t.listingId),
     check(
       "trade_offer_items_objekt_chk",
-      sql`CASE ${t.kind} WHEN 'objekt' THEN num_nulls(${t.tokenId}, ${t.slug}, ${t.artist}, ${t.member}, ${t.season}, ${t.class}, ${t.onOffline}) = 0 AND num_nonnulls(${t.amount}, ${t.currency}, ${t.method}, ${t.markedPaidAt}, ${t.confirmedAt}) = 0 ELSE num_nonnulls(${t.tokenId}, ${t.slug}, ${t.artist}, ${t.member}, ${t.season}, ${t.class}, ${t.onOffline}, ${t.transferredAt}, ${t.txHash}) = 0 AND coalesce(${t.amount}, 0) > 0 AND ${t.currency} IS NOT NULL AND NOT ${t.live} END`,
+      sql`CASE ${t.kind} WHEN 'objekt' THEN num_nulls(${t.tokenId}, ${t.slug}, ${t.artist}, ${t.member}, ${t.members}, ${t.season}, ${t.class}, ${t.onOffline}) = 0 AND cardinality(${t.members}) > 0 AND num_nonnulls(${t.amount}, ${t.currency}, ${t.method}, ${t.markedPaidAt}, ${t.confirmedAt}) = 0 ELSE num_nonnulls(${t.tokenId}, ${t.slug}, ${t.artist}, ${t.member}, ${t.members}, ${t.season}, ${t.class}, ${t.onOffline}, ${t.transferredAt}, ${t.txHash}) = 0 AND coalesce(${t.amount}, 0) > 0 AND ${t.currency} IS NOT NULL AND NOT ${t.live} END`,
     ),
     check(
       "trade_offer_items_transfer_chk",
@@ -995,6 +997,8 @@ export const tradeListingWants = pgTable(
     slug: varchar("slug", { length: 255 }),
     artist: varchar("artist", { length: 32 }),
     member: varchar("member", { length: 32 }),
+    // every member an exact row's collection names, which the member filters match on
+    members: varchar("members", { length: 32 }).array(),
     season: varchar("season", { length: 32 }),
     class: varchar("class", { length: 8 }),
     onOffline: varchar("on_offline", { length: 16 }),
@@ -1012,10 +1016,10 @@ export const tradeListingWants = pgTable(
     check(
       "trade_listing_wants_shape_chk",
       sql`CASE ${t.kind}
-        WHEN 'exact' THEN coalesce(${t.count}, 0) > 0 AND num_nulls(${t.slug}, ${t.artist}, ${t.member}, ${t.season}, ${t.class}, ${t.onOffline}) = 0 AND num_nonnulls(${t.amount}, ${t.currency}) = 0
-        WHEN 'range' THEN coalesce(${t.count}, 0) > 0 AND num_nonnulls(${t.slug}, ${t.artist}, ${t.member}, ${t.season}, ${t.class}, ${t.onOffline}, ${t.amount}, ${t.currency}) = 0
-        WHEN 'choice' THEN coalesce(${t.count}, 0) > 0 AND num_nonnulls(${t.slug}, ${t.artist}, ${t.member}, ${t.season}, ${t.class}, ${t.onOffline}, ${t.amount}, ${t.currency}) = 0
-        ELSE coalesce(${t.amount}, 1) > 0 AND ${t.currency} IS NOT NULL AND num_nonnulls(${t.count}, ${t.slug}, ${t.artist}, ${t.member}, ${t.season}, ${t.class}, ${t.onOffline}) = 0
+        WHEN 'exact' THEN coalesce(${t.count}, 0) > 0 AND num_nulls(${t.slug}, ${t.artist}, ${t.member}, ${t.members}, ${t.season}, ${t.class}, ${t.onOffline}) = 0 AND cardinality(${t.members}) > 0 AND num_nonnulls(${t.amount}, ${t.currency}) = 0
+        WHEN 'range' THEN coalesce(${t.count}, 0) > 0 AND num_nonnulls(${t.slug}, ${t.artist}, ${t.member}, ${t.members}, ${t.season}, ${t.class}, ${t.onOffline}, ${t.amount}, ${t.currency}) = 0
+        WHEN 'choice' THEN coalesce(${t.count}, 0) > 0 AND num_nonnulls(${t.slug}, ${t.artist}, ${t.member}, ${t.members}, ${t.season}, ${t.class}, ${t.onOffline}, ${t.amount}, ${t.currency}) = 0
+        ELSE coalesce(${t.amount}, 1) > 0 AND ${t.currency} IS NOT NULL AND num_nonnulls(${t.count}, ${t.slug}, ${t.artist}, ${t.member}, ${t.members}, ${t.season}, ${t.class}, ${t.onOffline}) = 0
       END`,
     ),
   ],
@@ -1067,6 +1071,8 @@ export const tradeListingWantOptions = pgTable(
     slug: varchar("slug", { length: 255 }).notNull(),
     artist: varchar("artist", { length: 32 }).notNull(),
     member: varchar("member", { length: 32 }).notNull(),
+    // every member the collection names, which the member filters match on
+    members: varchar("members", { length: 32 }).array().notNull(),
     season: varchar("season", { length: 32 }).notNull(),
     class: varchar("class", { length: 8 }).notNull(),
     onOffline: varchar("on_offline", { length: 16 }).notNull(),

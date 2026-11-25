@@ -7,7 +7,7 @@ Apollo mirrors data from MODHAUS' COSMO app and the Abstract chain. This file co
 A `collection` is a type of objekt. It has:
 
 - a group (artist), e.g. tripleS, ARTMS
-- a member, e.g. Seoyeon, Heejin
+- one or more members, e.g. Seoyeon, Heejin ([Members](#members))
 - a season, e.g. Atom01, Binary01, Cream01
 - a class, e.g. First, Double, Special, Premier, Welcome
 - a number, e.g. 101Z, 201Z, 320Z, 401A
@@ -18,6 +18,22 @@ About the number:
 - The indexer sets `on_offline` to `online` only when the number contains `Z`, so an odd number such as `atom01-artmstest-100u` counts as offline.
 - The first digit hints at the class: 1 is Welcome or First, 2 Special, 3 Double, 4 Premier.
 - Welcome class objekts are always 100Z.
+
+### Members
+
+COSMO metadata carries one `Member` trait per member, so a collection can name several.
+
+| Collection                               | `Member` traits                 | `collection.member` |
+| ---------------------------------------- | ------------------------------- | ------------------- |
+| most                                     | `Xinyu`                         | `Xinyu`             |
+| Unit class                               | `Xinyu`, `ChaeWon`, `S15 x S21` | `S15 x S21`         |
+| `cream01-s21-325z` to `cream01-s24-325z` | `ChaeWon`, `S21`                | `S21`               |
+
+- `collection.members` holds every trait, de-duplicated and sorted; `collection.member` holds one, the pairing label for a Unit collection.
+- Member filters and search match on `members`, so a Unit collection shows under each of its members.
+- Progress, the progress leaderboard and stats key on `member`, so a Unit collection counts only under its pairing label, which no member's progress page shows.
+- COSMO writes the label's `x` in either case: `S1 X S13` in Cream02, `S15 x S21` in Divine02.
+- `CHK_collection_members` keeps `members` non-empty with no NULLs or repeats.
 
 ### Unobtainable collections
 

@@ -2,6 +2,7 @@ import { runCosmo } from "@apollo/cosmo/runtime";
 import { fetchMetadataV3 } from "@apollo/cosmo/server/metadata";
 import {
   type CosmoObjektMetadataV1,
+  type NormalizedObjektMetadata,
   normalizeV3,
 } from "@apollo/cosmo/types/metadata";
 import { addr, Addresses, chunk, slugifyObjekt } from "@apollo/util";
@@ -251,7 +252,7 @@ processor.run(db, async (ctx) => {
  */
 async function handleCollection(
   ctx: ProcessorContext<Store>,
-  metadata: CosmoObjektMetadataV1,
+  metadata: NormalizedObjektMetadata,
   buffer: Map<string, Collection>,
   transfer: Transfer,
 ) {
@@ -296,6 +297,7 @@ async function handleCollection(
   // set and/or update metadata
   collection.season = metadata.objekt.season;
   collection.member = metadata.objekt.member;
+  collection.members = metadata.objekt.members;
   collection.artist = artist.toLowerCase();
   collection.collectionNo = metadata.objekt.collectionNo;
   collection.class = metadata.objekt.class;
