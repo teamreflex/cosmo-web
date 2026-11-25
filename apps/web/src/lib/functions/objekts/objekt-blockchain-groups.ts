@@ -158,6 +158,7 @@ export const $fetchObjektsBlockchainGroups = createServerFn({ method: "GET" })
         id: collections.id,
         artist: collections.artist,
         member: collections.member,
+        members: collections.members,
         season: collections.season,
         class: collections.class,
         collectionNo: collections.collectionNo,

@@ -12,6 +12,7 @@ import { addr, isEqual } from "@apollo/util";
 import {
   and,
   type AnyColumn,
+  arrayOverlaps,
   eq,
   inArray,
   isNull,
@@ -52,6 +53,7 @@ const indexedAttributeColumns = {
   slug: collections.slug,
   artist: collections.artist,
   member: collections.member,
+  members: collections.members,
   collectionNo: collections.collectionNo,
   season: collections.season,
   class: collections.class,
@@ -295,6 +297,7 @@ export async function resolveWants(
       slug: collections.slug,
       artist: collections.artist,
       member: collections.member,
+      members: collections.members,
       season: collections.season,
       class: collections.class,
       onOffline: collections.onOffline,
@@ -394,10 +397,13 @@ export async function unusableTokens(
  */
 function itemRangeConditions(filter: RangeFilter) {
   return and(
+    // a member matches any member the item's collection names, as matchesRange() checks
+    ...(filter.member.length
+      ? [arrayOverlaps(tradeOfferItems.members, filter.member)]
+      : []),
     ...(
       [
         [tradeOfferItems.artist, filter.artist],
-        [tradeOfferItems.member, filter.member],
         [tradeOfferItems.season, filter.season],
         [tradeOfferItems.class, filter.class],
         [tradeOfferItems.onOffline, filter.on_offline],
