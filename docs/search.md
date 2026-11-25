@@ -34,6 +34,7 @@ imported = some {        imported unchanged, so the retry and the
 ```
 
 - `unobtainable` is flipped by hand long after `createdAt`, so the watermark alone never sees the change.
+- Any other column that changes after import, such as `members` refreshed by the processor or a staff edit, reaches search only when a restart imports every collection again.
 - The flag set is read before the new collections, so a flip that races a run is caught on the next one.
 - The watermark is the newest imported `createdAt`, never the clock. `createdAt` is the block time of a collection's first mint and the indexer writes the row after it, so a clock watermark would skip a collection written late.
 - `Typesense.imported` lives in memory, so a restart imports every collection again. That is harmless because imports upsert.
@@ -46,13 +47,14 @@ imported = some {        imported unchanged, so the retry and the
 
 `apps/web/src/lib/client/typesense.ts` queries the `collections` collection with the search-only key. Every field it names must be declared in `setupTypesenseCollection()` (`apps/schedules/src/search/setup.ts`) with the right flags:
 
-| Web uses it in | Fields                                                         | Needs in `setupTypesenseCollection()` |
-| -------------- | -------------------------------------------------------------- | ------------------------------------- |
-| `query_by`     | `member`, `description`, `season`, `shortCode`, `collectionNo` | `index: true`, string                 |
-| `filter_by`    | `artist`, `member`, `season`, `class`, `collectionNo`          | `index: true`                         |
-| `sort_by`      | `createdAt`, `collectionNo`, `memberSortOrder`                 | numeric, or `sort: true` on a string  |
+| Web uses it in | Fields                                                          | Needs in `setupTypesenseCollection()` |
+| -------------- | --------------------------------------------------------------- | ------------------------------------- |
+| `query_by`     | `members`, `description`, `season`, `shortCode`, `collectionNo` | `index: true`, string                 |
+| `filter_by`    | `artist`, `members`, `season`, `class`, `collectionNo`          | `index: true`                         |
+| `sort_by`      | `createdAt`, `collectionNo`, `memberSortOrder`                  | numeric, or `sort: true` on a string  |
 
 - A renamed or de-indexed field fails at query time in the browser, not at type-check time.
+- `members` is a `string[]` holding every member a collection names ([cosmo.md](cosmo.md#members)), so `members:[…]` matches a Unit collection under each of its members.
 - Fields web only displays, such as image URLs, are `index: false`.
 - Web parses every hit with `collectionDocumentSchema` (`apps/web/src/lib/universal/schema/search.ts`), which lists each field it reads under the indexer column's name. A hit missing one fails the whole search, so documents keep every column under its own name.
 - A hit's `createdAt` is epoch milliseconds, not the row's `Date`, so a parsed hit is a `CollectionDocument` and never an `IndexedObjekt`.
@@ -63,6 +65,7 @@ imported = some {        imported unchanged, so the retry and the
 
 - `setupTypesenseCollection()` drops and recreates the collection when the existing one fails its `upToDate` check, a hardcoded list of fields.
 - Add each new field to that check, or a running Typesense never gets it.
+- A field web starts naming ships in apps/schedules first: web goes out after schedules' first run has recreated the collection, because every search that names a missing field fails.
 - Search is incomplete from the moment the collection is dropped until that run's import finishes.
 
 ## Synonyms

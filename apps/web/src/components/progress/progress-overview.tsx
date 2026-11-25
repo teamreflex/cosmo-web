@@ -51,7 +51,8 @@ export default function ProgressOverview(props: Props) {
   }, [filters.artist, data]);
 
   const completionMap = new Map(completion.map((c) => [c.member, c]));
-  const total = stats.members.reduce((acc, stat) => acc + stat.count, 0);
+  // seasons count each objekt once; members count a Unit objekt once per member
+  const total = stats.seasons.reduce((acc, stat) => acc + stat.count, 0);
 
   function completionRatio(member: string) {
     const c = completionMap.get(member);

@@ -33,6 +33,7 @@ function toFormValues(c: Collection): UpdateCollectionInput {
     id: c.id,
     artist: c.artist,
     member: c.member,
+    members: c.members,
     season: c.season,
     class: c.class,
     collectionNo: c.collectionNo,

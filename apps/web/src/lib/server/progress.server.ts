@@ -6,12 +6,20 @@ import {
   progressLeaderboard,
 } from "@apollo/database/indexer/schema";
 import type { Collection } from "@apollo/database/indexer/types";
-import { and, asc, count, desc, eq, notInArray } from "drizzle-orm";
+import {
+  and,
+  arrayContains,
+  asc,
+  count,
+  desc,
+  eq,
+  notInArray,
+} from "drizzle-orm";
 
 // the member's collections that progress counts: every class but Welcome and Zero, as progress_leaderboard does
 const progressCollections = (member: string) =>
   and(
-    eq(collections.member, member),
+    arrayContains(collections.members, [member]),
     notInArray(collections.class, ["Welcome", "Zero"]),
   );
 
@@ -66,7 +74,10 @@ export async function fetchProgress(address: string, member: string) {
     .from(collectionOwners)
     .innerJoin(collections, eq(collectionOwners.collectionId, collections.id))
     .where(
-      and(eq(collectionOwners.owner, address), eq(collections.member, member)),
+      and(
+        eq(collectionOwners.owner, address),
+        arrayContains(collections.members, [member]),
+      ),
     )
     .comment({ fn: "fetchProgress" });
 }

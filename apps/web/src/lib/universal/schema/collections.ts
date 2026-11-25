@@ -15,6 +15,7 @@ export const updateCollectionSchema = z.object({
   id: z.uuid(),
   artist: z.string().min(1).max(32),
   member: z.string().min(1).max(32),
+  members: z.array(z.string().trim().min(1).max(32)).min(1).max(8),
   season: z.string().min(1).max(32),
   class: z.string().min(1).max(8),
   collectionNo: z.string().min(1).max(8),

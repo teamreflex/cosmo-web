@@ -20,6 +20,7 @@ export default function CollectionRefetchButton({ id, form }: Props) {
     onSuccess: (values) => {
       form.setValue("artist", values.artist, { shouldDirty: true });
       form.setValue("member", values.member, { shouldDirty: true });
+      form.setValue("members", values.members, { shouldDirty: true });
       form.setValue("season", values.season, { shouldDirty: true });
       form.setValue("collectionNo", values.collectionNo, { shouldDirty: true });
       form.setValue("class", values.class, { shouldDirty: true });

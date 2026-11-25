@@ -446,6 +446,7 @@ async function seed() {
     collectionId: collection.collectionId,
     season: collection.season,
     member: collection.member,
+    members: [collection.member],
     artist: "artms",
     collectionNo: collection.collectionNo,
     class: collection.class,
@@ -471,6 +472,7 @@ async function seed() {
         ),
         season: sql.raw(`excluded.${indexerSchema.collections.season.name}`),
         member: sql.raw(`excluded.${indexerSchema.collections.member.name}`),
+        members: sql.raw(`excluded.${indexerSchema.collections.members.name}`),
         collectionNo: sql.raw(
           `excluded.${indexerSchema.collections.collectionNo.name}`,
         ),
