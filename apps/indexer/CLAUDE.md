@@ -170,14 +170,20 @@ The drain spots a rolled-back transfer by its missing `transfer` row (see [`docs
 
 The processor never writes these; triggers on `objekt` and `collection` do.
 
-| Table                                                            | Migration       | Holds                                                                    |
-| ---------------------------------------------------------------- | --------------- | ------------------------------------------------------------------------ |
-| `collection_stats`                                               | `1791327933173` | objekt and spun counts per collection; a row exists while it has objekts |
-| `collection_owner`, `progress_leaderboard`, `progress_histogram` | `1792234623962` | copies per owner, progress counts and the rank histogram                 |
+| Table                                                            | Migration                        | Holds                                                                    |
+| ---------------------------------------------------------------- | -------------------------------- | ------------------------------------------------------------------------ |
+| `collection_stats`                                               | `1791327933173`                  | objekt and spun counts per collection; a row exists while it has objekts |
+| `collection_owner`, `progress_leaderboard`, `progress_histogram` | `1792234623962`, `1795580803948` | copies per owner, progress counts per member and the rank histogram      |
 
+- The leaderboard counts a collection once for each of its `members`, so a Unit collection counts toward every member it names and toward its pairing label.
 - The leaderboard tables exclude the `Welcome` and `Zero` classes, unobtainable collections and `Addresses.SPIN`.
-- A change to a collection's member, season, `on_offline`, class or `unobtainable` moves its owners' counts.
-- For a full reindex from the start block: disable the leaderboard triggers, reindex, truncate the three tables, then re-run the backfill in migration `1792234623962`.
+- A change to a collection's `members`, season, `on_offline`, class or `unobtainable` moves its owners' counts. A change to `members` alone moves only the members that left or joined; `member` alone moves nothing.
+- The `progress_leaderboard_expected` view computes what `progress_leaderboard` should hold from `collection_owner`. It reads every owned collection (about 9 minutes on the local prod copy), so keep it off request paths.
+- Drift check: compare `progress_leaderboard` with the view both ways with `EXCEPT`, off-peak.
+- For a full reindex from the start block:
+  1. Disable the leaderboard and histogram triggers, reindex, and truncate the three tables.
+  2. Re-run the `collection_owner` fill in migration `1792234623962`.
+  3. Insert `progress_leaderboard` from `progress_leaderboard_expected`, and `progress_histogram` grouped from it, before re-enabling the histogram triggers, so 12M rows don't pass through a transition table.
 - `collection_market_stats` and `member` belong to apps/schedules (`sync-market-stats`, `sync-members`).
 
 ## Schema changes
