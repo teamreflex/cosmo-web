@@ -87,8 +87,7 @@ function toPage<T extends { id: string; bumpedAt: Date }>(rows: T[]) {
 /**
  * One page of the Listings feed: open listings, most recently posted or
  * bumped first, each with its units, or a buy listing's units and how
- * many its trades hold. The cursor is the
- * previous page's last place as that page read it, so a listing bumped,
+ * many its trades hold. The cursor is the previous page's last place as that page read it, so a listing bumped,
  * claimed from, edited or withdrawn between pages still marks the place; a
  * bumped one moves to the top of a refetch rather than repeating.
  */

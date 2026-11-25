@@ -39,7 +39,11 @@ export default function ListingPreviews() {
       >
         {({ payload }) =>
           payload !== undefined && (
-            <HoverCardContent align="end" className="w-105 p-3.5">
+            <HoverCardContent
+              align="end"
+              collisionPadding={{ top: 64, bottom: 8 }}
+              className="max-h-(--available-height) w-105 overflow-y-auto p-3.5"
+            >
               <ListingBreakdown slip={payload} tone="popover" />
             </HoverCardContent>
           )
@@ -89,17 +93,22 @@ function ListingBreakdown({
   slip: ListingSlip;
   tone: "popover" | "drawer";
 }) {
-  const [only] = slip.options;
+  const options = slip.options.map((option, index) =>
+    optionLines(`${index}`, option, "full"),
+  );
+  const [only] = options;
+  // every option's chips start in one column, a payment alone too
+  const counted = options.flat().some((line) => line.count !== null);
   return (
     <div className="flex flex-col gap-4">
       <BreakdownSide label={m.market_listings_column_offering()}>
         <SlipLines lines={offeringLines(slip, "full")} size="md" />
       </BreakdownSide>
       <BreakdownSide label={m.market_listings_column_asking()}>
-        {only !== undefined && slip.options.length === 1 ? (
-          <SlipLines lines={optionLines("0", only, "full")} size="md" />
+        {only !== undefined && options.length === 1 ? (
+          <SlipLines lines={only} size="md" />
         ) : (
-          slip.options.map((option, index) => (
+          options.map((lines, index) => (
             <section
               key={index}
               className={cn(
@@ -118,10 +127,7 @@ function ListingBreakdown({
               >
                 {m.listing_option_label({ number: index + 1 })}
               </h3>
-              <SlipLines
-                lines={optionLines(`${index}`, option, "full")}
-                size="md"
-              />
+              <SlipLines lines={lines} size="md" counted={counted} />
             </section>
           ))
         )}

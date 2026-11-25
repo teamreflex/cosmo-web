@@ -31,8 +31,7 @@ export type ChipSize = keyof typeof sizes;
 /**
  * One value of a want or an offer as a rounded chip, an artist's logo or a
  * member's picture at its start, or another `lead` such as season dots. A
- * chip that doesn't fit its line, or that a line kept from wrapping
- * squeezes, truncates its text.
+ * chip wider than its line truncates its text.
  */
 export function Chip({
   size = "md",
@@ -54,7 +53,7 @@ export function Chip({
       dir="auto"
       style={style}
       className={cn(
-        "inline-flex max-w-full min-w-0 shrink items-center gap-1.5 rounded-full border border-border bg-card text-xs font-medium whitespace-nowrap",
+        "inline-flex max-w-full min-w-0 shrink-0 items-center gap-1.5 rounded-full border border-border bg-card text-xs font-medium whitespace-nowrap",
         sizes[size].chip,
         image !== undefined && sizes[size].withImage,
         className,
@@ -129,16 +128,13 @@ export function SlipChipItem({
       );
     case "more":
       return (
-        <Chip size={size} className="shrink-0 font-mono text-muted-foreground">
+        <Chip size={size} className="font-mono text-muted-foreground">
           {m.listing_chip_more({ count: chip.count })}
         </Chip>
       );
     case "lines":
       return (
-        <Chip
-          size={size}
-          className="shrink-0 border-dashed text-muted-foreground"
-        >
+        <Chip size={size} className="border-dashed text-muted-foreground">
           {m.listing_chip_more_lines({ count: chip.count })}
         </Chip>
       );
@@ -171,7 +167,8 @@ function CollectionChip({
       style={
         member === undefined ? undefined : { "--tint": member.primaryColorHex }
       }
-      className={cn(member !== undefined && memberTint)}
+      // a long name gives way on a line kept from wrapping, down to its picture and a letter or two
+      className={cn("min-w-10 shrink", member !== undefined && memberTint)}
     >
       {chipObjektName(collection, attributes)}
       {serial !== null && (
@@ -190,7 +187,7 @@ function CollectionChip({
 
 // a member's chip: bordered and washed in their colour, set as --tint
 const memberTint =
-  "border-(--tint)/60 bg-[color-mix(in_oklch,var(--tint)_14%,var(--color-card))]";
+  "border-(--tint)/60 bg-[color-mix(in_oklab,var(--tint)_14%,var(--color-card))]";
 
 /**
  * A group as its logo and name, bordered in its colour.

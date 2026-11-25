@@ -7,8 +7,7 @@ import type { ComponentProps, ReactNode } from "react";
  * The parts of a trade slip, shared by the Listings feed, My trades and
  * their skeletons, so a skeleton lays out as its row by construction. Below
  * md a slip is a card of two tinted halves stacked over a footer, from md
- * one line,
- * and from lg its variant's columns under a SlipColumnHeader. Nothing here
+ * one line, and from lg its variant's columns under a SlipColumnHeader. Nothing here
  * reads a row, so a route's skeleton can import it without the rows.
  */
 type Variant = "listing" | "trade";
@@ -17,11 +16,13 @@ type Variant = "listing" | "trade";
  * md: give, divider, get. lg: listing is type, offering, arrow or ratio,
  * asking, from; trade is type, you send, arrow, you get, status, with,
  * time, its fixed columns narrower until xl so a single objekt's name and
- * number fit.
+ * number fit. A listing's divider is as wide as its ratio pill, and on a
+ * screen that can't hover its rows and header keep room at their end for
+ * the row's Details button.
  */
 const columns = {
   listing:
-    "md:grid-cols-[minmax(0,1.2fr)_16px_minmax(0,1.4fr)] lg:grid-cols-[96px_minmax(0,1.25fr)_56px_minmax(0,1.4fr)_170px]",
+    "md:grid-cols-[minmax(0,1.2fr)_56px_minmax(0,1.4fr)] lg:grid-cols-[96px_minmax(0,1.25fr)_56px_minmax(0,1.4fr)_170px] md:[@media(hover:none)]:pr-28",
   trade:
     "md:grid-cols-[minmax(0,1fr)_16px_minmax(0,1fr)] lg:grid-cols-[64px_minmax(0,1fr)_20px_minmax(0,1fr)_150px_114px_96px] xl:grid-cols-[72px_minmax(0,1fr)_20px_minmax(0,1fr)_150px_160px_100px]",
 } satisfies Record<Variant, string>;
@@ -230,7 +231,7 @@ export function SlipFanCard({
     props: mergeProps<"span">(
       {
         className: cn(
-          "absolute flex h-12.5 w-8 overflow-hidden rounded-[3px] ring-2 ring-card",
+          "absolute flex h-12.5 w-8 overflow-hidden rounded-[3px] ring-1 ring-card",
           fanPlacements[index],
         ),
       },

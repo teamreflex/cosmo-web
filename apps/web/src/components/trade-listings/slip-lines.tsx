@@ -11,17 +11,21 @@ const lineHeights = { sm: "h-6", md: "h-7" } satisfies Record<ChipSize, string>;
  * number, and a slot after it each want's count, so chips line up across
  * lines; a side with no marks or counts leaves them out. A phone card's
  * half is narrow, so a row there drops an empty gutter and a count column
- * that would only read "1×". From md a row's line never wraps: its
- * chips truncate, so the line stays one chip tall.
+ * that would only read "1×". From md a row's line of collections never
+ * wraps: its collection chips truncate, so "+N" stays beside them. A line
+ * of range values wraps instead, since its chips are short. Blocks that
+ * must line up with each other, such as a preview's options, pass
+ * `counted` so one without counts keeps the count column too.
  */
 export function SlipLines({
   lines,
   size,
+  counted = lines.some((line) => line.count !== null),
 }: {
   lines: readonly SlipLine[];
   size: ChipSize;
+  counted?: boolean;
 }) {
-  const counted = lines.some((line) => line.count !== null);
   const marked = lines.some((line) => line.gutter !== null);
   const counts = lines.some((line) => line.count !== null && line.count > 1);
   return (
@@ -54,7 +58,9 @@ export function SlipLines({
           <ul
             className={cn(
               "flex min-w-0 flex-1 flex-wrap items-center gap-1.25",
-              size === "sm" && "md:flex-nowrap",
+              size === "sm" &&
+                line.chips.some((chip) => chip.kind === "collection") &&
+                "md:flex-nowrap md:overflow-hidden",
             )}
           >
             {line.chips.map((chip) => (

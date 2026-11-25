@@ -20,7 +20,7 @@ import {
   IconChevronRight,
 } from "@tabler/icons-react";
 import { Link } from "@tanstack/react-router";
-import type { ReactNode } from "react";
+import { type ReactNode, useId } from "react";
 import FeedbackBadge from "../feedback/feedback-badge";
 import UserAvatar from "../profile/user-avatar";
 import { Button } from "../ui/button";
@@ -72,13 +72,14 @@ export default function ListingFeedRow({ row }: { row: FeedRow }) {
  * A listing as a slip that opens it: two halves over a footer below md,
  * one line from md and the header's columns from lg. Each half is a fan of
  * its first pictures beside lines of chips. A ratio (listingRatio())
- * replaces the arrow and counts the free objekts; a bundle keeps the
- * arrow. `children` end the slip: after the time on a phone, and in the
+ * replaces the arrow; a bundle keeps the arrow. `children` end the slip: after the time on a phone, and in the
  * last column from lg.
  *
  * Hovering the slip from md opens the list's preview card, and its Details
- * button opens the list's drawer on a phone (ListingPreviews), each naming
- * what the lines sum up. The button sits beside the link, not in it.
+ * button opens the list's drawer on a phone or any screen that can't hover
+ * (ListingPreviews), each naming what the lines sum up. The button sits
+ * beside the link, not in it, and takes the link's text as its
+ * description, so a screen reader can tell one row's button from another.
  *
  * No `content-visibility: auto` here: WebKit never painted rows that first
  * laid out under the market notice's scroll lock.
@@ -91,6 +92,7 @@ export function ListingSlipRow({
   children: ReactNode;
 }) {
   const ratio = pillRatio(row, row.posted);
+  const linkId = useId();
   const types = listingTypesOfListing(row).map((type) => (
     <ListingTypeBadge key={type} type={type} />
   ));
@@ -106,6 +108,7 @@ export function ListingSlipRow({
             render={<Link to="/market/listing/$id" params={{ id: row.id }} />}
           />
         }
+        id={linkId}
         className="outline-none max-md:hover:bg-secondary max-md:focus-visible:border-ring max-md:focus-visible:bg-secondary md:focus-visible:bg-secondary/50"
       >
         <SlipHalf
@@ -159,15 +162,16 @@ export function ListingSlipRow({
         />
       </Slip>
 
-      {/* at the footer's far end, which leaves it room; the hit area reaches 44px */}
+      {/* at a phone card footer's far end, or the end of a row that can't hover, each of which leaves it room; the hit area reaches 44px */}
       <DrawerTrigger
         handle={listingDetailsDrawer}
         payload={row}
+        aria-describedby={linkId}
         render={
           <Button
             variant="outline"
             size="xs"
-            className="absolute right-2 bottom-1.25 z-10 rounded-full border-cosmo/50 bg-card text-cosmo before:absolute before:-inset-2.5 md:hidden dark:text-cosmo-text"
+            className="absolute right-2 bottom-1.25 z-10 rounded-full border-cosmo/50 bg-card text-cosmo before:absolute before:-inset-2.5 md:top-1/2 md:right-4 md:bottom-auto md:hidden md:-translate-y-1/2 dark:text-cosmo-text md:[@media(hover:none)]:inline-flex"
           />
         }
       >

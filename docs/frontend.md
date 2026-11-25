@@ -93,6 +93,7 @@ Tailwind v4, configured CSS-first in `styles/tailwind.css`, with shadcn tokens i
 - `@theme inline` collapses `var()` chains at build time. A token that must be overridable at runtime goes in a non-inline `@theme` block; check the built CSS references your token.
 - Merge classes with `cn()` from `lib/utils.ts`. Variants use `cva()` (see `components/ui/button.tsx`).
 - `aspect-photocard` is the objekt card ratio.
+- Wash a tint into a surface with `color-mix(in oklab, …)`, not `in oklch`. OKLCH interpolates hue, so a small share of a member's colour mixed into a near-grey token keeps mostly the grey's hue: reds turn purple and yellows blue on the dark card.
 
 Typography:
 

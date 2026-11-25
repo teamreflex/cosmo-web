@@ -73,7 +73,7 @@ function RangeCard({ ranges }: { ranges: readonly RangeFilter[] }) {
   return (
     <span
       style={{ "--tint": tint }}
-      className="flex size-full items-center justify-center rounded-[3px] border border-dashed border-(--tint)/75 bg-[color-mix(in_oklch,var(--tint)_22%,var(--color-card))]"
+      className="flex size-full items-center justify-center rounded-[3px] border border-dashed border-(--tint)/75 bg-[color-mix(in_oklab,var(--tint)_22%,var(--color-card))]"
     >
       {image === undefined ? (
         <IconCards className="w-1/2 text-muted-foreground" />

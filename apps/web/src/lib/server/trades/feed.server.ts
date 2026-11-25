@@ -311,8 +311,8 @@ const itemListing = alias(tradeOffers, "item_listing");
 /**
  * Relational extras on a listing's items saying what holds each back
  * beside the indexer: a live copy of its token in any trade (`inTrade`),
- * and a lock on it by the listing's address (`locked`). Only a pool item (`left_at` null) is judged; one that left
- * reads false.
+ * and a lock on it by the listing's address (`locked`). Only a pool item
+ * (`left_at` null) is judged; one that left reads false.
  */
 export const poolItemExtras = {
   inTrade: (t: { tokenId: AnyColumn; leftAt: AnyColumn }) =>

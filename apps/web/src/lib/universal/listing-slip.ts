@@ -196,39 +196,31 @@ function wantLines(
   switch (want.kind) {
     case "exact":
       return [
-        {
+        collectionsLine(
           key,
-          gutter: null,
-          count: want.count,
-          chips: collectionChips(
-            key,
-            [
-              {
-                attributes: want.objekt,
-                collection: want.collection,
-                serial: null,
-              },
-            ],
-            mode,
-          ),
-        },
+          want.count,
+          [
+            {
+              attributes: want.objekt,
+              collection: want.collection,
+              serial: null,
+            },
+          ],
+          mode,
+        ),
       ];
     case "choice":
       return [
-        {
+        collectionsLine(
           key,
-          gutter: null,
-          count: want.count,
-          chips: collectionChips(
-            key,
-            want.options.map(({ collection, ...attributes }) => ({
-              attributes,
-              collection,
-              serial: null,
-            })),
-            mode,
-          ),
-        },
+          want.count,
+          want.options.map(({ collection, ...attributes }) => ({
+            attributes,
+            collection,
+            serial: null,
+          })),
+          mode,
+        ),
       ];
     case "range":
       return want.ranges.map((range, index): SlipLine => ({
@@ -238,6 +230,35 @@ function wantLines(
         chips: rangeChips(`${key}:${index}`, range, mode),
       }));
   }
+}
+
+function collectionsLine(
+  key: string,
+  count: number | null,
+  shown: readonly CollectionShown[],
+  mode: SlipMode,
+): SlipLine {
+  return {
+    key,
+    gutter: null,
+    count,
+    chips: collectionChips(key, shown, mode),
+  };
+}
+
+// a payment on its own line, a "+" before it when it follows other lines
+function paymentLine(
+  key: string,
+  payment: ListingPayment,
+  perUnit: boolean,
+  follows: boolean,
+): SlipLine {
+  return {
+    key,
+    gutter: follows ? { kind: "and" } : null,
+    count: null,
+    chips: [{ kind: "payment", key, payment, perUnit }],
+  };
 }
 
 /**
@@ -258,19 +279,7 @@ export function optionLines(
   if (option.payment?.side !== "to") return rows;
   return [
     ...rows,
-    {
-      key: `${key}:payment`,
-      gutter: rows.length === 0 ? null : { kind: "and" },
-      count: null,
-      chips: [
-        {
-          kind: "payment",
-          key: `${key}:payment`,
-          payment: option.payment,
-          perUnit: false,
-        },
-      ],
-    },
+    paymentLine(`${key}:payment`, option.payment, false, rows.length > 0),
   ];
 }
 
@@ -282,20 +291,16 @@ export function optionLines(
 export function askingLines(
   options: readonly ListingOption<ListingFeedWant>[],
 ): SlipLine[] {
-  const lines =
-    options.length === 1
-      ? options.flatMap((option, index) =>
-          optionLines(`${index}`, option, "compact"),
-        )
-      : options.flatMap((option, index) =>
-          optionLines(`${index}`, option, "compact").map(
-            (line, position): SlipLine =>
-              position === 0
-                ? { ...line, gutter: { kind: "option", number: index + 1 } }
-                : line,
-          ),
-        );
-  return capLines(lines);
+  return capLines(
+    options.flatMap((option, index) =>
+      optionLines(`${index}`, option, "compact").map(
+        (line, position): SlipLine =>
+          options.length > 1 && position === 0
+            ? { ...line, gutter: { kind: "option", number: index + 1 } }
+            : line,
+      ),
+    ),
+  );
 }
 
 function capLines(lines: SlipLine[]): SlipLine[] {
@@ -319,7 +324,7 @@ function capLines(lines: SlipLine[]): SlipLine[] {
  * The poster's payment on top of their objekts, which prices every option
  * alike, or null without one.
  */
-export function posterPayment(slip: Pick<ListingSlip, "options">) {
+function posterPayment(slip: Pick<ListingSlip, "options">) {
   const payment = slip.options[0]?.payment;
   return payment?.side === "from" ? payment : null;
 }
@@ -334,27 +339,12 @@ export function offeringLines(
 ): SlipLine[] {
   const payment = posterPayment(slip);
   if (slip.units.kind === "buy" && payment !== null) {
-    return [
-      {
-        key: "buy",
-        gutter: null,
-        count: null,
-        chips: [{ kind: "payment", key: "buy", payment, perUnit: true }],
-      },
-    ];
+    return [paymentLine("buy", payment, true, false)];
   }
   const objekts = itemLines(slip.items, mode);
   return payment === null
     ? objekts
-    : [
-        ...objekts,
-        {
-          key: "payment",
-          gutter: objekts.length === 0 ? null : { kind: "and" },
-          count: null,
-          chips: [{ kind: "payment", key: "payment", payment, perUnit: false }],
-        },
-      ];
+    : [...objekts, paymentLine("payment", payment, false, objekts.length > 0)];
 }
 
 /**
@@ -366,14 +356,7 @@ export function itemLines(
 ): SlipLine[] {
   return items.length === 0
     ? []
-    : [
-        {
-          key: "items",
-          gutter: null,
-          count: null,
-          chips: collectionChips("items", items, mode),
-        },
-      ];
+    : [collectionsLine("items", null, items, mode)];
 }
 
 /**
