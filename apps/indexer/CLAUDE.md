@@ -100,13 +100,13 @@ The objekt contract sets `isObjektTransferable` at mint and changes it through `
 
 Who writes each `collection` column decides whether an edit survives:
 
-| Columns                                                                                                               | Written by                                                                                   |
-| --------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------- |
-| `season`, `member`, `artist`, `collection_no`, `class`, `como_amount`, `on_offline`, `thumbnail_image`, `front_image` | the processor, from metadata on every transfer: a staff edit lasts until the next transfer   |
-| `back_image`                                                                                                          | the processor, only when metadata has one                                                    |
-| `contract`, `created_at`, `collection_id`, `slug`, `text_color`, `background_color`, `accent_color`                   | the processor on create only; staff edit the colours at `/admin/collections`                 |
-| `front_image_version`, `back_image_version`                                                                           | `mirrorImages`, and staff re-mirrors at `/admin/collections`                                 |
-| `unobtainable`, `has_audio`, `front_media`, `band_image_url`                                                          | staff only (`/admin/collections`, `/admin/bands`); `handleCollection` must never assign them |
+| Columns                                                                                                                          | Written by                                                                                   |
+| -------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------- |
+| `season`, `member`, `members`, `artist`, `collection_no`, `class`, `como_amount`, `on_offline`, `thumbnail_image`, `front_image` | the processor, from metadata on every transfer: a staff edit lasts until the next transfer   |
+| `back_image`                                                                                                                     | the processor, only when metadata has one                                                    |
+| `contract`, `created_at`, `collection_id`, `slug`, `text_color`, `background_color`, `accent_color`                              | the processor on create only; staff edit the colours at `/admin/collections`                 |
+| `front_image_version`, `back_image_version`                                                                                      | `mirrorImages`, and staff re-mirrors at `/admin/collections`                                 |
+| `unobtainable`, `has_audio`, `front_media`, `band_image_url`                                                                     | staff only (`/admin/collections`, `/admin/bands`); `handleCollection` must never assign them |
 
 ## Hot-block rollbacks
 
