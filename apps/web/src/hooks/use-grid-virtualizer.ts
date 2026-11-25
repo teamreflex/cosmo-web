@@ -1,4 +1,8 @@
-import { useVirtualizer, useWindowVirtualizer } from "@tanstack/react-virtual";
+import {
+  observeWindowOffset,
+  useVirtualizer,
+  useWindowVirtualizer,
+} from "@tanstack/react-virtual";
 import type { Virtualizer } from "@tanstack/react-virtual";
 import type { RefObject } from "react";
 
@@ -16,6 +20,12 @@ type Options = {
  * `getVirtualItems()` from the first render (TanStack/virtual#736), so this hook
  * opts out and hands the compiled grid a fresh snapshot every render. It also
  * owns the ref read behind `scrollMargin`, which the compiler rejects in render.
+ *
+ * When a modal opens and the browser can't reserve a stable scrollbar gutter,
+ * Base UI's scroll lock moves the page scroll from `<html>` onto `<body>` and
+ * marks `<html>` with `data-base-ui-scroll-locked`. `window.scrollY` reads 0
+ * until the lock lifts, so the offset comes from `<body>` while it holds, or
+ * the grid would render its top rows under a page scrolled further down.
  */
 export function useGridVirtualizer({
   count,
@@ -29,6 +39,16 @@ export function useGridVirtualizer({
   const virtualizer = useWindowVirtualizer({
     ...gridOptions({ count, lanes, gap, itemHeight, overscanRows: 3 }),
     scrollMargin: container.current?.offsetTop ?? 0,
+    // fix for helium hiding everything after page 1 when opening a sheet
+    observeElementOffset: (instance, cb) =>
+      observeWindowOffset(instance, (offset, isScrolling) =>
+        cb(
+          document.documentElement.hasAttribute("data-base-ui-scroll-locked")
+            ? document.body.scrollTop
+            : offset,
+          isScrolling,
+        ),
+      ),
   });
 
   return snapshot(virtualizer);
