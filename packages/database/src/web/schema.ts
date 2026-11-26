@@ -1162,7 +1162,7 @@ export const tradeFeedback = pgTable(
     fromAddress: citext("from_address", { length: 42 }).notNull(),
     toAddress: citext("to_address", { length: 42 }).notNull(),
     raterSide: tradeSide("rater_side").notNull(),
-    // the rater's role; the profile's role tabs read the rated party's inverse
+    // the rater's role; the profile's role filter reads the rated party's inverse
     role: feedbackRole("role").notNull(),
     rating: feedbackRating("rating").notNull(),
     // null when the rater left no comment

@@ -172,12 +172,11 @@ export function tradeFeedbackView({
     : { state: "none" };
 }
 
-// the role tabs of the feedback page, by the rated party's role
+// the feedback page's role filter, by the rated party's role
 export const feedbackRoleFilters = ["all", ...feedbackRoles] as const;
 export type FeedbackRoleFilter = (typeof feedbackRoleFilters)[number];
 
 export const feedbackRatingFilters = ["all", ...feedbackRatings] as const;
-export type FeedbackRatingFilter = (typeof feedbackRatingFilters)[number];
 
 /**
  * The feedback page's filters. A value the page doesn't know reads as all,
@@ -208,6 +207,11 @@ export type FeedbackSummary = {
   counts: Record<FeedbackRating, number>;
   roles: Record<FeedbackRole, number>;
 };
+
+// the roles an address has a visible rating in
+export function ratedRoles(summary: FeedbackSummary) {
+  return feedbackRoles.filter((role) => summary.roles[role] > 0);
+}
 
 /**
  * How many positive and negative ratings a share positive needs before a

@@ -1,9 +1,9 @@
 import { m } from "@/i18n/messages";
 import { getLocale } from "@/i18n/runtime";
 import {
+  formatRatings,
   formatScore,
   percentStyle,
-  ratedRoleLabels,
   ratingStyles,
   roleNames,
 } from "@/lib/client/feedback";
@@ -14,11 +14,13 @@ import {
   type FeedbackSearch,
   type FeedbackSummary as Summary,
   formatPercentPositive,
+  ratedRoles,
 } from "@/lib/universal/feedback";
 import { cn } from "@/lib/utils";
 import { feedbackRatings, feedbackRoles } from "@apollo/database/web/types";
 import { getRouteApi } from "@tanstack/react-router";
 import { ToggleGroup, ToggleGroupItem } from "../ui/toggle-group";
+import RatingShareBar from "./rating-share-bar";
 
 const route = getRouteApi("/@{$username}/feedback");
 
@@ -27,6 +29,20 @@ const eyebrow =
 
 // below this many ratings the bar draws one pip per rating
 const PIP_LIMIT = 50;
+
+const filterItem =
+  "h-11 gap-1.5 disabled:border-dashed aria-pressed:border-input";
+
+// sets feedback page filters in place of the current history entry, keeping the scroll
+function useSetFilter() {
+  const navigate = route.useNavigate();
+  return (filter: Partial<FeedbackSearch>) =>
+    void navigate({
+      search: (prev) => ({ ...prev, ...filter }),
+      replace: true,
+      resetScroll: false,
+    });
+}
 
 /**
  * The top of the feedback page as one scoreboard: the score with the share
@@ -93,7 +109,7 @@ function RatingFilter({
   summary: Summary;
   value: FeedbackSearch["rating"];
 }) {
-  const navigate = route.useNavigate();
+  const setFilter = useSetFilter();
   const share = new Intl.NumberFormat(getLocale(), { style: "percent" });
   const pips = summary.total < PIP_LIMIT;
 
@@ -102,10 +118,7 @@ function RatingFilter({
       <div className="flex items-baseline justify-between gap-3">
         <span className={eyebrow}>{m.feedback_page_rating()}</span>
         <span className="text-xs text-muted-foreground tabular-nums">
-          {m.feedback_badge_ratings({
-            count: summary.total,
-            formatted: formatCount(summary.total),
-          })}
+          {formatRatings(summary.total)}
         </span>
       </div>
 
@@ -119,16 +132,11 @@ function RatingFilter({
         // pressing the shown rating again keeps it
         onValueChange={([picked]) => {
           const rating = feedbackRatingFilters.find((r) => r === picked);
-          if (rating === undefined) return;
-          void navigate({
-            search: (prev) => ({ ...prev, rating }),
-            replace: true,
-            resetScroll: false,
-          });
+          if (rating !== undefined) setFilter({ rating });
         }}
         className="grid w-full grid-cols-4 sm:flex sm:flex-wrap"
       >
-        <ToggleGroupItem value="all" className={filterItem}>
+        <ToggleGroupItem value="all" className={ratingItem}>
           {m.feedback_page_rating_all()}
           <span className="font-mono text-muted-foreground tabular-nums">
             {formatCount(summary.total)}
@@ -142,7 +150,7 @@ function RatingFilter({
               key={rating}
               value={rating}
               disabled={count === 0 && value !== rating}
-              className={filterItem}
+              className={ratingItem}
             >
               <style.icon aria-hidden className={cn(count > 0 && style.text)} />
               <span className="max-sm:sr-only">{style.label()}</span>
@@ -162,8 +170,7 @@ function RatingFilter({
   );
 }
 
-const filterItem =
-  "h-11 gap-1.5 disabled:border-dashed sm:h-8 sm:px-2.5 aria-pressed:border-input";
+const ratingItem = cn(filterItem, "sm:h-8 sm:px-2.5");
 
 /**
  * Below PIP_LIMIT ratings one pip per rating, so two ratings read as two
@@ -191,17 +198,7 @@ function RatingBar({
       )}
     </div>
   ) : (
-    <div aria-hidden className="flex h-3 gap-0.5 overflow-hidden rounded-sm">
-      {feedbackRatings
-        .filter((rating) => counts[rating] > 0)
-        .map((rating) => (
-          <span
-            key={rating}
-            className={ratingStyles[rating].bar}
-            style={{ flexGrow: counts[rating] }}
-          />
-        ))}
-    </div>
+    <RatingShareBar counts={counts} className="h-3 rounded-sm" />
   );
 }
 
@@ -218,10 +215,9 @@ function RoleFilter({
   summary: Summary;
   value: FeedbackSearch["role"];
 }) {
-  const navigate = route.useNavigate();
-  const rated = feedbackRoles.filter((role) => summary.roles[role] > 0);
+  const setFilter = useSetFilter();
 
-  if (rated.length < 2 && value === "all") {
+  if (ratedRoles(summary).length < 2 && value === "all") {
     return (
       <div className="flex flex-col gap-2.5 lg:p-5">
         <span className={eyebrow}>{m.feedback_page_roles()}</span>
@@ -264,12 +260,7 @@ function RoleFilter({
         value={[value]}
         onValueChange={([picked]) => {
           const role = feedbackRoleFilters.find((r) => r === picked);
-          if (role === undefined) return;
-          void navigate({
-            search: (prev) => ({ ...prev, role }),
-            replace: true,
-            resetScroll: false,
-          });
+          if (role !== undefined) setFilter({ role });
         }}
         className="grid w-full grid-cols-4 lg:flex lg:flex-col lg:items-stretch lg:gap-1"
       >
@@ -278,9 +269,12 @@ function RoleFilter({
             key={role}
             value={role}
             disabled={counts[role] === 0 && value !== role}
-            className="h-11 gap-1.5 disabled:border-dashed aria-pressed:border-input lg:h-7 lg:justify-between lg:border-transparent lg:px-2 lg:disabled:border-transparent"
+            className={cn(
+              filterItem,
+              "lg:h-7 lg:justify-between lg:border-transparent lg:px-2 lg:disabled:border-transparent",
+            )}
           >
-            {role === "all" ? ratedRoleLabels.all() : roleNames[role]()}
+            {roleNames[role]()}
             <span
               className={cn(
                 "font-mono tabular-nums",

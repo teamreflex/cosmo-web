@@ -219,7 +219,7 @@ Acceptance is decided per option: an option takes offers (`listingAcceptance()` 
 
 ## Accepting an offer on a listing
 
-`$acceptOffer` reads the indexer for both sides and the listing's terms, every option's (`readListingTerms()`), before the transaction, and judges the offer against the option its `listing_option` names. It then locks both users `FOR NO KEY UPDATE`, the offer, then the listing, refusing `listing_closed` once it isn't open. `recheckListingOffer()` reads the pool, a buy listing's taken units, the links, both sides' locks and live trades and the claimer's cap under those locks, and refuses as `offerRefusal()` decides, the verdict the poster's Offers tab shows:
+`$acceptOffer` reads the indexer for both sides and the listing's terms, every option's (`readListingTerms()`), before the transaction, and judges the offer against the option its `listing_option` names. It then locks both users `FOR NO KEY UPDATE`, the offer, then the listing, refusing `listing_closed` once it isn't open. `recheckListingOffer()` reads the pool, a buy listing's taken units, the links, both sides' locks and live trades under those locks, and refuses as `offerRefusal()` decides, the verdict the poster's Offers tab shows:
 
 1. `offer_expired` once `expires_at <= now()`.
 2. `listing_updated` when the option is gone, the picks are no longer in the pool or a whole number of the current units (`offerUnits()`: a buy listing's offer takes the units it recorded and no picks), or the offer's payment no longer fits the listing's: a payment gained or lost, another side or currency, or another amount than a fixed price times the units (`listingOfferRefusal()`, `paymentFits()`).

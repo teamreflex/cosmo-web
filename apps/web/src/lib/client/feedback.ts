@@ -45,7 +45,7 @@ export const ratingStyles = {
     icon: TablerIcon;
     label: () => string;
     text: string;
-    // the fill of its share of the feedback page's rating bar
+    // the fill of its share of a rating bar
     bar: string;
     checked: string;
   }
@@ -69,11 +69,10 @@ export const roleLabels = {
 
 // the role a profile was rated in, as its feedback page tags a rating, "As seller"
 export const ratedRoleLabels = {
-  all: m.feedback_page_role_all,
   seller: m.feedback_page_role_seller,
   buyer: m.feedback_page_role_buyer,
   trader: m.feedback_page_role_trader,
-} satisfies Record<FeedbackRoleFilter, () => string>;
+} satisfies Record<FeedbackRole, () => string>;
 
 // the listing type each role trades in, whose badge colour its tag takes
 export const roleListingTypes = {
@@ -82,12 +81,18 @@ export const roleListingTypes = {
   trader: "trade",
 } satisfies Record<FeedbackRole, ListingType>;
 
-// the role a profile was rated in, as the feedback page's role filter names it
+// the options of the feedback page's role filter, each role as the one a profile was rated in
 export const roleNames = {
+  all: m.feedback_page_role_all,
   buyer: m.feedback_page_role_name_buyer,
   seller: m.feedback_page_role_name_seller,
   trader: m.feedback_page_role_name_trader,
-} satisfies Record<FeedbackRole, () => string>;
+} satisfies Record<FeedbackRoleFilter, () => string>;
+
+// how many ratings a profile has, "231 ratings"
+export function formatRatings(count: number) {
+  return m.feedback_badge_ratings({ count, formatted: formatCount(count) });
+}
 
 /**
  * A score's sign and digits. The sign is a real minus, "−4" rather than

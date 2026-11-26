@@ -1,6 +1,7 @@
 import { m } from "@/i18n/messages";
 import { getLocale } from "@/i18n/runtime";
 import {
+  formatRatings,
   formatScore,
   percentStyle,
   ratedRoleLabels,
@@ -20,11 +21,7 @@ import {
   formatPercentPositive,
 } from "@/lib/universal/feedback";
 import { cn } from "@/lib/utils";
-import {
-  type FeedbackRating,
-  feedbackRatings,
-  feedbackRoles,
-} from "@apollo/database/web/types";
+import { feedbackRatings, feedbackRoles } from "@apollo/database/web/types";
 import {
   IconArrowRight,
   IconArrowsExchange,
@@ -48,6 +45,7 @@ import { Skeleton } from "../ui/skeleton";
 import { Timestamp } from "../ui/timestamp";
 import { FeedbackComment } from "./feedback-text";
 import RatingIcon from "./rating-icon";
+import RatingShareBar from "./rating-share-bar";
 
 // a pointer that hovers; a tap on a touch screen follows the link instead
 const hoverQuery = "(hover: hover)";
@@ -94,7 +92,9 @@ function FeedbackChip({ address, username, hasAccount }: Props) {
     ) : null;
   }
 
+  // the card never opens on the feedback page, so nothing would read the fetch
   function prefetchLatest() {
+    if (onFeedbackPage) return;
     void queryClient
       .infiniteQuery(feedbackEntriesQuery(address, feedbackSearchDefaults))
       .catch(noop);
@@ -166,7 +166,7 @@ function ChipLabel({
             {m.feedback_badge_positive({ percent })}
           </span>
           {" · "}
-          {ratings(view.total)}
+          {formatRatings(view.total)}
         </span>
         <span aria-hidden className="md:hidden">
           <span className={percentClass}>{percent}</span>
@@ -243,7 +243,7 @@ function FeedbackCard({
             {summary.percent === null ? (
               <>
                 <span className="text-sm font-semibold">
-                  {ratings(summary.total)}
+                  {formatRatings(summary.total)}
                 </span>
                 <span className="text-xs text-muted-foreground">
                   {m.feedback_page_percent_none()}
@@ -262,38 +262,38 @@ function FeedbackCard({
                   })}
                 </span>
                 <span className="text-xs text-muted-foreground tabular-nums">
-                  {ratings(summary.total)}
+                  {formatRatings(summary.total)}
                 </span>
               </>
             )}
           </span>
         </div>
 
-        <div
-          aria-hidden
-          className="flex h-1.5 gap-0.5 overflow-hidden rounded-full"
-        >
-          {feedbackRatings.map(
-            (rating) =>
-              summary.counts[rating] > 0 && (
-                <span
-                  key={rating}
-                  className={cn("min-w-1", ratingStyles[rating].bar)}
-                  style={{ flexGrow: summary.counts[rating] }}
-                />
-              ),
-          )}
-        </div>
+        <RatingShareBar
+          counts={summary.counts}
+          className="h-1.5 rounded-full"
+        />
 
         <div className="flex flex-col gap-1.5">
-          {feedbackRatings.map((rating) => (
-            <div key={rating} className="flex justify-between gap-3 text-sm">
-              <RatingLabel rating={rating} />
-              <span className="font-mono tabular-nums">
-                {formatCount(summary.counts[rating])}
-              </span>
-            </div>
-          ))}
+          {feedbackRatings.map((rating) => {
+            const style = ratingStyles[rating];
+            return (
+              <div key={rating} className="flex justify-between gap-3 text-sm">
+                <span
+                  className={cn(
+                    "inline-flex items-center gap-1.5 font-medium",
+                    style.text,
+                  )}
+                >
+                  <style.icon aria-hidden className="size-4 shrink-0" />
+                  {style.label()}
+                </span>
+                <span className="font-mono tabular-nums">
+                  {formatCount(summary.counts[rating])}
+                </span>
+              </div>
+            );
+          })}
         </div>
       </div>
 
@@ -390,21 +390,4 @@ function LatestSkeleton() {
       ))}
     </CardSection>
   );
-}
-
-// a rating's icon and name in its colour
-function RatingLabel({ rating }: { rating: FeedbackRating }) {
-  const style = ratingStyles[rating];
-  return (
-    <span
-      className={cn("inline-flex items-center gap-1.5 font-medium", style.text)}
-    >
-      <style.icon aria-hidden className="size-4 shrink-0" />
-      {style.label()}
-    </span>
-  );
-}
-
-function ratings(count: number) {
-  return m.feedback_badge_ratings({ count, formatted: formatCount(count) });
 }

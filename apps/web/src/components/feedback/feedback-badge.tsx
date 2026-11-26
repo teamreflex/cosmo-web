@@ -1,6 +1,6 @@
 import { m } from "@/i18n/messages";
 import { getLocale } from "@/i18n/runtime";
-import { percentStyle } from "@/lib/client/feedback";
+import { formatRatings, percentStyle } from "@/lib/client/feedback";
 import { formatCount } from "@/lib/client/trade-listings";
 import {
   type FeedbackRep,
@@ -39,7 +39,7 @@ export default function FeedbackBadge(props: Props) {
       props.className,
     );
     if (rep.percent === null) {
-      return <span className={className}>{ratings(rep.count)}</span>;
+      return <span className={className}>{formatRatings(rep.count)}</span>;
     }
     const percent = formatPercentPositive(rep.percent, locale);
     const compact = m.feedback_badge_compact({
@@ -75,7 +75,7 @@ export default function FeedbackBadge(props: Props) {
       {rep === null ? (
         m.feedback_badge_none()
       ) : rep.percent === null ? (
-        ratings(rep.count)
+        formatRatings(rep.count)
       ) : (
         <>
           <span className={percentStyle(rep.percent)}>
@@ -87,17 +87,13 @@ export default function FeedbackBadge(props: Props) {
           {props.narrow ? (
             <>
               <span className="md:hidden">{formatCount(rep.count)}</span>
-              <span className="max-md:hidden">{ratings(rep.count)}</span>
+              <span className="max-md:hidden">{formatRatings(rep.count)}</span>
             </>
           ) : (
-            ratings(rep.count)
+            formatRatings(rep.count)
           )}
         </>
       )}
     </span>
   );
-}
-
-function ratings(count: number) {
-  return m.feedback_badge_ratings({ count, formatted: formatCount(count) });
 }

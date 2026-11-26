@@ -21,8 +21,8 @@ import { profileIdentifier } from "@/lib/universal/cosmo-accounts";
 import {
   feedbackSearchDefaults,
   feedbackSearchSchema,
+  ratedRoles,
 } from "@/lib/universal/feedback";
-import { feedbackRoles } from "@apollo/database/web/types";
 import { accountName } from "@apollo/util";
 import { IconStar, IconUserQuestion } from "@tabler/icons-react";
 import { noop, useSuspenseQueries } from "@tanstack/react-query";
@@ -99,10 +99,7 @@ function RouteComponent() {
               address={cosmo.address}
               ownerName={name}
               search={search}
-              showRole={
-                feedbackRoles.filter((role) => summary.roles[role] > 0).length >
-                1
-              }
+              showRole={ratedRoles(summary).length > 1}
               viewer={
                 account
                   ? {
