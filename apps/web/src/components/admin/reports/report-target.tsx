@@ -144,7 +144,11 @@ function UserTarget({
 
   return (
     <div className="flex items-center gap-3 px-4 py-3.5">
-      <UserAvatar username={user.username} className="size-8 **:p-1" />
+      <UserAvatar
+        username={user.username}
+        avatar={user.avatar}
+        className="size-8"
+      />
       <div className="flex min-w-0 flex-col gap-0.5">
         <div className="flex flex-wrap items-center gap-2">
           <StaffUserName user={user} className="font-medium" />
@@ -211,7 +215,11 @@ function TradeParty({
       {party === null ? (
         <UserAvatar deleted className="size-8" />
       ) : (
-        <UserAvatar username={party.username} className="size-8 **:p-1" />
+        <UserAvatar
+          username={party.username}
+          avatar={party.avatar}
+          className="size-8"
+        />
       )}
       <div className="flex min-w-0 flex-col gap-0.5 text-sm">
         {party === null ? (

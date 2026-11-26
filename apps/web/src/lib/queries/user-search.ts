@@ -1,3 +1,4 @@
+import type { SearchedCosmoUser } from "@/lib/universal/cosmo-accounts";
 import { queryOptions } from "@tanstack/react-query";
 import { $searchUsers } from "../functions/user-search";
 
@@ -8,7 +9,7 @@ import { $searchUsers } from "../functions/user-search";
 export const cosmoUserSearchQuery = (query: string) =>
   queryOptions({
     queryKey: ["cosmo-user-search", query],
-    queryFn: async () => {
+    queryFn: async (): Promise<SearchedCosmoUser[]> => {
       const res = await $searchUsers({ data: { query } });
       return res.results;
     },

@@ -46,7 +46,11 @@ export default function TradeRow({
           </div>
         ) : (
           <RowAvatar
-            username={counterparty === null ? null : username}
+            user={
+              counterparty === null
+                ? null
+                : { username, avatar: counterparty.avatar }
+            }
             type={notification.type}
           />
         )

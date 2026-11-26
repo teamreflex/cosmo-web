@@ -124,3 +124,68 @@ export function objektImageSrcSet(
     )
     .join(", ");
 }
+
+/**
+ * R2 key of a profile picture. The name is random, so the public URL says
+ * nothing about whose picture it is.
+ */
+export function userAvatarKey(id: string) {
+  return `user-avatars/${id}.webp`;
+}
+
+/**
+ * Public URL of a profile picture, from the R2 key stored on its user.
+ */
+export function userAvatarUrl(cdnUrl: string, avatar: string) {
+  return `${cdnUrl}/${avatar}`;
+}
+
+/**
+ * Side of a stored profile picture in pixels. The largest avatar on the site
+ * is 88 CSS px, which this covers at 3x.
+ */
+export const USER_AVATAR_SIZE = 256;
+
+/**
+ * How far the cropper zooms in. A crop is then never narrower than a quarter
+ * of the image, which on the smallest front image is still wider than
+ * USER_AVATAR_SIZE, so a picture is never upscaled.
+ */
+export const USER_AVATAR_MAX_ZOOM = 4;
+
+/**
+ * A square crop as fractions of the image, `x` and `size` of its width and
+ * `y` of its height, so it means the same at every resolution of the image.
+ */
+export type AvatarCrop = {
+  readonly x: number;
+  readonly y: number;
+  readonly size: number;
+};
+
+/**
+ * The pixel square a crop covers in an image of the given size. Rounding can
+ * put a crop that touches an edge a pixel past it, so the square is held
+ * inside the image.
+ */
+export function avatarCropRect(
+  crop: AvatarCrop,
+  image: { width: number; height: number },
+) {
+  const side = Math.max(
+    1,
+    Math.min(Math.round(crop.size * image.width), image.width, image.height),
+  );
+  return {
+    left: Math.min(
+      Math.max(Math.round(crop.x * image.width), 0),
+      image.width - side,
+    ),
+    top: Math.min(
+      Math.max(Math.round(crop.y * image.height), 0),
+      image.height - side,
+    ),
+    width: side,
+    height: side,
+  };
+}

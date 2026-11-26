@@ -121,3 +121,14 @@ export function PickerGridSkeleton() {
     </div>
   );
 }
+
+/**
+ * Stands in for a whole picker while its code or data loads.
+ */
+export function PickerFallback() {
+  return (
+    <div className="min-h-0 flex-1 overflow-hidden px-3 pt-3">
+      <PickerGridSkeleton />
+    </div>
+  );
+}

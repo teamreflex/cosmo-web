@@ -34,6 +34,8 @@ export type TransferObjekt = {
 export type Counterparty = {
   address: string;
   username: string | null;
+  // R2 key of their profile picture, null when they have none
+  avatar: string | null;
 };
 
 /**

@@ -187,7 +187,7 @@ function OfferCard({
   return (
     <StateCard
       tone={refusal === null ? "offer" : "paused"}
-      icon={<PartyAvatar party={claimer} className="size-6 text-xs **:p-1" />}
+      icon={<PartyAvatar party={claimer} className="size-6 text-xs" />}
       title={<PartyLink party={claimer} />}
       meta={
         <>
@@ -382,7 +382,7 @@ function TradeRow({ trade }: { trade: ListingTrade }) {
       params={{ id: trade.tradeId }}
       className="flex flex-wrap items-center gap-x-3 gap-y-1.5 px-4 py-3 outline-none focus-visible:bg-secondary/50"
     >
-      <PartyAvatar party={trade.claimer} className="size-7 text-xs **:p-1" />
+      <PartyAvatar party={trade.claimer} className="size-7 text-xs" />
       <span
         className="min-w-28 flex-1 truncate font-medium sm:max-w-48"
         title={partyName(trade.claimer)}

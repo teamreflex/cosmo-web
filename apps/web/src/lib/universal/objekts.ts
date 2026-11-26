@@ -90,6 +90,8 @@ export type SerialTransfer = Transfer & {
 
 export type SerialObjekt = {
   username: string | null;
+  // R2 key of the owner's profile picture, null when they have none
+  avatar: string | null;
   address: string;
   serial: number;
   transfers: SerialTransfer[];

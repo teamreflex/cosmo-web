@@ -11,7 +11,7 @@ import {
 } from "@tanstack/react-query";
 import { Suspense, useState } from "react";
 import { ErrorBoundary } from "react-error-boundary";
-import TradeSheet from "../trade-listings/trade-sheet";
+import ResponsiveSheet from "../responsive-sheet";
 import { Button } from "../ui/button";
 import { Spinner } from "../ui/spinner";
 import {
@@ -96,7 +96,7 @@ export default function CounterOfferSheet({
   });
 
   return (
-    <TradeSheet
+    <ResponsiveSheet
       title={m.trade_page_counter_title()}
       badge={
         <span className="min-w-0 truncate text-xs text-muted-foreground">
@@ -176,7 +176,7 @@ export default function CounterOfferSheet({
           )}
         </QueryErrorResetBoundary>
       </div>
-    </TradeSheet>
+    </ResponsiveSheet>
   );
 }
 

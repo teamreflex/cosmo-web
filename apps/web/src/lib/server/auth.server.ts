@@ -492,6 +492,13 @@ export const auth = betterAuth({
         input: true,
         returned: true,
       },
+      // written only by the profile picture server functions, through Drizzle
+      avatar: {
+        type: "string",
+        required: false,
+        input: false,
+        returned: true,
+      },
     },
   },
   account: {
@@ -546,6 +553,7 @@ export function toPublicUser(
   return {
     id: user.id,
     username: user.displayUsername ?? undefined,
+    avatar: user.avatar ?? null,
     gridColumns: user.gridColumns ?? GRID_COLUMNS,
     collectionMode: collectionModeSchema.parse(user.collectionMode),
     social: {

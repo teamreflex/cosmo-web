@@ -6,8 +6,8 @@ import type {
   ListingPick,
 } from "@/lib/universal/trade-listings";
 import type { ReactNode } from "react";
+import ResponsiveSheet from "../responsive-sheet";
 import TradePicker from "./trade-picker";
-import TradeSheet from "./trade-sheet";
 
 type Props = {
   /** the viewer's linked COSMO address, whose collection the picker lists */
@@ -41,7 +41,7 @@ export default function RowPicker({
   onToggle,
 }: Props) {
   return (
-    <TradeSheet
+    <ResponsiveSheet
       title={m.listing_detail_picker_title()}
       open={open}
       onOpenChange={onOpenChange}
@@ -60,6 +60,6 @@ export default function RowPicker({
         onToggle={(objekt) => onToggle(listingPick(objekt))}
         onDone={() => onOpenChange(false)}
       />
-    </TradeSheet>
+    </ResponsiveSheet>
   );
 }

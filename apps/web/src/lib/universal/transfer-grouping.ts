@@ -239,7 +239,7 @@ export function groupTransfers({
         kind: "sent",
         id,
         timestamp,
-        counterparty: { address: to, username: null },
+        counterparty: { address: to, username: null, avatar: null },
         objekts: [t],
       };
     }
@@ -292,6 +292,7 @@ function chainRow(
   const counterparty = {
     address: counterpartyOf(address, anchor),
     username: null,
+    avatar: null,
   };
   const sent = chain.filter((t) => t.transfer.from === address);
   const received = chain.filter((t) => t.transfer.from !== address);

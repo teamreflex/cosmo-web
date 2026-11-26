@@ -30,7 +30,7 @@ import { useId, useRef, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { bold } from "../notifications/row-utils";
-import TradeSheet from "../trade-listings/trade-sheet";
+import ResponsiveSheet from "../responsive-sheet";
 import { EndedBadge } from "../trades/trade-header";
 import { Button } from "../ui/button";
 import { Field, FieldError, FieldLabel, FieldSet } from "../ui/field";
@@ -109,7 +109,7 @@ export default function FeedbackLeaveDialog({
   }
 
   return (
-    <TradeSheet
+    <ResponsiveSheet
       title={m.feedback_dialog_title({ name })}
       badge={<EndedBadge status={feedbackWindow.ended} />}
       aside={
@@ -266,7 +266,7 @@ export default function FeedbackLeaveDialog({
           </p>
         </div>
       </form>
-    </TradeSheet>
+    </ResponsiveSheet>
   );
 }
 

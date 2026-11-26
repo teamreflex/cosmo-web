@@ -72,6 +72,7 @@ Better Auth's `/update-user` and `/sign-up/email` accept every user field marked
 - The `username` plugin validates `displayUsername` only when a `displayUsernameValidator` is set. The `server-only-user-fields` plugin drops any `displayUsername` a client sends and copies the validated `username` into it instead.
 - `currency` follows its own rule ([Display currency](#display-currency)).
 - `emailNotifications`, the email opt-out mask, stays client-writable, so its validator (`emailNotificationsSchema` in `@apollo/trades/notifications`) admits only masks of defined bits.
+- `avatar` is `input: false`, which refuses it from clients, from `mapProfileToUser` and from `auth.api.updateUser`, so a [profile picture](accounts.md#profile-pictures) is only ever written through Drizzle.
 
 ## Schema generation
 

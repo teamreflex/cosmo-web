@@ -28,6 +28,7 @@ import { format } from "date-fns";
 import type { ReactNode } from "react";
 import { useId, useState } from "react";
 import { SPECIAL_RIBBON_LINEAR } from "../objekt/variant-gradients";
+import UserAvatar from "../profile/user-avatar";
 import { Badge } from "../ui/badge";
 import { Collapse } from "../ui/collapse";
 import { Timestamp } from "../ui/timestamp";
@@ -542,10 +543,10 @@ function UserLink({
 
   return (
     <>
-      <img
-        src="/profile.webp"
-        alt=""
-        className="size-5.5 shrink-0 rounded-full bg-cosmo-profile p-0.5"
+      <UserAvatar
+        username={name}
+        avatar={counterparty.avatar}
+        className="size-5.5"
       />
       {direction && <DirectionPill direction={direction} />}
       {counterparty.address === Addresses.NULL ? (

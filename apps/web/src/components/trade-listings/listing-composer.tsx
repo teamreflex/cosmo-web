@@ -78,6 +78,7 @@ import {
   useWatch,
 } from "react-hook-form";
 import { toast } from "sonner";
+import ResponsiveSheet from "../responsive-sheet";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -103,7 +104,6 @@ import ComposerRangeConfirm from "./composer-range-confirm";
 import ComposerRatio from "./composer-ratio";
 import ComposerOptions from "./composer-want-rows";
 import TradePicker from "./trade-picker";
-import TradeSheet from "./trade-sheet";
 
 type Props = {
   mode: ComposerMode;
@@ -559,7 +559,7 @@ export default function ListingComposer({
   );
 
   return (
-    <TradeSheet
+    <ResponsiveSheet
       title={title}
       closeDisabled={mutation.isPending}
       open={open}
@@ -567,7 +567,7 @@ export default function ListingComposer({
       onOpenChangeComplete={handleOpenChangeComplete}
     >
       {shell}
-    </TradeSheet>
+    </ResponsiveSheet>
   );
 }
 

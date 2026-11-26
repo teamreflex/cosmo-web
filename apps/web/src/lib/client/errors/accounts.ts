@@ -32,6 +32,8 @@ export function formatAccountError(code: string): string | null {
       return m.account_error_deletion_session_stale({
         minutes: FRESH_SESSION_MINUTES,
       });
+    case "avatar_source_unavailable":
+      return m.account_error_avatar_source_unavailable();
     default:
       code satisfies never;
       return null;

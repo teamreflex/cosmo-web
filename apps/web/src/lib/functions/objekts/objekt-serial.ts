@@ -44,6 +44,7 @@ export const $fetchObjektSerial = createServerFn({ method: "GET" })
 
     return {
       username: addressMap.get(objekt.owner)?.username ?? null,
+      avatar: addressMap.get(objekt.owner)?.avatar ?? null,
       address: objekt.owner,
       serial: objekt.serial,
       transfers,

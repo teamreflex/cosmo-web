@@ -13,7 +13,7 @@ import {
 } from "@tanstack/react-query";
 import { Suspense, useState } from "react";
 import { ErrorBoundary } from "react-error-boundary";
-import TradeSheet from "../trade-listings/trade-sheet";
+import ResponsiveSheet from "../responsive-sheet";
 import { OfferBar } from "../trades/offer-picker";
 import {
   dropToken,
@@ -57,7 +57,7 @@ export default function ListMatches({ list }: Props) {
         <IconUsers />
         {m.list_matches_title()}
       </Button>
-      <TradeSheet
+      <ResponsiveSheet
         title={m.list_matches_title()}
         aside={
           // the count shares the content's request, and shows once it lands
@@ -168,7 +168,7 @@ export default function ListMatches({ list }: Props) {
             )}
           </QueryErrorResetBoundary>
         </div>
-      </TradeSheet>
+      </ResponsiveSheet>
     </>
   );
 }

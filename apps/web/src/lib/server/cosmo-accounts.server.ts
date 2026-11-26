@@ -322,13 +322,21 @@ export async function searchCosmoAccounts(
   };
 }
 
+type KnownAddress = {
+  address: string;
+  username: string;
+  // R2 key of the linked user's profile picture, null without a link or a picture
+  avatar: string | null;
+};
+
 /**
- * Fetch all known addresses from the database.
+ * Fetch all known addresses from the database, each with the profile picture
+ * of the user who linked it.
  * Returns a Map with lowercase addresses as keys for O(1) lookups.
  */
 export async function fetchKnownAddresses(addresses: string[]) {
   if (addresses.length === 0) {
-    return new Map<string, { address: string; username: string }>();
+    return new Map<string, KnownAddress>();
   }
 
   // fetch known profiles
@@ -342,10 +350,16 @@ export async function fetchKnownAddresses(addresses: string[]) {
       address: true,
       username: true,
     },
+    with: { user: { columns: { avatar: true } } },
   });
 
   // convert to Map for O(1) lookups
-  return new Map(results.map((a) => [addr(a.address), a]));
+  return new Map<string, KnownAddress>(
+    results.map(({ user, ...account }) => [
+      addr(account.address),
+      { ...account, avatar: user?.avatar ?? null },
+    ]),
+  );
 }
 
 /**

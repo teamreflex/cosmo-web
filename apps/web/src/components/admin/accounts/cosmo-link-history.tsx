@@ -237,7 +237,8 @@ function HistoryRow({ entry }: { entry: CosmoLinkHistoryEntry }) {
           <span className="flex min-w-0 items-center gap-2">
             <UserAvatar
               username={entry.user.username}
-              className="size-5.5 **:p-0.5"
+              avatar={entry.user.avatar}
+              className="size-5.5"
             />
             <span className="truncate font-medium">{entry.user.username}</span>
           </span>

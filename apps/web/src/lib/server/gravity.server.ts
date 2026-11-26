@@ -210,6 +210,7 @@ export async function fetchAggregatedGravityData(
     topUsers: topUsers.map((user) => ({
       ...user,
       nickname: addressMap.get(user.address)?.username,
+      avatar: addressMap.get(user.address)?.avatar ?? null,
     })),
     totalVoteCount,
     totalComoCount,

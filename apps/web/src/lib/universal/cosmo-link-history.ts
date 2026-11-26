@@ -13,6 +13,6 @@ export type CosmoLinkHistoryEntry = {
   createdAt: Date;
   event: CosmoLinkEvent;
   cosmo: { username: string; address: string };
-  user: { id: string; username: string | null };
+  user: { id: string; username: string | null; avatar: string | null };
   reason: CosmoLinkReason;
 };

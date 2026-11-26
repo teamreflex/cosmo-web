@@ -134,8 +134,8 @@ function PartnerRow({
         <div className="flex min-w-0 flex-1 flex-col gap-x-3 gap-y-2 sm:flex-row sm:items-center">
           <div className="flex min-w-0 flex-1 items-center gap-3">
             <UserAvatar
-              variant="square"
               username={partner.username}
+              avatar={partner.user.avatar}
               className="size-7 sm:size-9"
             />
             <span className="min-w-0 flex-1 truncate text-sm font-semibold">

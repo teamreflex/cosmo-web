@@ -7,6 +7,7 @@
   "exports": {
     ".": "./src/index.ts",
     "./server": "./src/server.ts",
+    "./avatar": "./src/avatar.ts",
     "./runtime": "./src/runtime.ts",
     "./errors": "./src/errors.ts"
   },
@@ -19,7 +20,8 @@
     "format": "bun fmt"
   },
   "dependencies": {
-    "effect": "catalog:"
+    "effect": "catalog:",
+    "sharp": "^0.35.5"
   },
   "devDependencies": {
     "@apollo/database": "workspace:*",

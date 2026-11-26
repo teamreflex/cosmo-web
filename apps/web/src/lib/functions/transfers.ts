@@ -36,6 +36,8 @@ export const $fetchTransfers = createServerFn({ method: "GET" })
                 ...row.counterparty,
                 username:
                   addressMap.get(row.counterparty.address)?.username ?? null,
+                avatar:
+                  addressMap.get(row.counterparty.address)?.avatar ?? null,
               },
             }
           : row,

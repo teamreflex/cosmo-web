@@ -1,6 +1,6 @@
 # Accounts
 
-An Apollo account is a Better Auth user ([`auth.md`](auth.md)) that may link one COSMO account by proving control of its bio. This file covers links, what others may see of a user, how staff name users, and account deletion.
+An Apollo account is a Better Auth user ([`auth.md`](auth.md)) that may link one COSMO account by proving control of its bio. This file covers links, what others may see of a user, profile pictures, how staff name users, and account deletion.
 
 ## COSMO links
 
@@ -71,9 +71,42 @@ An Apollo account is a Better Auth user ([`auth.md`](auth.md)) that may link one
 `PublicUser` is what other people may see of a user. It is brand-typed; build it with `toPublicUser()` (`lib/server/auth.server.ts`).
 
 - It leaves out the email, the role, the display currency and `image`, which for a Discord sign-in is an avatar URL holding the Discord account id. Discord and X names are included only when `showSocials` is on.
+- `avatar` is the R2 key of the user's [profile picture](#profile-pictures), null without one.
 - The viewer's own account goes through `toCurrentUser()`, which adds the currency. The role travels separately on `GetAccount`.
 - Load user rows with a relational query (`db.query.user`, or `cosmoAccounts` with `with: { user: true }`), then map each through `toPublicUser()`.
 - Don't select `discord` or `twitter` in an aggregating query or CTE, and don't hand-roll a SQL mask for them. Fetch the user rows in a separate relational query after the aggregation, so the `showSocials` rule stays in `toPublicUser()`.
+
+## Profile pictures
+
+A user's picture is a square cropped from the front image of an objekt they own. `UserAvatar` (`components/profile/user-avatar.tsx`) draws it as a circle everywhere a user is shown, and draws the squid for a user without one.
+
+```
+  profile header                 apps/web                             indexer / R2
+  --------------                 --------                             ------------
+  owner clicks their avatar
+  ObjektPicker: pick an objekt
+  react-easy-crop: place circle
+  $setProfileImage ----------->  cosmoMiddleware, avatar:<user> limit
+   {tokenId, crop}               caller owns the token? ----------->  objekt + collection
+                                   no -> objekt_not_owned
+                                 front image, full size <-----------  front mirror, original.webp
+                                   (COSMO's copy when unmirrored)
+                                 renderUserAvatar: crop, 256 px WebP
+                                 write ---------------------------->  user-avatars/<uuid>.webp
+                                 replaceAvatar: lock the user row,
+                                   set user.avatar
+                                 delete the key it replaced ------->  R2
+  invalidate both account
+  queries, router.invalidate()
+```
+
+- `user.avatar` holds the R2 key, and `userAvatarUrl()` (`@apollo/image`) joins it to `VITE_CDN_URL`.
+- The client sends only the token id and where the circle sits, as fractions of the image (`AvatarCrop`). The server crops its own copy, so a client can't supply the picture, and the fractions hold although the cropper shows a smaller rendition than the server crops.
+- Only `$setProfileImage` and `$removeProfileImage` (`lib/functions/avatar.ts`) write the column ([`auth.md`](auth.md#client-written-user-fields)).
+- A picture outlives the objekt it came from. Transferring the objekt changes nothing.
+- A payload cached before a change can still name the old key, whose object is gone. `UserAvatar` falls back to the squid when a picture fails to load.
+- A surface that knows only a COSMO address (serials, transfers, gravity's top users, user search) gets the picture from `fetchKnownAddresses()`, which reads it off the user who linked the address.
+- The render and the key layout are in [`packages/image/README.md`](../packages/image/README.md#profile-pictures).
 
 ## Staff names
 
@@ -111,7 +144,8 @@ An Apollo account is a Better Auth user ([`auth.md`](auth.md)) that may link one
            |   closeOpenOffers(by: "deletion"), delete verification rows,     |
            |   delete the user row (foreign keys cascade or set null)         |
            +------------------------------------------------------------------+
-           after commit: clear the pin cache, clear the link code, disconnect
+           after commit: clear the pin cache and the link code, delete the
+             profile picture from R2, disconnect
 ```
 
 - A deletion proof (`DeletionProof`) is either the token from the emailed link or, only for an account without a deliverable email ([`auth.md`](auth.md#social-sign-in-can-change-the-email)), a session created less than 10 minutes ago.

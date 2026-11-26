@@ -54,7 +54,8 @@ export default function ListingFeedRow({ row }: { row: FeedRow }) {
       ) : (
         <UserAvatar
           username={row.cosmoUsername ?? row.poster.username}
-          className="size-4.5 text-xxs **:p-0.5 md:size-6"
+          avatar={row.poster.avatar}
+          className="size-4.5 md:size-6"
         />
       )}
       {/* the rating follows the name, and sits under it in its lg column */}

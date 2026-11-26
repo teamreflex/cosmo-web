@@ -165,6 +165,7 @@ function TopUsers(props: TopUsersProps) {
         key: user.address,
         rank: index + 1,
         name: user.nickname ?? user.address.substring(0, 8),
+        avatar: user.avatar,
         como: user.total,
         // newest first: ISO timestamps sort as they read
         votes: user.votes.toSorted((a, b) =>
@@ -200,7 +201,11 @@ function TopUsers(props: TopUsersProps) {
               />
 
               <span className="relative shrink-0">
-                <UserAvatar username={row.name} className="size-7 **:p-1" />
+                <UserAvatar
+                  username={row.name}
+                  avatar={row.avatar}
+                  className="size-7"
+                />
                 {row.votes.length > 1 && (
                   <span
                     className="absolute -right-1 -bottom-1 rounded-full bg-secondary px-1 font-mono text-xxs leading-4 text-muted-foreground ring-2 ring-card"

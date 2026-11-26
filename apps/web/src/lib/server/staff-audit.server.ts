@@ -386,6 +386,7 @@ export async function fetchAuditStaff(): Promise<AuditStaffMember[]> {
         name: user.name,
         username: user.username,
         displayUsername: user.displayUsername,
+        avatar: user.avatar,
       },
       cosmoAccount: { username: cosmoAccounts.username },
     })

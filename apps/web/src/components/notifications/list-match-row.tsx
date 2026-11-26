@@ -42,7 +42,12 @@ export default function ListMatchRow({
       className={rowClassName}
     >
       <RowBody
-        leading={<RowAvatar username={username} type={notification.type} />}
+        leading={
+          <RowAvatar
+            user={{ username, avatar: notification.actor.avatar }}
+            type={notification.type}
+          />
+        }
         sentence={describeListMatch(notification, username, single)}
         lastAt={notification.lastAt}
         single={single}

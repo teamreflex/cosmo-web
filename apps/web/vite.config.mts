@@ -74,8 +74,10 @@ export default defineConfig({
     }),
     tanstackStart({
       importProtection: {
-        // writes to R2 with Bun APIs; only reachable through lib/server
-        client: { specifiers: ["@apollo/image/server"] },
+        // server.ts writes to R2 with Bun APIs and avatar.ts loads sharp; only reachable through lib/server
+        client: {
+          specifiers: ["@apollo/image/server", "@apollo/image/avatar"],
+        },
       },
     }),
     /**

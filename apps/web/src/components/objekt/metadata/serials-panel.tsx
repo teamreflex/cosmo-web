@@ -1,3 +1,4 @@
+import UserAvatar from "@/components/profile/user-avatar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -139,10 +140,10 @@ function Content(props: ContentProps) {
         to={href}
         className="group flex items-center gap-3 rounded-lg bg-secondary/50 p-3 transition-colors hover:bg-secondary/60"
       >
-        <img
-          src="/profile.webp"
-          alt={m.objekt_serials_profile_alt()}
-          className="size-10 rounded-full bg-cosmo-profile p-1"
+        <UserAvatar
+          username={m.objekt_serials_profile_alt()}
+          avatar={result.avatar}
+          className="size-10"
         />
         <div className="flex flex-col">
           <span className="text-xs text-muted-foreground">

@@ -153,7 +153,7 @@ function TradeRow({ row }: { row: MyTradeRow }) {
             <>
               <PartyAvatar
                 party={row.counterparty}
-                className="size-4.5 text-xxs **:p-0.5 md:size-6"
+                className="size-4.5 text-xxs md:size-6"
               />
               <span
                 className="truncate font-medium"

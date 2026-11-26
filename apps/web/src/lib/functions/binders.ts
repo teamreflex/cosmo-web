@@ -319,7 +319,6 @@ export const $placeObjekt = createServerFn({ method: "POST" })
   .validator(placeObjektSchema)
   .middleware([cosmoMiddleware])
   .handler(async ({ data, context }) => {
-    // the indexer can lag a transfer, so a just-received objekt may fail here
     const owned = await indexer.query.objekts.findFirst({
       where: {
         id: String(data.tokenId),
@@ -405,7 +404,6 @@ export const $addToBinder = createServerFn({ method: "POST" })
       data,
       context,
     }): Promise<Exclude<BinderPlacement, { kind: "full" }>> => {
-      // the indexer can lag a transfer, so a just-received objekt may fail here
       const owned = await indexer.query.objekts.findFirst({
         where: {
           id: String(data.tokenId),

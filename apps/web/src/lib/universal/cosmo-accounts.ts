@@ -1,3 +1,4 @@
+import type { CosmoPublicUser } from "@apollo/cosmo/types/user";
 import type { PublicUser } from "./auth";
 
 export type PublicCosmo = {
@@ -28,3 +29,11 @@ export type FullAccount = {
 export function profileIdentifier(cosmo: PublicCosmo) {
   return cosmo.isAddress ? cosmo.address : cosmo.username;
 }
+
+/**
+ * A COSMO user search result. `avatar` is the R2 key of the profile picture
+ * of the Apollo user who linked the account, null without a link or a
+ * picture. The search dialog shows it rather than COSMO's own profile images,
+ * so a result matches the profile it opens.
+ */
+export type SearchedCosmoUser = CosmoPublicUser & { avatar: string | null };

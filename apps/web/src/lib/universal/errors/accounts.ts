@@ -7,6 +7,7 @@ export const accountErrorCodes = [
   "account_deletion_banned",
   "account_deletion_email_required",
   "account_deletion_session_stale",
+  "avatar_source_unavailable",
 ] as const;
 
 export type AccountErrorCode = (typeof accountErrorCodes)[number];

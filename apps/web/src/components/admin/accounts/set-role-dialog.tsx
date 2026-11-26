@@ -24,13 +24,13 @@ import { roleLabel } from "@/lib/client/roles";
 import { env } from "@/lib/env/client";
 import { $setRole } from "@/lib/functions/staff-users";
 import { roleUserQuery } from "@/lib/queries/staff-users";
+import type { SearchedCosmoUser } from "@/lib/universal/cosmo-accounts";
 import {
   type SetRoleInput,
   setRoleInputSchema,
 } from "@/lib/universal/schema/staff-users";
 import { type RoleUser, staffUserText } from "@/lib/universal/staff-users";
 import { roleNames } from "@apollo/auth";
-import type { CosmoPublicUser } from "@apollo/cosmo/types/user";
 import { standardSchemaResolver } from "@hookform/resolvers/standard-schema";
 import { IconLoader2 } from "@tabler/icons-react";
 import {
@@ -52,7 +52,7 @@ import { toast } from "sonner";
 export default function SetRoleDialog() {
   const accountId = useId();
   const [open, setOpen] = useState(false);
-  const [account, setAccount] = useState<CosmoPublicUser | null>(null);
+  const [account, setAccount] = useState<SearchedCosmoUser | null>(null);
 
   function handleOpenChange(next: boolean) {
     setOpen(next);
@@ -110,7 +110,7 @@ export default function SetRoleDialog() {
 }
 
 type AccountRoleProps = {
-  account: CosmoPublicUser;
+  account: SearchedCosmoUser;
   onDone: () => void;
 };
 

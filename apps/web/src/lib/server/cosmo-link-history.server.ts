@@ -85,6 +85,7 @@ export async function fetchCosmoLinkHistory(input: CosmoLinkHistoryQueryInput) {
       user: {
         id: row.userId,
         username: row.user === null ? null : apolloUsername(row.user),
+        avatar: row.user?.avatar ?? null,
       },
       reason: row.reason,
     })),

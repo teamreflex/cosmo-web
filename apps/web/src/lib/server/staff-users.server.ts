@@ -27,6 +27,7 @@ export type NamedUser = {
   name: string;
   username: string | null;
   displayUsername: string | null;
+  avatar: string | null;
 };
 
 /**
@@ -36,6 +37,7 @@ export const namedUserColumns = {
   name: true,
   username: true,
   displayUsername: true,
+  avatar: true,
 } satisfies Record<keyof NamedUser, true>;
 
 /**
@@ -71,8 +73,12 @@ export function staffUser(user: StaffUserRow | null): StaffUser | null {
     return null;
   }
   return user.cosmoAccount === null
-    ? { kind: "apollo", username: apolloUsername(user) }
-    : { kind: "cosmo", username: user.cosmoAccount.username };
+    ? { kind: "apollo", username: apolloUsername(user), avatar: user.avatar }
+    : {
+        kind: "cosmo",
+        username: user.cosmoAccount.username,
+        avatar: user.avatar,
+      };
 }
 
 /**

@@ -17,8 +17,8 @@ export class ImageFetchError extends Data.TaggedError("ImageFetchError")<{
 }
 
 /**
- * Bun.Image could not decode or encode the source. The Bun.Image error code
- * (e.g. `ERR_IMAGE_DECODE_FAILED`) is on `cause`.
+ * Bun.Image or sharp could not decode or encode the source. Bun.Image's error
+ * code (e.g. `ERR_IMAGE_DECODE_FAILED`) or sharp's error is on `cause`.
  */
 export class ImageProcessError extends Data.TaggedError("ImageProcessError")<{
   readonly url: string;

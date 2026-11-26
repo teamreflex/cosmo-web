@@ -1190,7 +1190,7 @@ function PartyCard({ party, role }: { party: TradeParty; role: string }) {
   return (
     <Item variant="outline" className="bg-card">
       <ItemMedia>
-        <PartyAvatar party={party} className="size-9 text-sm **:p-1.5" />
+        <PartyAvatar party={party} className="size-9 text-sm" />
       </ItemMedia>
       <ItemContent className="min-w-0">
         <ItemTitle className="max-w-full">

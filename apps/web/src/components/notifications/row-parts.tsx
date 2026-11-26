@@ -66,21 +66,21 @@ export function RowBody({
  * gone, badged with the notification's type.
  */
 export function RowAvatar({
-  username,
+  user,
   type,
 }: {
-  username: string | null;
+  user: { username: string; avatar: string | null } | null;
   type: BadgedType;
 }) {
   return (
     <div className="relative h-fit shrink-0">
-      {username === null ? (
-        <UserAvatar variant="square" deleted className="size-8 text-sm" />
+      {user === null ? (
+        <UserAvatar deleted className="size-8 text-sm" />
       ) : (
         <UserAvatar
-          variant="square"
-          username={username}
-          className="size-8 text-sm"
+          username={user.username}
+          avatar={user.avatar}
+          className="size-8"
         />
       )}
       <TypeBadge type={type} />

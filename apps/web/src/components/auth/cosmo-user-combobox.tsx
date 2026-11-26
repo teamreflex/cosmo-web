@@ -1,15 +1,15 @@
 import UserCombobox from "@/components/user-combobox";
 import { m } from "@/i18n/messages";
 import { cosmoUserSearchQuery } from "@/lib/queries/user-search";
+import type { SearchedCosmoUser } from "@/lib/universal/cosmo-accounts";
 import type { ValidArtist } from "@apollo/cosmo/types/common";
-import type { CosmoPublicUser } from "@apollo/cosmo/types/user";
 
 type Props = {
   id?: string;
   // picks which of a user's profile images is shown
   artistId: ValidArtist;
-  value: CosmoPublicUser | null;
-  onChange: (user: CosmoPublicUser | null) => void;
+  value: SearchedCosmoUser | null;
+  onChange: (user: SearchedCosmoUser | null) => void;
   invalid?: boolean;
   autoFocus?: boolean;
 };

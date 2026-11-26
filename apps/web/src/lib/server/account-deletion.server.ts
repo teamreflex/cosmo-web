@@ -21,6 +21,7 @@ import {
 } from "@apollo/database/web/schema";
 import { and, eq, gt, like } from "drizzle-orm";
 import { randomBytes } from "node:crypto";
+import { deleteAvatar } from "./avatar.server";
 import { clearBinderPinCache } from "./binders.server";
 import { recordCosmoLinkChanges } from "./cosmo-accounts.server";
 import { db, type DbOrTx, type WebTx } from "./db";
@@ -99,7 +100,9 @@ export async function createDeletionToken(userId: string) {
   return token;
 }
 
-type DeletionOutcome = DeletionBlocked | { status: "deleted"; link: CosmoLink };
+type DeletionOutcome =
+  | DeletionBlocked
+  | { status: "deleted"; link: CosmoLink; avatar: string | null };
 
 /**
  * Delete the account once the proof checks out. The user row is locked first,
@@ -117,6 +120,7 @@ export async function deleteAccount(
         email: authSchema.user.email,
         banned: authSchema.user.banned,
         banExpires: authSchema.user.banExpires,
+        avatar: authSchema.user.avatar,
       })
       .from(authSchema.user)
       .where(eq(authSchema.user.id, userId))
@@ -160,7 +164,11 @@ export async function deleteAccount(
       }
     }
 
-    return { status: "deleted", link: await purgeAccount(tx, userId) };
+    return {
+      status: "deleted",
+      link: await purgeAccount(tx, userId),
+      avatar: caller.avatar,
+    };
   });
 
   if (result.status === "blocked") {
@@ -171,6 +179,9 @@ export async function deleteAccount(
     await clearBinderPinCache(result.link);
   }
   await clearVerification(userId);
+  if (result.avatar !== null) {
+    await deleteAvatar(result.avatar);
+  }
   /**
    * The user row's foreign key deletes the sessions without Better Auth's
    * hooks, so the disconnect is published here.

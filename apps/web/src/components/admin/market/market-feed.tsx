@@ -310,7 +310,7 @@ function Party({ party }: { party: TradePartyName }) {
   const name = partyName(party);
   return (
     <span className="flex min-w-0 items-center gap-1.5">
-      <PartyAvatar party={party} className="size-5 text-xxs **:p-0.5" />
+      <PartyAvatar party={party} className="size-5 text-xxs" />
       <span className="truncate font-medium" title={name}>
         {name}
       </span>

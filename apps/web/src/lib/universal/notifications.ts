@@ -30,8 +30,12 @@ export type NotificationCollection = {
   frontImageVersion: string | null;
 };
 
-// `username` is null when the user has no COSMO link
-type NotificationUser = { userId: string; username: string | null };
+// `username` is null when the user has no COSMO link, `avatar` when they have no picture
+type NotificationUser = {
+  userId: string;
+  username: string | null;
+  avatar: string | null;
+};
 
 /**
  * A token a trade notification names. `serial` and `collection` are null

@@ -3,9 +3,9 @@ import UserBalances, {
   ComoBalanceErrorFallback,
 } from "@/components/navbar/como-balances";
 import ProfileActions from "@/components/profile/profile-actions";
+import ProfileAvatar from "@/components/profile/profile-avatar";
 import ProfileIdentity from "@/components/profile/profile-identity";
 import ProfileTabs from "@/components/profile/profile-tabs";
-import UserAvatar from "@/components/profile/user-avatar";
 import { Skeleton } from "@/components/ui/skeleton";
 import { m } from "@/i18n/messages";
 import { env } from "@/lib/env/client";
@@ -76,6 +76,8 @@ function RouteComponent() {
   const { account, target } = Route.useLoaderData();
 
   const isAuthenticated = account?.cosmo?.address === target.cosmo.address;
+  const isOwner =
+    target.user !== undefined && account?.user.id === target.user.id;
 
   return (
     <MetadataDialogProvider>
@@ -84,18 +86,16 @@ function RouteComponent() {
           <BinderViewerProvider
             userId={target.user?.id}
             username={profileIdentifier(target.cosmo)}
-            isOwner={
-              target.user !== undefined && account?.user.id === target.user.id
-            }
+            isOwner={isOwner}
           >
             {/* the accent glow is the header's own background so it also tints the translucent border, and follows the container so it stays under the identity block on wide screens */}
             <div className="border-b border-border [background:radial-gradient(900px_280px_at_max(20%,calc(50%_-_460px))_0%,color-mix(in_oklch,var(--color-cosmo)_12.6%,transparent),transparent_60%)]">
               <div className="container flex flex-col gap-4 pt-6 pb-3 md:flex-row md:items-center md:gap-6">
                 {/* avatar */}
-                <UserAvatar
-                  variant="square"
-                  className="size-16 md:size-22"
+                <ProfileAvatar
                   username={target.cosmo.username}
+                  avatar={target.user?.avatar ?? null}
+                  ownerAddress={isOwner ? target.cosmo.address : null}
                 />
 
                 {/* identity */}
@@ -181,7 +181,7 @@ function PendingComponent() {
     <main className="relative flex flex-col">
       <div className="border-b border-border">
         <div className="container flex flex-col gap-3 pt-6 pb-3 md:flex-row md:items-center md:gap-6">
-          <Skeleton className="size-16 rounded-sm md:size-22" />
+          <Skeleton className="size-16 rounded-full md:size-22" />
           <div className="flex min-w-0 flex-1 flex-col gap-3">
             <Skeleton className="h-8 w-40" />
             <Skeleton className="h-10.5 w-36 rounded-sm" />

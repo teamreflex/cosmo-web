@@ -116,7 +116,8 @@ export default function AuditRow({ row }: Props) {
           <>
             <UserAvatar
               username={row.staff.username}
-              className="size-5.5 **:p-0.5"
+              avatar={row.staff.avatar}
+              className="size-5.5"
             />
             <StaffUserName user={row.staff} className="font-medium" />
             <StatusPill tone="muted" className="font-sans">

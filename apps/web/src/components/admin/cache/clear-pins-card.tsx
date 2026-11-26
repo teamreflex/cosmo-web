@@ -10,14 +10,14 @@ import {
 } from "@/components/ui/card";
 import { m } from "@/i18n/messages";
 import { $clearUserPinsCache } from "@/lib/functions/cache";
-import type { CosmoPublicUser } from "@apollo/cosmo/types/user";
+import type { SearchedCosmoUser } from "@/lib/universal/cosmo-accounts";
 import { IconLoader2, IconTrash } from "@tabler/icons-react";
 import { useMutation } from "@tanstack/react-query";
 import { useState } from "react";
 import { toast } from "sonner";
 
 export default function ClearPinsCard() {
-  const [user, setUser] = useState<CosmoPublicUser | null>(null);
+  const [user, setUser] = useState<SearchedCosmoUser | null>(null);
   const mutation = useMutation({
     mutationFn: $clearUserPinsCache,
     onSuccess: () => {

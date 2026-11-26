@@ -168,4 +168,4 @@ Start's import protection replaces `*.server.*` files with mocks in client bundl
 - A file that exports `createServerFn` or `createMiddleware` is plain `.ts`, never `.server.ts`, because the client needs the RPC stub and the middleware chain. That is why `lib/server/middlewares.ts` has no `.server`.
 - Never re-export from a `.server` file (`export { x } from "./foo.server"` is blocked); consumers import from the source.
 - `lib/server/db/index.ts`, `lib/server/db/indexer/*` and `middlewares.ts` match no protected pattern. They stay out of the client only because no browser-reachable file imports their values.
-- `vite.config.mts` denies `@apollo/image/server` on the client, because it writes to R2 with Bun APIs.
+- `vite.config.mts` denies `@apollo/image/server` and `@apollo/image/avatar` on the client, because the first writes to R2 with Bun APIs and the second loads sharp.

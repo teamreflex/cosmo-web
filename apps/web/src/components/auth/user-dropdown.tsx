@@ -42,8 +42,10 @@ export default function UserDropdown({ user, onSignOut }: UserDropdownProps) {
 
       <DropdownMenuTrigger className="group relative outline-hidden">
         <UserAvatar
-          className="h-8 w-8 shadow-sm **:p-1"
+          className="h-8 w-8 shadow-sm"
           username={user.username ?? "Apollo"}
+          avatar={user.avatar}
+          priority
         />
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-fit">

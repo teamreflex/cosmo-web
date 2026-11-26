@@ -66,6 +66,7 @@ const offerNotificationTypes = new Set<NotificationType>([
 function tradeActor(row: {
   actorId: string | null;
   actorUsername: string | null;
+  actorAvatar: string | null;
   actorName: string | null;
   counterpartyId: string | null;
 }): TradeActor | null {
@@ -73,7 +74,12 @@ function tradeActor(row: {
     return null;
   }
   return row.actorId === row.counterpartyId
-    ? { kind: "party", userId: row.actorId, username: row.actorUsername }
+    ? {
+        kind: "party",
+        userId: row.actorId,
+        username: row.actorUsername,
+        avatar: row.actorAvatar,
+      }
     : { kind: "staff", name: row.actorName };
 }
 
@@ -93,6 +99,7 @@ export const $listNotifications = createServerFn({ method: "GET" })
     const actor = alias(cosmoAccounts, "actor");
     const actorUser = alias(user, "actor_user");
     const counterparty = alias(cosmoAccounts, "counterparty");
+    const counterpartyUser = alias(user, "counterparty_user");
     const counterpartyId = sql<
       string | null
     >`CASE WHEN ${tradeOffers.fromUserId} = ${notifications.userId} THEN ${tradeOffers.toUserId} ELSE ${tradeOffers.fromUserId} END`;
@@ -105,6 +112,7 @@ export const $listNotifications = createServerFn({ method: "GET" })
         readAt: notifications.readAt,
         actorId: notifications.actorId,
         actorUsername: actor.username,
+        actorAvatar: actorUser.avatar,
         actorName: sql<
           string | null
         >`coalesce(${actor.username}, ${actorUser.username})`,
@@ -117,6 +125,7 @@ export const $listNotifications = createServerFn({ method: "GET" })
         offerProposedBy: tradeOffers.proposedBy,
         counterpartyId,
         counterpartyUsername: counterparty.username,
+        counterpartyAvatar: counterpartyUser.avatar,
         // whether an offer or a claim was on a listing, which its poster's items name
         fromListing: sql<boolean>`(${inArray(notifications.type, [
           ...offerNotificationTypes,
@@ -153,6 +162,7 @@ export const $listNotifications = createServerFn({ method: "GET" })
       .leftJoin(actor, eq(actor.userId, notifications.actorId))
       .leftJoin(actorUser, eq(actorUser.id, notifications.actorId))
       .leftJoin(counterparty, eq(counterparty.userId, counterpartyId))
+      .leftJoin(counterpartyUser, eq(counterpartyUser.id, counterpartyId))
       .where(
         and(
           eq(notifications.userId, context.session.session.userId),
@@ -283,7 +293,11 @@ export const $listNotifications = createServerFn({ method: "GET" })
                   createdAt: row.createdAt,
                   type: row.type,
                   unread: row.readAt === null,
-                  actor: { userId: row.actorId, username: row.actorUsername },
+                  actor: {
+                    userId: row.actorId,
+                    username: row.actorUsername,
+                    avatar: row.actorAvatar,
+                  },
                   list: { id: row.listId, slug: row.listSlug },
                   collection:
                     row.collectionId === null
@@ -319,6 +333,7 @@ export const $listNotifications = createServerFn({ method: "GET" })
                 : {
                     userId: row.counterpartyId,
                     username: row.counterpartyUsername,
+                    avatar: row.counterpartyAvatar,
                   },
             offer: { id: row.offerId, status: row.offerStatus },
             token: row.tokenId === null ? null : toToken(row.tokenId),

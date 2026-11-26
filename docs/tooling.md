@@ -171,6 +171,7 @@ Web limits are fixed windows consumed through `consumeRateLimit()` in `apps/web/
 | `feedback:<user>`                   | 10 / 10 min | `$leaveFeedback`                                                                                                       |
 | `feedback-remove:<staff>`           | 30 / 10 min | `$removeFeedback` (staff)                                                                                              |
 | `report:<user>`                     | 5 / 10 min  | `$createReport`, and chat's `Report`: one shared budget                                                                |
+| `avatar:<user>`                     | 5 / 10 min  | `$setProfileImage`, because each call crops and uploads an image                                                       |
 | `account-deletion:<user>`           | 3 / 1 hour  | `$requestAccountDeletion`                                                                                              |
 | `cosmo-link-code:<user>`            | 10 / 1 hour | `$generateVerificationCode`                                                                                            |
 | `cosmo-link-target:<cosmo user id>` | 30 / 1 hour | `$generateVerificationCode`, for every caller it would not refuse anyway                                               |

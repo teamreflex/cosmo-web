@@ -1,13 +1,14 @@
 # @apollo/image
 
-Mirrors COSMO objekt images into our R2 bucket: the untouched source bytes for archival, a full-size WebP, and resized WebP renditions for small surfaces. Served from `cdn.apollo.cafe`, and locally from the `floci` service in `docker-compose.yml`.
+Mirrors COSMO objekt images into our R2 bucket (the untouched source bytes for archival, a full-size WebP, and resized WebP renditions for small surfaces) and crops users' profile pictures out of them. Served from `cdn.apollo.cafe`, and locally from the `floci` service in `docker-compose.yml`.
 
-| Entry                   | Contents                                                                             |
-| ----------------------- | ------------------------------------------------------------------------------------ |
-| `@apollo/image`         | Size table, `ObjektImageRef`, key and URL builders. No Bun APIs; safe in the client. |
-| `@apollo/image/server`  | URL normalisation, version hashing, download, render, upload, mirror.                |
-| `@apollo/image/runtime` | `runImage(effect, signal?)` for callers without an Effect runtime.                   |
-| `@apollo/image/errors`  | `ImageFetchError`, `ImageProcessError`, `ImageStoreError`, `isSourceFailure`.        |
+| Entry                   | Contents                                                                                                    |
+| ----------------------- | ----------------------------------------------------------------------------------------------------------- |
+| `@apollo/image`         | Size table, `ObjektImageRef`, key and URL builders, the avatar crop maths. No Bun APIs; safe in the client. |
+| `@apollo/image/server`  | URL normalisation, version hashing, download, render, upload, mirror.                                       |
+| `@apollo/image/avatar`  | `renderUserAvatar`, the only code that loads sharp.                                                         |
+| `@apollo/image/runtime` | `runImage(effect, signal?)` for callers without an Effect runtime.                                          |
+| `@apollo/image/errors`  | `ImageFetchError`, `ImageProcessError`, `ImageStoreError`, `isSourceFailure`.                               |
 
 ## Layout
 
@@ -23,6 +24,13 @@ objekts/{front,back}/<slug>/<version>/
 - `<version>` is the first 12 hex characters of a SHA-256 of the normalised source URL.
 - COSMO gives a replaced image a new URL, so a replacement lands in a new folder and every key is immutable.
 - The indexer, the web admin and the backfill script each derive the version on their own, so changing `normaliseSourceUrl()`, the hash length or the layout needs a full re-mirror.
+
+```
+user-avatars/<uuid>.webp     a user's profile picture, 256 px square
+```
+
+- The name is a random UUID, so the public URL says nothing about whose picture it is.
+- A changed picture is a new key, and the web app deletes the one it replaces.
 
 ## Callers
 
@@ -88,15 +96,25 @@ mirrorObjektImage(bucket, { side, slug, sourceUrl, force? })
 - A failure partway through leaves the marker missing, so the next call redoes everything.
 - The output depends only on the source URL, so rewriting is safe even where the CDN has already cached a file.
 
+## Profile pictures
+
+`renderUserAvatar(source, crop, sourceUrl)` crops a square out of an image and encodes it as a 256 px WebP. The flow around it is in [`docs/accounts.md`](../../docs/accounts.md#profile-pictures).
+
+- It uses sharp, because Bun.Image has no crop. apps/web lists sharp as its own dependency too: its server bundle leaves the import external and resolves it from `apps/web/node_modules`.
+- It is alone in `@apollo/image/avatar`, so the indexer, which imports `@apollo/image/server` to mirror images, never loads sharp.
+- An `AvatarCrop` is in fractions of the image, `x` and `size` of its width and `y` of its height, so a crop placed on one rendition means the same on another. `avatarCropRect()` turns it into pixels and holds the square inside the image.
+- `USER_AVATAR_MAX_ZOOM` is the furthest the cropper zooms in. At 4, a crop of the narrowest front image (1083 px) is still wider than `USER_AVATAR_SIZE`, so a picture is never upscaled.
+- A failure is an `ImageProcessError`, which `isSourceFailure()` counts as the source's fault.
+
 ## Failures
 
 | Error               | When                                                                   | Meaning for callers                       |
 | ------------------- | ---------------------------------------------------------------------- | ----------------------------------------- |
 | `ImageFetchError`   | Download failed. `status` is undefined for network errors or timeouts. | 4xx: broken source. Otherwise: transient. |
-| `ImageProcessError` | Bun.Image couldn't decode or encode the source                         | Broken source                             |
+| `ImageProcessError` | Bun.Image or sharp couldn't decode or encode the source                | Broken source                             |
 | `ImageStoreError`   | R2 request failed                                                      | Transient                                 |
 
-`isSourceFailure(error)` implements the split in the last column. `bun test` covers it, `normaliseSourceUrl` and `objektImageRef` (`tests/server.test.ts`).
+`isSourceFailure(error)` implements the split in the last column. `bun test` covers it, `normaliseSourceUrl` and `objektImageRef` (`tests/server.test.ts`), and `avatarCropRect` (`tests/avatar.test.ts`).
 
 ## Mirroring a whole environment
 

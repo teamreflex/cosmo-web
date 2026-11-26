@@ -60,7 +60,7 @@ export default function ListingHeader({
         <div className="grid min-w-0 flex-1 basis-105 grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-x-3 gap-y-0.5 md:grid-cols-[auto_minmax(0,max-content)_1fr] md:gap-x-2.5">
           <PartyAvatar
             party={party}
-            className="col-start-1 row-start-1 row-end-3 size-9 text-sm **:p-1.5 md:mr-1.5 md:size-10"
+            className="col-start-1 row-start-1 row-end-3 size-9 text-sm md:mr-1.5 md:size-10"
           />
           <h1 className="col-start-2 row-start-1 truncate text-base font-semibold">
             <PartyLink party={party} />

@@ -18,10 +18,10 @@ import {
   $verifyCosmoBio,
 } from "@/lib/functions/auth";
 import { artistsQuery, currentAccountQuery } from "@/lib/queries/core";
+import type { SearchedCosmoUser } from "@/lib/universal/cosmo-accounts";
 import { isAccountErrorCode } from "@/lib/universal/errors/accounts";
 import { artistColors, cn, track } from "@/lib/utils";
 import type { ValidArtist } from "@apollo/cosmo/types/common";
-import type { CosmoPublicUser } from "@apollo/cosmo/types/user";
 import { IconCheck, IconCircleCheck, IconLoader2 } from "@tabler/icons-react";
 import {
   useMutation,
@@ -37,11 +37,16 @@ type WizardState =
   | { step: "info" }
   | { step: "artist" }
   | { step: "search"; artistId: ValidArtist }
-  | { step: "code"; artistId: ValidArtist; user: CosmoPublicUser; code: string }
+  | {
+      step: "code";
+      artistId: ValidArtist;
+      user: SearchedCosmoUser;
+      code: string;
+    }
   | {
       step: "success";
       artistId: ValidArtist;
-      user: CosmoPublicUser;
+      user: SearchedCosmoUser;
     };
 
 type Props = {
@@ -105,7 +110,7 @@ function LinkCosmoWizard({ onClose }: LinkCosmoWizardProps) {
   }
 
   function getProfileImage(
-    user: CosmoPublicUser,
+    user: SearchedCosmoUser,
     artistId: ValidArtist,
   ): string | undefined {
     return user.userProfiles.find((p) => p.artistId === artistId)?.image
@@ -245,11 +250,11 @@ function ArtistStep({ onContinue }: ArtistStepProps) {
 
 type SearchStepProps = {
   artistId: ValidArtist;
-  onContinue: (user: CosmoPublicUser, code: string) => void;
+  onContinue: (user: SearchedCosmoUser, code: string) => void;
 };
 
 function SearchStep({ artistId, onContinue }: SearchStepProps) {
-  const [selected, setSelected] = useState<CosmoPublicUser | null>(null);
+  const [selected, setSelected] = useState<SearchedCosmoUser | null>(null);
   const { mutate, isPending, error, reset } = useMutation({
     mutationFn: $generateVerificationCode,
   });

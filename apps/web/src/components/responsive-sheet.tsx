@@ -3,15 +3,15 @@ import { m } from "@/i18n/messages";
 import { cn } from "@/lib/utils";
 import { IconX } from "@tabler/icons-react";
 import type { ReactNode, RefObject } from "react";
-import { Button } from "../ui/button";
-import { Dialog, DialogClose, DialogContent, DialogTitle } from "../ui/dialog";
+import { Button } from "./ui/button";
+import { Dialog, DialogClose, DialogContent, DialogTitle } from "./ui/dialog";
 import {
   Drawer,
   DrawerClose,
   DrawerContent,
   DrawerFooter,
   DrawerTitle,
-} from "../ui/drawer";
+} from "./ui/drawer";
 
 type Props = {
   title: ReactNode;
@@ -23,6 +23,8 @@ type Props = {
   footer?: ReactNode;
   /** a narrower dialog, and a drawer only as tall as its content */
   narrow?: boolean;
+  /** a narrow sheet's drawer at full height all the same, for content that fills and scrolls */
+  tall?: boolean;
   /** what takes focus on open, instead of the first focusable element */
   initialFocus?: RefObject<HTMLElement | null>;
   closeDisabled?: boolean;
@@ -34,17 +36,19 @@ type Props = {
 };
 
 /**
- * What the trade flows open in, the composer, a listing's row picker and
- * the feedback form: a centred dialog on desktop and a bottom drawer on
- * phones, each headed by its title and a close button. Unless `narrow`, the
- * dialog is wide and the drawer tall.
+ * A sheet for a task that takes over the screen, such as composing a listing,
+ * picking objekts or leaving feedback: a centred dialog on desktop and a
+ * bottom drawer on phones, each headed by its title and a close button.
+ * Unless `narrow`, the dialog is wide and the drawer tall; `tall` keeps a
+ * narrow sheet's drawer tall.
  */
-export default function TradeSheet({
+export default function ResponsiveSheet({
   title,
   badge,
   aside,
   footer,
   narrow = false,
+  tall = false,
   initialFocus,
   closeDisabled,
   open,
@@ -113,7 +117,7 @@ export default function TradeSheet({
         initialFocus={initialFocus}
         className={cn(
           "max-h-[92dvh] gap-0 rounded-t-md p-0",
-          !narrow && "h-[92dvh]",
+          (!narrow || tall) && "h-[92dvh]",
         )}
       >
         <header className="flex shrink-0 flex-col gap-2 border-b border-border px-4 pt-1.5 pb-3">
@@ -150,5 +154,26 @@ export default function TradeSheet({
         )}
       </DrawerContent>
     </Drawer>
+  );
+}
+
+/**
+ * A sheet's body for content that fills and scrolls, such as an objekt
+ * picker: a fixed height in the dialog, and what the drawer has left on
+ * phones.
+ */
+export function SheetFill({ children }: { children: ReactNode }) {
+  const isDesktop = useMediaQuery();
+
+  return (
+    <div
+      className={
+        isDesktop
+          ? "flex h-[min(720px,calc(100dvh-12rem))] flex-col"
+          : "flex min-h-0 flex-1 flex-col"
+      }
+    >
+      {children}
+    </div>
   );
 }

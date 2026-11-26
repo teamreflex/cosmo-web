@@ -100,7 +100,7 @@ export default function TradeHeader({ trade, side }: Props) {
 function PartyName({ party }: { party: TradeParty }) {
   return (
     <span className="inline-flex min-w-0 items-center gap-2">
-      <PartyAvatar party={party} className="size-6 text-xs **:p-1" />
+      <PartyAvatar party={party} className="size-6 text-xs" />
       <PartyLink party={party} className="font-semibold" />
       <FeedbackBadge variant="compact" rep={party.rep} />
     </span>
@@ -120,6 +120,7 @@ export function PartyAvatar({
   ) : (
     <UserAvatar
       username={party.cosmoUsername ?? party.user.username}
+      avatar={party.user.avatar}
       className={className}
     />
   );

@@ -4,6 +4,8 @@ import * as z from "zod";
 export type PublicUser = {
   id: string;
   username: string | undefined;
+  // R2 key of the profile picture, null when the user has none
+  avatar: string | null;
   gridColumns: number;
   collectionMode: CollectionDataSource;
   social: {

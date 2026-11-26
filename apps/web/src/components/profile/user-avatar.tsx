@@ -1,6 +1,9 @@
 import { m } from "@/i18n/messages";
+import { env } from "@/lib/env/client";
 import { cn } from "@/lib/utils";
-import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
+import { userAvatarUrl } from "@apollo/image";
+import { useState } from "react";
+import { Avatar, AvatarFallback } from "../ui/avatar";
 
 /**
  * A deleted user shows a muted "?" with no picture, so nothing of the
@@ -8,26 +11,29 @@ import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
  */
 type Props = {
   className?: string;
-  variant?: "circle" | "square";
-} & ({ deleted: true } | { deleted?: false; username?: string });
+} & (
+  | { deleted: true }
+  | {
+      deleted?: false;
+      username?: string;
+      /** R2 key of the user's profile picture, null for the squid */
+      avatar: string | null;
+      /** in view as the page opens, so the picture loads at once */
+      priority?: boolean;
+    }
+);
 
-export default function UserAvatar({
-  className,
-  variant = "circle",
-  ...props
-}: Props) {
+/**
+ * A user's profile picture in a circle, or the squid when they have none. A
+ * picture that fails to load, such as one a cached payload still names after
+ * its owner replaced it, falls back to the squid. Pictures are one request
+ * per user, so unless `priority` each loads only as it nears the viewport.
+ */
+export default function UserAvatar({ className, ...props }: Props) {
+  const [failed, setFailed] = useState<string | null>(null);
+
   if (props.deleted === true) {
-    return variant === "square" ? (
-      <div
-        className={cn(
-          "relative flex size-20 shrink-0 items-center justify-center overflow-hidden rounded-md bg-muted font-cosmo text-3xl leading-none font-black text-muted-foreground",
-          className,
-        )}
-        aria-label={m.common_deleted_user()}
-      >
-        <span>?</span>
-      </div>
-    ) : (
+    return (
       <Avatar
         className={cn("size-20", className)}
         aria-label={m.common_deleted_user()}
@@ -38,29 +44,29 @@ export default function UserAvatar({
   }
 
   const username = props.username ?? "User";
-
-  if (variant === "square") {
-    return (
-      <div
-        className={cn(
-          "relative flex size-20 shrink-0 items-center justify-center overflow-hidden rounded-md bg-gradient-to-br from-cosmo to-cosmo/40 font-cosmo text-3xl leading-none font-black text-background uppercase",
-          className,
-        )}
-        aria-label={username}
-      >
-        <span>{username.charAt(0).toUpperCase()}</span>
-      </div>
-    );
-  }
+  const avatar = props.avatar === failed ? null : props.avatar;
 
   return (
-    <Avatar className={cn("size-20", className)}>
-      <AvatarFallback>{username.charAt(0).toUpperCase()}</AvatarFallback>
-      <AvatarImage
-        className="bg-cosmo-profile p-3"
-        src="/profile.webp"
-        alt={username}
-      />
-    </Avatar>
+    <span
+      className={cn(
+        "block size-20 shrink-0 overflow-hidden rounded-full",
+        avatar === null ? "bg-cosmo-profile" : "bg-muted",
+        className,
+      )}
+    >
+      {avatar === null ? (
+        // padded against the circle's own width, so the squid keeps its proportions at every size
+        <img className="size-full p-[14%]" src="/profile.webp" alt={username} />
+      ) : (
+        <img
+          className="size-full object-cover"
+          src={userAvatarUrl(env.VITE_CDN_URL, avatar)}
+          alt={username}
+          decoding="async"
+          loading={props.priority === true ? "eager" : "lazy"}
+          onError={() => setFailed(avatar)}
+        />
+      )}
+    </span>
   );
 }

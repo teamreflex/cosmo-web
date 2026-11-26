@@ -100,6 +100,8 @@ export interface AggregatedTopVote {
 export interface AggregatedTopUser {
   address: string;
   nickname: string | undefined;
+  /** R2 key of the voter's profile picture, null when they have none */
+  avatar: string | null;
   total: number;
   votes: {
     id: string;

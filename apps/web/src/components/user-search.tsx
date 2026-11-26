@@ -17,7 +17,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
 import type { PropsWithChildren } from "react";
 import { useDebounceValue } from "usehooks-ts";
-import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
+import UserAvatar from "./profile/user-avatar";
 import { Command } from "./ui/command";
 import { DialogClose } from "./ui/dialog";
 
@@ -143,7 +143,11 @@ export function UserSearch({
                       className="cursor-pointer gap-2"
                       value={user.nickname}
                     >
-                      <UserAvatar nickname={user.nickname} />
+                      <UserAvatar
+                        username={user.nickname}
+                        avatar={user.avatar}
+                        className="size-5"
+                      />
                       <span>{user.nickname}</span>
                     </CommandItem>
                   ))}
@@ -168,23 +172,6 @@ export function UserSearch({
         </Command>
       </CommandDialog>
     </div>
-  );
-}
-
-type UserResultProps = {
-  nickname: string;
-};
-
-function UserAvatar({ nickname }: UserResultProps) {
-  return (
-    <Avatar className="h-5 w-5">
-      <AvatarFallback>{nickname.charAt(0).toUpperCase()}</AvatarFallback>
-      <AvatarImage
-        className="bg-cosmo-profile p-1"
-        src="/profile.webp"
-        alt={nickname}
-      />
-    </Avatar>
   );
 }
 

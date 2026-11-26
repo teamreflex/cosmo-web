@@ -2,8 +2,8 @@ import ObjektPicker, {
   type CollectionQuery,
 } from "@/components/objekt-picker/objekt-picker";
 import type { PickerScope } from "@/components/objekt-picker/picker-filters";
-import { PickerGridSkeleton } from "@/components/objekt-picker/picker-grid";
-import { useMediaQuery } from "@/hooks/use-media-query";
+import { PickerFallback } from "@/components/objekt-picker/picker-grid";
+import { SheetFill } from "@/components/responsive-sheet";
 import { m } from "@/i18n/messages";
 import { offerBlock } from "@/lib/client/trade-listings";
 import { tradeTokenStatesQuery } from "@/lib/queries/trade-listings";
@@ -48,16 +48,8 @@ export default function TradePicker({
   picked,
   ...props
 }: Props) {
-  const isDesktop = useMediaQuery();
-
   return (
-    <div
-      className={
-        isDesktop
-          ? "flex h-[min(720px,calc(100dvh-12rem))] flex-col"
-          : "flex min-h-0 flex-1 flex-col"
-      }
-    >
+    <SheetFill>
       <div className="flex shrink-0 flex-wrap items-center gap-x-3 gap-y-1 border-b border-border px-4 py-2.5 md:px-5">
         {heading}
         <Button type="button" size="sm" onClick={onDone} className="ml-auto">
@@ -68,7 +60,7 @@ export default function TradePicker({
       <Suspense fallback={<PickerFallback />}>
         <PickerWithStates address={address} picked={picked} {...props} />
       </Suspense>
-    </div>
+    </SheetFill>
   );
 }
 
@@ -114,13 +106,5 @@ function PickerWithStates({
         );
       }}
     />
-  );
-}
-
-function PickerFallback() {
-  return (
-    <div className="min-h-0 flex-1 overflow-hidden px-3 pt-3">
-      <PickerGridSkeleton />
-    </div>
   );
 }
