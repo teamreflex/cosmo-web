@@ -1,8 +1,9 @@
 import { tradeOfferItems, tradeOffers } from "@apollo/database/web/schema";
 import { listingTakenUnits } from "@apollo/database/web/sql";
-import type {
-  NewTradeOfferItem,
-  TradeOfferStatus,
+import {
+  type NewTradeOfferItem,
+  openTradeStatuses,
+  type TradeOfferStatus,
 } from "@apollo/database/web/types";
 import {
   scaleWants,
@@ -11,7 +12,6 @@ import {
   unitsOf,
 } from "@apollo/trades/allocate";
 import { validateAssignment } from "@apollo/trades/assignment";
-import { claimCap } from "@apollo/trades/caps";
 import { firstRefusal } from "@apollo/trades/holdings";
 import {
   type ClaimTerms,
@@ -42,7 +42,6 @@ import {
   tradePayment,
 } from "../../universal/trade-listings";
 import { db, type DbOrTx, type WebTx } from "../db";
-import { claimStanding } from "./detail.server";
 import { storedWants } from "./feed.server";
 import {
   readIndexerTokens,
@@ -283,11 +282,31 @@ async function readTakenUnits(tx: WebTx, listingId: string) {
 }
 
 /**
+ * Whether the user already has a trade from the listing under way: a live
+ * claim, or an offer on it still waiting for the poster, whose poster's
+ * items keep the listing's id.
+ */
+async function holdsListingTrade(tx: WebTx, userId: string, listingId: string) {
+  const [held] = await tx
+    .select({ id: tradeOffers.id })
+    .from(tradeOfferItems)
+    .innerJoin(tradeOffers, eq(tradeOffers.id, tradeOfferItems.offerId))
+    .where(
+      and(
+        eq(tradeOfferItems.listingId, listingId),
+        eq(tradeOffers.toUserId, userId),
+        inArray(tradeOffers.status, [...openTradeStatuses]),
+      ),
+    )
+    .limit(1);
+  return held !== undefined;
+}
+
+/**
  * Locks both users' rows in one statement ordered by id, so a claim or an
  * offer on the listing can't deadlock against a crossed one or interleave
- * with a deletion or ban, and the claimer's parallel claims queue for the
- * cap, which their linked address's feedback score sets, and reads their
- * COSMO links under the locks. Then locks the listing row behind its status
+ * with a deletion or ban, and the claimer's parallel claims queue behind
+ * each other, and reads their COSMO links under the locks. Then locks the listing row behind its status
  * and `updated_at` guard without changing it, so claims and offers on one
  * listing queue behind each other and an edit or a drop: one that committed
  * while this one waited leaves no row to lock, and the re-read says which.
@@ -295,9 +314,7 @@ async function readTakenUnits(tx: WebTx, listingId: string) {
  * by the live-token index on insert. Then repeats every check that could
  * have changed, refusing units past what a buy listing has left beside its
  * live and completed trades' (pending offers hold none), refusing a claimer who already has a live claim or a
- * pending offer from the listing; only a claim counts against the cap,
- * since an offer is checked against it when it's accepted. A refusal rolls
- * the write back. Returns the claimer's COSMO address as stored, which the
+ * pending offer from the listing. A refusal rolls the write back. Returns the claimer's COSMO address as stored, which the
  * trade pins, and the poster's locked row, missing when the listing has no
  * poster.
  */
@@ -305,7 +322,7 @@ export async function lockAndRecheck(
   tx: WebTx,
   actor: ListingActor,
   input: ClaimListingInput,
-  { listing, states, submitted, claim }: Preflight,
+  { listing, states, submitted }: Preflight,
 ) {
   const users = await lockParties(
     tx,
@@ -374,10 +391,8 @@ export async function lockAndRecheck(
     actor.address,
   );
   if (link.kind === "refused") refuse(link.refusal);
-  const standing = await claimStanding(tx, actor.userId, listing.id);
-  if (standing.claimsListing) refuse("listing_claim_exists");
-  if (claim.kind === "claim" && standing.active >= claimCap(standing)) {
-    refuse("claim_cap_reached");
+  if (await holdsListingTrade(tx, actor.userId, listing.id)) {
+    refuse("listing_claim_exists");
   }
 
   const token = firstRefusal(
@@ -539,7 +554,7 @@ export async function readListingTerms(listingId: string) {
  * listing row `FOR NO KEY UPDATE` while it's still open, after the offer
  * (docs/locking.md), reads its pool, the units a buy listing's live and
  * completed trades hold, the parties' links, both sides' locks and live
- * trades and the claimer's claim cap, which accepting counts toward, then refuses as offerRefusal() decides, the order the listing
+ * trades, then refuses as offerRefusal() decides, the order the listing
  * page shows. The indexer states of both sides' tokens come from before
  * the transaction.
  */
@@ -628,12 +643,6 @@ export async function recheckListingOffer(
         claimer !== undefined &&
         claimerLink(claimer, links.get(claimer.id)?.address, trade.toAddress)
           .kind === "linked",
-      // only accepted and disputed trades count, so this offer isn't one yet
-      atCap:
-        claimer !== undefined &&
-        (await claimStanding(tx, claimer.id).then(
-          (standing) => standing.active >= claimCap(standing),
-        )),
     },
     {
       states: tokens,

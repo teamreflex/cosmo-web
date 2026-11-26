@@ -320,8 +320,8 @@ export const $bumpListing = createServerFn({ method: "POST" })
  * saw. Each claim is its own trade, and claims on one listing run side by
  * side as long as they pick different objekts; a claimer holds one live
  * trade per listing. An option with a range row, or an amount the claimer
- * offers for its payment, makes it an offer instead (claimTerms()): the same request, checked the same way except
- * for the claim cap, sends the poster a pending offer at that amount that
+ * offers for its payment, makes it an offer instead (claimTerms()): the same request, checked the same way,
+ * sends the poster a pending offer at that amount that
  * reserves nothing and that they accept or decline, and a claimer holds one
  * live trade or pending offer per listing. Every refusal is an
  * ExpectedError and writes nothing. The order they're checked in is fixed,

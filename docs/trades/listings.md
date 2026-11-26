@@ -146,7 +146,7 @@ My trades' Listings tab (`$fetchMyListings`, `components/trades/my-listings.tsx`
 | `unlinked`           | anyone else without a COSMO link                      | nothing                                                                                                                               |
 | `candidate`          | anyone else                                           | what they can take and what they hold for it                                                                                          |
 
-- The poster's offers each carry the claimer, both sides' tokens with serials, the expiry and whether it can be accepted now (`offerRefusal()`, in `$acceptOffer`'s order and with its codes). The page reads the indexer once, the claimers' caps in one grouped statement and the locks by address.
+- The poster's offers each carry the claimer, both sides' tokens with serials, the expiry and whether it can be accepted now (`offerRefusal()`, in `$acceptOffer`'s order and with its codes). The page reads the indexer once and the locks by address.
 - The poster's trades come from one query (`readListingTrades()`): each with when it was accepted and the pool tokens it took, a live one with what the poster still has to send and whether it waits on them, a disputed one with the dispute that froze it.
 - A candidate gets, for each option, the most units they can take giving it (`allocateUnits()`, bounded by the free pool or a buy listing's units left, `MAX_PER_ROW`, `MAX_TOTAL_WANTED` and their holdings), and per want row how many matching objekts they own and how many it is short. One holdings read covers every option's rows.
 - On a listing with several options the picker starts with an option picker (`option-picker.tsx`), each option saying whether giving it claims or sends an offer; it starts on the first option the candidate can fill. The page reads the listing at the chosen option (`listingAt()`), and switching option starts the picks over. Everyone else sees every option in its own box with "or" between them (`WantList`).
@@ -156,7 +156,6 @@ My trades' Listings tab (`$fetchMyListings`, `components/trades/my-listings.tsx`
 - `useListingPicks().toggle()` refuses a pick that fails `fitsWant()`, the rule the server checks, as a guard behind the picker.
 - A short want row shows what it still needs greyed out, the wanted objekt or every collection an "any of" row takes, while a range row crosses out its short slots. An exact row's open slots show its objekt dimmed.
 - Only a candidate's read touches holdings.
-- A candidate who has reached their claim cap sees a notice with their count and cap in place of the picker (`candidatePanel()`), but only when every option only claims. A listing that takes offers still shows the picker, because an offer is checked against the cap when the poster accepts it ([feedback.md](feedback.md#claim-cap)). On an option that claims beside one that takes offers, or one open to offers, a capped candidate gets the cap notice above the picker and a disabled Accept (`acceptCapped()`, judged on the chosen option), since an Accept is a claim; the offer dialog likewise holds back an amount equal to the asking price.
 - The picker's buttons follow `listingAcceptance()` for the chosen option: Accept on an option that claims, Send offer on one that only takes offers, and Make an offer beside Accept on one open to offers. The confirm dialog takes the amount offered per trade when the listing takes offers on its payment. An amount equal to the asking price of a listing open to offers turns it back into Accept. With a range row an empty amount offers the asking price; without one an offer needs an amount, since Accept already claims at that price.
 
 ## The poster's tabs
@@ -196,7 +195,7 @@ Refusals are checked in a fixed order, so the same request always gets the same 
 7. `claim_token_unavailable { tokenId, reason }` for a claimer token that isn't theirs or can't move.
 8. Under the lock: both users are locked `FOR NO KEY UPDATE` and their links re-read, then the listing row is locked behind its status and `updated_at` guard, which refuses as in step 1.
 9. Under the lock: `listing_unavailable` again, `listing_pick_unavailable` for a pick locked or live since, `listing_full` when a buy listing's live and completed trades leave fewer units than the claim takes (`unitsLeft()`, read with the listing's lock), `forbidden` for a banned claimer, `cosmo_not_linked` for one who relinked.
-10. Under the lock: `listing_claim_exists`, then `claim_cap_reached` (claims only, see [feedback.md](feedback.md)), then `claim_token_unavailable` for a claimer token locked or live since.
+10. Under the lock: `listing_claim_exists`, then `claim_token_unavailable` for a claimer token locked or live since.
 11. Inserting the items maps a live-token index clash to `listing_pick_unavailable` or `claim_token_unavailable` (`refuseLiveClash()`).
 
 - A refused poster or pick in preflight first re-reads the listing's status (`refuseAfterRecheck`), so a commit since the read gets the better answer.
@@ -211,7 +210,7 @@ Acceptance is decided per option: an option takes offers (`listingAcceptance()` 
 | open to offers (`price_or_offer`)           | a claim at the asking price, or an offer at it with a range row | an offer at that amount; the asking price itself is as no amount |
 | offer only (`offer_only`)                   | refused                                                         | an offer at that amount                                          |
 
-- An offer is the same `$claimListing` request, through the same checks and locks except the claim cap, and creates a `pending` trade with `proposed_by = to`, `expires_at = now() + OFFER_WINDOW` (72 h), nothing live, an `offered` event and `offer_received` to the poster. It returns `{ tradeId, pending: true }`.
+- An offer is the same `$claimListing` request, through the same checks and locks, and creates a `pending` trade with `proposed_by = to`, `expires_at = now() + OFFER_WINDOW` (72 h), nothing live, an `offered` event and `offer_received` to the poster. It returns `{ tradeId, pending: true }`.
 - Its payment item holds the offered amount times its units, so accepting it starts the trade at that amount, and the poster's Offers tab, My trades and the notification emails read it from there.
 - The claimer always names the amount, whichever side sends it: on a buy listing it is what the poster pays per unit, and the confirm dialog takes it under "You get". The poster's payment on top of their objekts is always a fixed price, so an offer on such a listing never names what the poster pays.
 - Claim or offer is decided from the option's wants and payment as `preflightClaim()` read them; the lock's `updated_at` guard guarantees they haven't changed since.
@@ -229,7 +228,7 @@ Acceptance is decided per option: an option takes offers (`listingAcceptance()` 
 5. `cosmo_not_linked` when `posterBlocked()` holds for the poster.
 6. `listing_full` when a buy listing's live and completed trades leave fewer units than the offer takes, since a pending offer held none.
 7. `listing_pick_unavailable` for a pick live in another trade; `claim_token_unavailable` naming why for any other undeliverable pick.
-8. `offer_unavailable` when the claimer is gone, banned, relinked or at their claim cap, without saying which, so the poster learns none of them.
+8. `offer_unavailable` when the claimer is gone, banned or relinked, without saying which, so the poster learns none of them.
 9. `offer_unavailable { tokenId }` for a claimer token that is no longer theirs to give, without saying why.
 
 It then becomes `accepted` with the claim window. The poster's picks go live first, so a live-token clash names the right side, then the claimer's. The claimer hears `offer_accepted`.

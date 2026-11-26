@@ -80,14 +80,14 @@ Apollo matches people who want to swap objekts and records each swap, but never 
 | [offers.md](offers.md)                           | direct offers, counters, offer windows, what a refusal may reveal                                                                                          |
 | [lifecycle.md](lifecycle.md)                     | trade statuses, party actions, ending a trade, timers' decisions, disputes, bans                                                                           |
 | [drain.md](drain.md)                             | what an on-chain transfer means for a trade, listing or offer                                                                                              |
-| [feedback.md](feedback.md)                       | claim caps, listing limits, rate limits, ratings and notices                                                                                               |
+| [feedback.md](feedback.md)                       | listing limits, rate limits, ratings and notices                                                                                                           |
 | [notification-emails.md](notification-emails.md) | which notifications are emailed, the opt-out bits, the email task's claim, release and cooldown                                                            |
 
 ## Where to start
 
 - **A transition rule**: `transition()` in `packages/trades/src/lifecycle.ts` and `tests/lifecycle.test.ts`. Guarded SQL updates take their statuses from `offerTransition()` and `listingTransition()`, so add to those maps instead of hard-coding statuses.
 - **What a transfer means**: `decideTransfer()` and `foldTransfers()` in `transfers.ts`, applied by `applyTrades` and `breakOffers` in `apps/schedules/src/functions/drain-outbox.ts`.
-- **Windows or caps**: `timers.ts` and `caps.ts`. `CLAIM_WINDOW` applies to claims and accepted offers alike.
+- **Windows or limits**: `timers.ts` and `caps.ts`. `CLAIM_WINDOW` applies to claims and accepted offers alike.
 - **A listing's terms**: the schemas in `listing.ts`, shared by post and edit, and `checkTerms()` and `insertTerms()` in `lib/server/trades/listings.server.ts`.
 - **The listing page or feed**: `lib/server/trades/detail.server.ts` and `feed.server.ts` read, and the verdicts they share with the page are pure in `lib/universal/trade-listings.ts` (`apps/web/tests/listing-viewer.test.ts`). The composer's form rules are in `lib/universal/trade-listing-form.ts` (`tests/trade-listing-form.test.ts`).
 - **A timeline event**: the `TradeEvent` union in `packages/database/src/web/types.ts`, its schema in `packages/chat/src/items.ts`, its renderer in `components/trades/trade-events.tsx`, and its strings in all six locales.

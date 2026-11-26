@@ -46,8 +46,8 @@ function rateableEnding(state: TradeState): RateableEnding | null {
 }
 
 /**
- * Whether a rating counts towards the rated party's score, share positive,
- * counts and claim cap. A completed trade's always does, including one staff
+ * Whether a rating counts towards the rated party's score, share positive
+ * and counts. A completed trade's always does, including one staff
  * completed without seeing a transfer; any other only once a token arrived
  * or a payment's recipient confirmed it. A rating that doesn't count still
  * shows.

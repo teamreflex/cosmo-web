@@ -1,13 +1,6 @@
-# Caps, feedback and notices
+# Listing limits, feedback and notices
 
-Windows are constants in `packages/trades/src/timers.ts`, caps and listing limits in `caps.ts`, and range limits in `range.ts`; read them from there, since the market notice and the composer do.
-
-## Claim cap
-
-- A user may hold `claimCap()` claims at once: `CLAIM_CAP_BASE` (3), plus one per tier in `CLAIM_CAP_TIERS` their score reaches, up to `CLAIM_CAP_CEILING`.
-- The score is the feedback score of their linked COSMO address, so a negative score never lowers the cap below the base.
-- `claimStanding()` counts the user's live trades claimed from a listing: `accepted` or `disputed`, the user is `to`, and an item carries a `listing_id`. An offer on a listing counts once it is accepted, which is when its cap is checked; a refusal for the cap reads to the poster as the generic `offer_unavailable`, since only the claimer may learn their cap.
-- Direct offers, pending offers and open listings are uncapped.
+Windows are constants in `packages/trades/src/timers.ts`, listing limits in `caps.ts`, and range limits in `range.ts`; read them from there, since the market notice and the composer do.
 
 ## Listing limits
 
@@ -54,4 +47,4 @@ The market has two dismissable notices, each remembered per browser in an httpOn
 - `$dismissNotice` sets the notice's cookie to its version in `NOTICE_VERSIONS` for a year (`useDismissNotice()` in `hooks/use-dismiss-notice.ts`).
 - The `/market` route reads every notice cookie on the server in one call (`$fetchDismissedNotices`, `dismissedNoticesQuery`), so SSR renders the dialog open or closed without a flash.
 - Bumping a notice's version in `NOTICE_VERSIONS` shows it to everyone again.
-- The market notice's numbers come from `CLAIM_CAP_BASE`, `CLAIM_CAP_CEILING`, `CLAIM_WINDOW` and `FEEDBACK_WINDOW_DAYS`, so its copy can't drift from the rules it describes.
+- The market notice's numbers come from `CLAIM_WINDOW` and `FEEDBACK_WINDOW_DAYS`, so its copy can't drift from the rules it describes.

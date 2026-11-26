@@ -22,7 +22,6 @@ import { m } from "@/i18n/messages";
 import { env } from "@/lib/env/client";
 import { dismissedNoticesQuery } from "@/lib/queries/market";
 import { cn } from "@/lib/utils";
-import { CLAIM_CAP_BASE, CLAIM_CAP_CEILING } from "@apollo/trades/caps";
 import type { ListingType } from "@apollo/trades/listing";
 import { CLAIM_WINDOW, FEEDBACK_WINDOW_DAYS } from "@apollo/trades/timers";
 import { ParaglideMessage } from "@inlang/paraglide-js-react";
@@ -403,12 +402,6 @@ function FeedbackStep({ active }: StepProps) {
         title={m.market_notice_feedback_title({ days: FEEDBACK_WINDOW_DAYS })}
       >
         <Body>{m.market_notice_feedback()}</Body>
-        <Body>
-          {m.market_notice_caps({
-            base: CLAIM_CAP_BASE,
-            ceiling: CLAIM_CAP_CEILING,
-          })}
-        </Body>
       </StepText>
     </>
   );

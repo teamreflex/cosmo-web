@@ -374,7 +374,6 @@
   "trade_error_listing_unavailable": "Cette annonce ne peut pas être acceptée pour le moment.",
   "trade_error_listing_want_unknown": "L'un des objekts que vous recherchez n'existe pas.",
   "trade_error_listing_range_empty": "L'une de vos plages ne correspond à aucun objekt.",
-  "trade_error_claim_cap_reached": "Vous avez atteint le nombre maximal d'échanges acceptés en cours. Terminez-en un avant d'en accepter un autre.",
   "trade_error_claim_assignment_invalid": "Les objekts choisis ne correspondent pas à cette annonce. Actualisez et choisissez à nouveau.",
   "trade_error_claim_token_unavailable": "L'un des objekts choisis ne peut plus être échangé.",
   "trade_error_trade_not_found": "Cet échange est introuvable.",
@@ -816,20 +815,6 @@
   "listing_detail_signed_out": "Connectez-vous pour voir lesquels de vos objekts correspondent et pour accepter.",
   "listing_detail_unlinked_title": "Liez votre compte COSMO pour échanger.",
   "listing_detail_link_cosmo": "Associer COSMO",
-  "listing_detail_cap_title": [
-    {
-      "declarations": ["input count", "local countPlural = count: plural"],
-      "selectors": ["countPlural"],
-      "match": {
-        "countPlural=one": "Vous avez {count} échange en cours, le maximum que votre compte peut mener à la fois.",
-        "countPlural=other": "Vous avez {count} échanges en cours, le maximum que votre compte peut mener à la fois."
-      }
-    }
-  ],
-  "listing_detail_cap_body": "Terminez-en un pour en accepter un autre.",
-  "listing_detail_cap_over_title": "Vous avez {active} échanges en cours. Votre compte peut en mener {cap} à la fois pour le moment.",
-  "listing_detail_cap_over_body": "Terminez-en {count} pour en accepter un autre.",
-  "listing_detail_cap_grows": "La limite augmente à mesure que vous recevez des évaluations positives.",
   "listing_detail_lost_race_title": "Un autre échange a pris un objekt que vous aviez choisi, juste avant vous.",
   "listing_detail_lost_race_body": "Choisissez-en un autre pour continuer ; si cet échange n'aboutit pas, il redevient disponible.",
   "listing_detail_updated_title": "Cette annonce a changé avant que vous acceptiez.",
@@ -2384,7 +2369,6 @@
   "market_notice_art_chat": "envoyé de mon côté, regarde ton COSMO !",
   "market_notice_feedback_title": "Évaluez-vous sous {days} jours",
   "market_notice_feedback": "Après un échange ou une vente, chaque partie laisse une évaluation positive, neutre ou négative. L'évaluation d'une vente indique qui était l'acheteur et qui était le vendeur, pour voir comment quelqu'un gère les paiements.",
-  "market_notice_caps": "Votre score augmente le nombre d'annonces que vous pouvez accepter à la fois, de {base} jusqu'à {ceiling}.",
   "market_notice_art_rate": "Évaluer {name}",
   "market_notice_art_rate_role": "en tant qu'acheteur de votre 101Z pour {price}",
   "market_notice_art_on_profiles": "Sur les profils :",
@@ -3021,6 +3005,5 @@
   ],
   "listing_composer_footer_offers": "{offered} · offres acceptées",
   "listing_offer_amount_invalid": "Saisissez un montant supérieur à 0, avec deux décimales au plus, jusqu'à {max}.",
-  "listing_offer_amount_total": "{count} × {amount} = {total}",
-  "listing_offer_amount_capped": "Vous avez atteint votre limite d'échanges : proposez un autre montant."
+  "listing_offer_amount_total": "{count} × {amount} = {total}"
 }

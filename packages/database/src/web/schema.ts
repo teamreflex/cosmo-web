@@ -820,7 +820,7 @@ export const tradeOffers = pgTable(
         t.onOfflines,
       )
       .where(sql`${t.kind} = 'listing' AND ${t.status} = 'open'`),
-    // my trades, sales pages, claim caps and the deletion check
+    // my trades, sales pages and the deletion check
     index("trade_offers_from_user_idx").on(t.fromUserId, t.status),
     index("trade_offers_to_user_idx").on(t.toUserId, t.status),
     // trade-timers' scan for accepted trades past the watermark

@@ -3,10 +3,8 @@ import {
   cosmoAccounts,
   tradeOfferItems,
   tradeOffers,
-  userFeedbackStats,
 } from "@apollo/database/web/schema";
 import {
-  liveTradeStatuses,
   openTradeStatuses,
   type TradeOfferItem,
   type TradeOfferStatus,
@@ -16,11 +14,7 @@ import {
   fitsWant,
   type UnitsRoom,
 } from "@apollo/trades/allocate";
-import {
-  claimCap,
-  type ClaimStats,
-  MAX_TOTAL_WANTED,
-} from "@apollo/trades/caps";
+import { MAX_TOTAL_WANTED } from "@apollo/trades/caps";
 import { nextStep, tradeParts, tradeState } from "@apollo/trades/lifecycle";
 import { isEqual } from "@apollo/util";
 import {
@@ -31,8 +25,6 @@ import {
   EmptyFilter,
   eq,
   exists,
-  inArray,
-  isNotNull,
   sql,
 } from "drizzle-orm";
 import { alias, QueryBuilder } from "drizzle-orm/pg-core";
@@ -52,7 +44,7 @@ import {
   tradePayment,
   type TradeRatio,
 } from "../../universal/trade-listings";
-import { db, type DbOrTx } from "../db";
+import { db } from "../db";
 import { feedbackRepColumns } from "../feedback.server";
 import { feedItem, readIndexed } from "./feed.server";
 import { readCandidates, readSharedTokenFlags } from "./holdings.server";
@@ -66,121 +58,6 @@ import {
 import { claimerLink } from "./trade.server";
 
 const qb = new QueryBuilder();
-
-/**
- * The rows that are open claims: trades taken from a listing that are
- * still accepted or disputed. Only a trade from a listing has items with a
- * `listing_id`: the poster's objekts, or their payment on a buy listing.
- */
-const openClaim = and(
-  eq(tradeOffers.kind, "trade"),
-  inArray(tradeOffers.status, [...liveTradeStatuses]),
-  exists(
-    qb
-      .select({ id: tradeOfferItems.id })
-      .from(tradeOfferItems)
-      .where(
-        and(
-          eq(tradeOfferItems.offerId, tradeOffers.id),
-          isNotNull(tradeOfferItems.listingId),
-        ),
-      ),
-  ),
-);
-
-const listingClaim = alias(tradeOffers, "listing_claim");
-
-/**
- * What a user's claim cap is judged on, in one statement: their linked COSMO
- * `address` (null when unlinked), how many claims they hold open, and the
- * feedback score of their linked address, or 0 before its first scored
- * rating. A claim passes its listing, which adds whether the user already
- * has a trade from it under way (`claimsListing`): a live claim, or an offer
- * on it still waiting for the poster, whose poster's items keep the
- * listing's id.
- */
-export async function claimStanding(
-  executor: DbOrTx,
-  userId: string,
-  listingId?: string,
-): Promise<
-  ClaimStats & {
-    address: string | null;
-    active: number;
-    claimsListing: boolean;
-  }
-> {
-  const link = qb
-    .select({ address: cosmoAccounts.address })
-    .from(cosmoAccounts)
-    .where(eq(cosmoAccounts.userId, userId));
-  const [row] = await executor
-    .select({
-      address: sql<string | null>`(${link})`,
-      active: count(),
-      score: sql<number>`coalesce((${qb
-        .select({ score: userFeedbackStats.score })
-        .from(userFeedbackStats)
-        .where(inArray(userFeedbackStats.address, link))}), 0)`.mapWith(Number),
-      claimsListing:
-        listingId === undefined
-          ? sql<boolean>`false`
-          : exists(
-              qb
-                .select({ id: listingClaim.id })
-                .from(tradeOfferItems)
-                .innerJoin(
-                  listingClaim,
-                  eq(listingClaim.id, tradeOfferItems.offerId),
-                )
-                .where(
-                  and(
-                    eq(tradeOfferItems.listingId, listingId),
-                    eq(listingClaim.toUserId, userId),
-                    inArray(listingClaim.status, [...openTradeStatuses]),
-                  ),
-                ),
-            ).mapWith(Boolean),
-    })
-    .from(tradeOffers)
-    .where(and(eq(tradeOffers.toUserId, userId), openClaim));
-  return {
-    address: row?.address ?? null,
-    active: row?.active ?? 0,
-    score: row?.score ?? 0,
-    claimsListing: row?.claimsListing ?? false,
-  };
-}
-
-/**
- * Which of the users hold as many open claims as their cap allows, judged
- * as claimStanding() judges one, in one grouped statement. A user with no
- * open claim is under any cap, so they don't need a row.
- */
-async function claimersAtCap(userIds: readonly string[]) {
-  if (userIds.length === 0) return new Set<string>();
-  const rows = await db
-    .select({
-      userId: tradeOffers.toUserId,
-      active: count(),
-      score: sql<number>`coalesce(${userFeedbackStats.score}, 0)`.mapWith(
-        Number,
-      ),
-    })
-    .from(tradeOffers)
-    .leftJoin(cosmoAccounts, eq(cosmoAccounts.userId, tradeOffers.toUserId))
-    .leftJoin(
-      userFeedbackStats,
-      eq(userFeedbackStats.address, cosmoAccounts.address),
-    )
-    .where(and(inArray(tradeOffers.toUserId, [...userIds]), openClaim))
-    .groupBy(tradeOffers.toUserId, userFeedbackStats.score);
-  return new Set(
-    rows.flatMap((row) =>
-      row.userId !== null && row.active >= claimCap(row) ? [row.userId] : [],
-    ),
-  );
-}
 
 const listingTrade = alias(tradeOffers, "listing_trade");
 
@@ -400,8 +277,7 @@ function claimer(row: ListingTradeRow) {
  * The poster's side of their open listing: its pending offers, each judged
  * as accepting it would be right now (offerRefusal), and every trade it
  * started, a live one with where it stands for the poster. The indexer is
- * read once for the page, for every offer's tokens, and the claimers' caps
- * in one statement.
+ * read once for the page, for every offer's tokens.
  */
 async function readPosterSide(listing: {
   id: string;
@@ -446,9 +322,6 @@ async function readPosterSide(listing: {
     listing.fromAddress,
     ...pending.map(({ toAddress }) => toAddress),
   ]);
-  const atCap = await claimersAtCap([
-    ...new Set(pending.flatMap(({ row }) => row.toUserId ?? [])),
-  ]);
   const pool = new Set(listing.pool);
   const options = listing.options.map(tradeOption);
   const now = new Date();
@@ -480,7 +353,6 @@ async function readPosterSide(listing: {
                   row.toUser.cosmoAccount?.address,
                   toAddress,
                 ).kind === "linked",
-              atCap: row.toUserId !== null && atCap.has(row.toUserId),
             },
             {
               states: indexed.states,
@@ -561,7 +433,7 @@ async function readPosterSide(listing: {
 /**
  * The candidate's side of an open listing, for each of its options: the
  * most units they can take giving it, bounded by the free pool or a buy
- * listing's units left, the claim caps and what they hold (allocateUnits), and per want row how many
+ * listing's units left, and what they hold (allocateUnits), and per want row how many
  * usable copies of the collections it fits they own before the cap and how
  * many it is short at that size, one unit's when they can't fill one. One
  * holdings read covers every option's rows. The allocation runs here,
@@ -680,8 +552,12 @@ export async function readListingViewer(
     };
   }
 
-  const { address, ...standing } = await claimStanding(db, viewerId);
-  if (address === null) return { role: "unlinked" };
+  const [link] = await db
+    .select({ address: cosmoAccounts.address })
+    .from(cosmoAccounts)
+    .where(eq(cosmoAccounts.userId, viewerId));
+  if (link === undefined) return { role: "unlinked" };
+  const { address } = link;
   // the listing's `stop` says whether the pool or the poster's account stops a claim
   return {
     role: "candidate",
@@ -692,7 +568,6 @@ export async function readListingViewer(
         ? { ...listing.units, free: listing.free }
         : listing.units,
     ),
-    claims: { active: standing.active, cap: claimCap(standing) },
     ownAddress: isEqual(address, listing.fromAddress),
     endedOffer: trade === undefined ? null : endedOffer(trade.status),
   };

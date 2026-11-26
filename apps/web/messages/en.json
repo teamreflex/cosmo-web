@@ -374,7 +374,6 @@
   "trade_error_listing_unavailable": "This listing can't be accepted right now.",
   "trade_error_listing_want_unknown": "One of the objekts you're looking for doesn't exist.",
   "trade_error_listing_range_empty": "One of your ranges doesn't match any objekts.",
-  "trade_error_claim_cap_reached": "You have as many accepted trades in progress as you can. Finish one before accepting another.",
   "trade_error_claim_assignment_invalid": "The objekts you picked don't fit this listing. Refresh and pick again.",
   "trade_error_claim_token_unavailable": "One of the objekts you picked can no longer be traded.",
   "trade_error_trade_not_found": "This trade couldn't be found.",
@@ -816,20 +815,6 @@
   "listing_detail_signed_out": "Sign in to see which of your objekts match and to accept.",
   "listing_detail_unlinked_title": "Link your COSMO account to trade.",
   "listing_detail_link_cosmo": "Link COSMO",
-  "listing_detail_cap_title": [
-    {
-      "declarations": ["input count", "local countPlural = count: plural"],
-      "selectors": ["countPlural"],
-      "match": {
-        "countPlural=one": "You have {count} trade in progress, the most your account can run at once.",
-        "countPlural=other": "You have {count} trades in progress, the most your account can run at once."
-      }
-    }
-  ],
-  "listing_detail_cap_body": "Finish one to accept another.",
-  "listing_detail_cap_over_title": "You have {active} trades in progress. Your account can run {cap} at once right now.",
-  "listing_detail_cap_over_body": "Finish {count} of them to accept another.",
-  "listing_detail_cap_grows": "The limit grows as you collect positive feedback.",
   "listing_detail_lost_race_title": "Another trade took an objekt you picked a moment before you.",
   "listing_detail_lost_race_body": "Pick another to go on; if their trade doesn't finish, it's free again.",
   "listing_detail_updated_title": "This listing changed before you accepted.",
@@ -2375,7 +2360,6 @@
   "market_notice_art_chat": "sent mine, check your COSMO!",
   "market_notice_feedback_title": "Rate each other within {days} days",
   "market_notice_feedback": "After a trade or sale, both sides leave positive, neutral or negative feedback. A sale's rating says who was the buyer and who was the seller, so you can see how someone handles payments.",
-  "market_notice_caps": "Your score raises how many listings you can accept at a time, from {base} up to {ceiling}.",
   "market_notice_art_rate": "Rate {name}",
   "market_notice_art_rate_role": "as the buyer of your 101Z for {price}",
   "market_notice_art_on_profiles": "On profiles:",
@@ -3003,6 +2987,5 @@
   ],
   "listing_composer_footer_offers": "{offered} · taking offers",
   "listing_offer_amount_invalid": "Enter an amount above 0 with at most two decimals, up to {max}.",
-  "listing_offer_amount_total": "{count} × {amount} = {total}",
-  "listing_offer_amount_capped": "You're at your claim cap, so offer a different amount."
+  "listing_offer_amount_total": "{count} × {amount} = {total}"
 }

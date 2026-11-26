@@ -371,7 +371,6 @@
   "trade_error_listing_unavailable": "지금은 이 교환 글을 수락할 수 없습니다.",
   "trade_error_listing_want_unknown": "찾고 있는 오브젝트 중 하나가 존재하지 않습니다.",
   "trade_error_listing_range_empty": "범위 중 하나에 해당하는 오브젝트가 없습니다.",
-  "trade_error_claim_cap_reached": "진행 중인 수락한 교환이 한도에 도달했습니다. 다른 교환을 수락하기 전에 하나를 완료하세요.",
   "trade_error_claim_assignment_invalid": "선택한 오브젝트가 이 교환 글에 맞지 않습니다. 새로고침한 뒤 다시 선택하세요.",
   "trade_error_claim_token_unavailable": "선택한 오브젝트 중 하나를 더 이상 교환할 수 없습니다.",
   "trade_error_trade_not_found": "교환을 찾을 수 없습니다.",
@@ -801,19 +800,6 @@
   "listing_detail_signed_out": "로그인하면 내 오브젝트 중 조건에 맞는 것을 확인하고 수락할 수 있습니다.",
   "listing_detail_unlinked_title": "교환하려면 COSMO 계정을 연결하세요.",
   "listing_detail_link_cosmo": "COSMO 연결",
-  "listing_detail_cap_title": [
-    {
-      "declarations": ["input count", "local countPlural = count: plural"],
-      "selectors": ["countPlural"],
-      "match": {
-        "countPlural=other": "진행 중인 교환이 {count}건으로, 계정이 동시에 진행할 수 있는 최대치입니다."
-      }
-    }
-  ],
-  "listing_detail_cap_body": "하나를 완료하면 다른 교환 글을 수락할 수 있습니다.",
-  "listing_detail_cap_over_title": "진행 중인 교환이 {active}건입니다. 지금은 계정이 동시에 {cap}건까지 진행할 수 있습니다.",
-  "listing_detail_cap_over_body": "{count}건을 완료하면 다른 교환 글을 수락할 수 있습니다.",
-  "listing_detail_cap_grows": "긍정 평가를 받을수록 한도가 늘어납니다.",
   "listing_detail_lost_race_title": "고른 오브젝트가 조금 먼저 다른 교환에 들어갔습니다.",
   "listing_detail_lost_race_body": "다른 것을 골라 계속하세요. 그 교환이 완료되지 않으면 다시 고를 수 있습니다.",
   "listing_detail_updated_title": "수락하기 전에 이 교환 글이 수정되었습니다.",
@@ -2329,7 +2315,6 @@
   "market_notice_art_chat": "보냈어요, COSMO 확인해 주세요!",
   "market_notice_feedback_title": "{days}일 안에 서로 평가하세요",
   "market_notice_feedback": "교환이나 판매가 끝나면 양쪽 모두 좋음, 보통, 나쁨으로 평가를 남깁니다. 판매 평가에는 누가 구매자이고 누가 판매자였는지 표시되어, 상대가 결제를 어떻게 처리하는지 알 수 있습니다.",
-  "market_notice_caps": "점수가 오를수록 동시에 수락할 수 있는 교환 글이 {base}건에서 최대 {ceiling}건까지 늘어납니다.",
   "market_notice_art_rate": "{name}님 평가",
   "market_notice_art_rate_role": "내 101Z를 {price}에 산 구매자로서",
   "market_notice_art_on_profiles": "프로필:",
@@ -2935,6 +2920,5 @@
   ],
   "listing_composer_footer_offers": "{offered} · 제안 받는 중",
   "listing_offer_amount_invalid": "0보다 크고 소수점 둘째 자리까지, {max} 이하의 금액을 입력하세요.",
-  "listing_offer_amount_total": "{count} × {amount} = {total}",
-  "listing_offer_amount_capped": "수락 한도에 도달했으니 다른 금액을 제안하세요."
+  "listing_offer_amount_total": "{count} × {amount} = {total}"
 }

@@ -371,7 +371,6 @@
   "trade_error_listing_unavailable": "この出品は現在承諾できません。",
   "trade_error_listing_want_unknown": "探しているオブジェクトの一つが存在しません。",
   "trade_error_listing_range_empty": "範囲の一つに一致するオブジェクトがありません。",
-  "trade_error_claim_cap_reached": "進行中の承諾済みトレードが上限に達しています。新たに承諾する前に、いずれかを完了してください。",
   "trade_error_claim_assignment_invalid": "選んだオブジェクトがこの出品に合いません。再読み込みして選び直してください。",
   "trade_error_claim_token_unavailable": "選んだオブジェクトの一つがトレードできなくなりました。",
   "trade_error_trade_not_found": "この取引が見つかりませんでした。",
@@ -801,19 +800,6 @@
   "listing_detail_signed_out": "サインインすると、条件に合うオブジェクトを確認して承諾できます。",
   "listing_detail_unlinked_title": "トレードするにはCOSMOアカウントを連携してください。",
   "listing_detail_link_cosmo": "COSMOを連携",
-  "listing_detail_cap_title": [
-    {
-      "declarations": ["input count", "local countPlural = count: plural"],
-      "selectors": ["countPlural"],
-      "match": {
-        "countPlural=other": "進行中のトレードが{count}件あり、同時に進められる上限に達しています。"
-      }
-    }
-  ],
-  "listing_detail_cap_body": "1件完了すると、別の出品を承諾できます。",
-  "listing_detail_cap_over_title": "進行中のトレードが{active}件あります。現在、同時に進められるのは{cap}件までです。",
-  "listing_detail_cap_over_body": "{count}件完了すると、別の出品を承諾できます。",
-  "listing_detail_cap_grows": "好評価が増えると上限も上がります。",
   "listing_detail_lost_race_title": "あなたより少し前に、選んだオブジェクトが別のトレードに使われました。",
   "listing_detail_lost_race_body": "別のものを選んで続けてください。そのトレードが完了しなければ、また選べるようになります。",
   "listing_detail_updated_title": "承諾する前にこの出品が変更されました。",
@@ -2329,7 +2315,6 @@
   "market_notice_art_chat": "送ったよ、COSMO確認してね！",
   "market_notice_feedback_title": "{days}日以内にお互いを評価しましょう",
   "market_notice_feedback": "トレードや販売の後、双方が良い・普通・悪いで評価を残します。販売の評価には誰が購入者で誰が出品者だったかが表示されるので、相手の支払いへの対応が分かります。",
-  "market_notice_caps": "スコアが上がるほど、同時に承諾できる出品が{base}件から最大{ceiling}件まで増えます。",
   "market_notice_art_rate": "{name}を評価",
   "market_notice_art_rate_role": "あなたの101Zを{price}で買った購入者として",
   "market_notice_art_on_profiles": "プロフィール：",
@@ -2935,6 +2920,5 @@
   ],
   "listing_composer_footer_offers": "{offered} · オファー受付中",
   "listing_offer_amount_invalid": "0より大きく、小数点以下2桁まで、{max}以下の金額を入力してください。",
-  "listing_offer_amount_total": "{count} × {amount} = {total}",
-  "listing_offer_amount_capped": "受け取り上限に達しているため、別の金額を提示してください。"
+  "listing_offer_amount_total": "{count} × {amount} = {total}"
 }

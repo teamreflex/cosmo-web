@@ -4,7 +4,6 @@ import type { ListingPayment } from "@apollo/trades/payment";
 import type { ObjektAttributes } from "@apollo/trades/range";
 import { describe, expect, test } from "bun:test";
 import {
-  acceptCapped,
   type Candidate,
   candidatePanel,
   hasRatio,
@@ -173,7 +172,7 @@ describe("whether the poster can accept an offer", () => {
         posterRefused: false,
         ...listing,
       },
-      { address: claimer, linked: true, atCap: false, ...side },
+      { address: claimer, linked: true, ...side },
       { states, poster: noFlags, claimer: noFlags, ...tokens },
       now,
     );
@@ -259,10 +258,6 @@ describe("whether the poster can accept an offer", () => {
       code: "offer_unavailable",
       tokenId: null,
     });
-    expect(judge({ side: { atCap: true } })).toEqual({
-      code: "offer_unavailable",
-      tokenId: null,
-    });
     expect(
       judge({
         tokens: { claimer: { locked: new Set(), live: new Set([10]) } },
@@ -275,7 +270,7 @@ describe("whether the poster can accept an offer", () => {
       judge({
         offer: { expiresAt: now },
         listing: { posterRefused: true },
-        side: { atCap: true },
+        side: { linked: false },
       }),
     ).toEqual({ code: "offer_expired" });
     expect(
@@ -401,7 +396,6 @@ describe("the error a refused accept throws", () => {
 const candidate = (overrides: Partial<Candidate> = {}): Candidate => ({
   role: "candidate",
   options: [{ units: 1, rows: [{ owned: 1, missing: 0 }] }],
-  claims: { active: 0, cap: 3 },
   ownAddress: false,
   endedOffer: null,
   ...overrides,
@@ -483,17 +477,7 @@ describe("whether a listing reads as a ratio", () => {
 });
 
 describe("what a candidate sees", () => {
-  const claims = { wants: [{ kind: "exact" as const }], payment: null };
-  // a range row makes an option take offers
-  const ranged = { ...claims, wants: [{ kind: "range" as const }] };
-  // a payment open to offers also claims at its asking price
-  const asking = { ...claims, payment: { mode: "price_or_offer" as const } };
-  // a payment with no asking price takes only offers
-  const unpriced = { ...claims, payment: { mode: "offer_only" as const } };
-  const listing = { options: [claims], stop: null };
-  const offers = { ...listing, options: [ranged] };
-  const either = { ...listing, options: [asking] };
-  const offerOnly = { ...listing, options: [unpriced] };
+  const listing = { stop: null };
 
   test("a pool all in trades is busy until one ends", () => {
     expect(candidatePanel({ ...listing, stop: "busy" }, candidate())).toBe(
@@ -507,32 +491,11 @@ describe("what a candidate sees", () => {
     );
   });
 
-  test("the cap stops claims but not offers", () => {
-    const capped = candidate({ claims: { active: 3, cap: 3 } });
-    expect(candidatePanel(listing, capped)).toBe("cap");
-    expect(candidatePanel(offers, capped)).toBe("picker");
-    expect(candidatePanel(either, capped)).toBe("picker");
-    expect(candidatePanel(offerOnly, capped)).toBe("picker");
-  });
-
-  test("the cap stops Accept beside Make an offer only on an option open to offers", () => {
-    const capped = candidate({ claims: { active: 3, cap: 3 } });
-    expect(acceptCapped(asking, capped)).toBe(true);
-    expect(acceptCapped(asking, candidate())).toBe(false);
-    expect(acceptCapped(unpriced, capped)).toBe(false);
-    expect(acceptCapped(ranged, capped)).toBe(false);
-  });
-
-  test("with options, the cap shows only when every option claims", () => {
-    const capped = candidate({ claims: { active: 3, cap: 3 } });
-    // "any Special-class objekt or $3": the range takes offers, the price claims
-    const mixed = { ...listing, options: [ranged, { ...claims, wants: [] }] };
-    expect(candidatePanel(mixed, capped)).toBe("picker");
-    expect(acceptCapped(ranged, capped)).toBe(false);
-    expect(acceptCapped(claims, capped)).toBe(true);
-    expect(
-      candidatePanel({ ...listing, options: [claims, claims] }, capped),
-    ).toBe("cap");
+  test("anything else shows the picker", () => {
+    expect(candidatePanel(listing, candidate())).toBe("picker");
+    expect(candidatePanel(listing, candidate({ ownAddress: true }))).toBe(
+      "blocked",
+    );
   });
 });
 

@@ -15,7 +15,6 @@ export const tradeErrorCodes = [
   "listing_full",
   "listing_units_taken",
   "listing_kind_fixed",
-  "claim_cap_reached",
   "claim_assignment_invalid",
   "claim_token_unavailable",
   "trade_not_found",

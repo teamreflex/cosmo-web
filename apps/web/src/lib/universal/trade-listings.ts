@@ -699,7 +699,7 @@ export type OfferRefusal =
  * go through, judged in `$acceptOffer`'s order and with its codes
  * (recheckListingOffer() in claim.server.ts) against the listing's option
  * the offer gives. A refusal over the claimer's side never says whether
- * their link, ban or cap stopped it. An offer on a buy listing takes the
+ * their link or ban stopped it. An offer on a buy listing takes the
  * units it recorded, which must still fit beside the units its other
  * trades hold.
  */
@@ -719,7 +719,7 @@ export function offerRefusal(
     options: readonly ListingOption<TradeWant>[];
     posterRefused: boolean;
   },
-  claimer: { address: string; linked: boolean; atCap: boolean },
+  claimer: { address: string; linked: boolean },
   tokens: {
     states: ReadonlyMap<number, IndexedToken>;
     poster: TokenFlags;
@@ -775,7 +775,7 @@ export function offerRefusal(
     };
   }
 
-  if (!claimer.linked || claimer.atCap) {
+  if (!claimer.linked) {
     return { code: "offer_unavailable", tokenId: null };
   }
   const token = firstRefusal(
@@ -949,7 +949,6 @@ export type ListingViewer =
   | {
       role: "candidate";
       options: CandidateOption[];
-      claims: { active: number; cap: number };
       ownAddress: boolean;
       endedOffer: EndedOfferStatus | null;
     };
@@ -957,44 +956,18 @@ export type ListingViewer =
 export type Candidate = Extract<ListingViewer, { role: "candidate" }>;
 
 /**
- * What a candidate sees in place of Accept: the claim cap when every option
- * of the listing only claims, since only claims count against it (an offer
- * is checked against it once accepted); the poster's side stopping any
+ * What a candidate sees in place of Accept: the poster's side stopping any
  * claim (ListingStop's `blocked`, or their own address); the pool all in
  * trades for now (`busy`); or the picker.
  */
 export function candidatePanel(
-  listing: {
-    options: readonly Parameters<typeof acceptanceOf>[0][];
-    stop: ListingStop | null;
-  },
-  viewer: Pick<Candidate, "claims" | "ownAddress">,
+  listing: { stop: ListingStop | null },
+  viewer: Pick<Candidate, "ownAddress">,
 ) {
-  if (
-    !takesOffers(listing.options) &&
-    viewer.claims.active >= viewer.claims.cap
-  ) {
-    return "cap";
-  }
   if (listing.stop === "blocked" || viewer.ownAddress) {
     return "blocked";
   }
   return listing.stop === "busy" ? "busy" : "picker";
-}
-
-/**
- * Whether the viewer's claim cap stops Accept on the option they picked,
- * where it claims, while the listing still shows the picker because the
- * option or another one takes offers, since only claims count against it.
- */
-export function acceptCapped(
-  option: Parameters<typeof acceptanceOf>[0],
-  viewer: Pick<Candidate, "claims">,
-) {
-  return (
-    acceptanceOf(option) !== "offer" &&
-    viewer.claims.active >= viewer.claims.cap
-  );
 }
 
 /**

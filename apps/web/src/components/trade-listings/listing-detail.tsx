@@ -97,8 +97,6 @@ function listingRole(
       switch (panel) {
         case "picker":
           return { role: "picker", viewer };
-        case "cap":
-          return { role: "refused", reason: "cap", claims: viewer.claims };
         case "blocked":
         case "busy":
           return { role: "refused", reason: panel };

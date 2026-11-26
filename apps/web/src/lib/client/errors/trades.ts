@@ -54,8 +54,6 @@ export function formatTradeError(code: string): string | null {
       return m.trade_error_listing_units_taken();
     case "listing_kind_fixed":
       return m.trade_error_listing_kind_fixed();
-    case "claim_cap_reached":
-      return m.trade_error_claim_cap_reached();
     case "claim_assignment_invalid":
       return m.trade_error_claim_assignment_invalid();
     case "claim_token_unavailable":

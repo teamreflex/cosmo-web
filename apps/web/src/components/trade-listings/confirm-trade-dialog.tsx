@@ -74,8 +74,6 @@ type Props = {
   onNotice: (notice: Notice | null) => void;
   /** drops a pool pick the server said another trade took */
   onPickTaken: (tokenId: number) => void;
-  /** the viewer is at their claim cap, so only an offer can go */
-  capped: boolean;
 };
 
 /**
@@ -105,7 +103,6 @@ export default function ConfirmTradeDialog({
   onOpenChange,
   onNotice,
   onPickTaken,
-  capped,
 }: Props) {
   const invalidate = useInvalidateListing();
   const queryClient = useQueryClient();
@@ -115,7 +112,7 @@ export default function ConfirmTradeDialog({
   const poster = posterName(listing);
   const parts = optionParts(listing);
   const { amount, setAmount, proposing, invalid, sent, ready, offers, endsAt } =
-    useOfferTerms(listing, snapshot, capped);
+    useOfferTerms(listing, snapshot);
 
   const claim = useMutation({
     mutationFn: (frozen: ConfirmSnapshot) =>
@@ -371,15 +368,9 @@ export default function ConfirmTradeDialog({
  * meaning the asking price on a listing with a range row, and from it
  * whether this claims or sends an offer (claimTerms()), with when the
  * trade's deadline or the offer's expiry would fall, counted from when the
- * picks were frozen. `invalid` is why the amount can't go: it doesn't
- * read, or it is the asking price, which claims, while the viewer is at
- * their claim cap.
+ * picks were frozen. `invalid` is set when a typed amount doesn't read.
  */
-function useOfferTerms(
-  listing: ListingAt,
-  snapshot: ConfirmSnapshot | null,
-  capped: boolean,
-) {
+function useOfferTerms(listing: ListingAt, snapshot: ConfirmSnapshot | null) {
   const [amount, setAmount] = useState("");
   const proposing = snapshot?.offer === true && takesAmount(listing);
   /**
@@ -393,12 +384,7 @@ function useOfferTerms(
     proposed?.success === false ? null : claimTerms(listing, proposed?.data);
   const offers =
     terms === null ? snapshot?.offer === true : terms.kind === "offer";
-  const invalid = amountRefusal({
-    typed: amount.trim() !== "",
-    reads: proposed?.success !== false,
-    claims: proposing && terms?.kind === "claim",
-    capped,
-  });
+  const invalid = amount.trim() !== "" && proposed?.success === false;
   return {
     amount,
     setAmount,
@@ -407,7 +393,7 @@ function useOfferTerms(
     // the amount sent, once it reads
     sent: proposed?.success === true ? amount.trim() : undefined,
     // there are picks to send, and an amount that reads when one is asked for
-    ready: snapshot !== null && terms !== null && invalid === null,
+    ready: snapshot !== null && terms !== null,
     offers,
     endsAt:
       snapshot === null
@@ -431,20 +417,6 @@ function offersAsking(listing: ListingAt) {
     listing.payment.amount !== null &&
     listing.wants.some((want) => want.kind === "range")
   );
-}
-
-/**
- * Why the typed amount can't go: it doesn't read, or it is the asking
- * price, which claims, while the viewer is at their claim cap.
- */
-function amountRefusal(amount: {
-  typed: boolean;
-  reads: boolean;
-  claims: boolean;
-  capped: boolean;
-}): "amount" | "capped" | null {
-  if (amount.typed && !amount.reads) return "amount";
-  return amount.claims && amount.capped ? "capped" : null;
 }
 
 /**
@@ -656,7 +628,7 @@ function ProposedPayment({
   units: number;
   proposing: boolean;
   amount: string;
-  invalid: "amount" | "capped" | null;
+  invalid: boolean;
   onAmount: (amount: string) => void;
 }) {
   if (listing.payment?.side !== sender) return null;
@@ -694,7 +666,7 @@ function OfferAmount({
   payment: ListingPayment;
   units: number;
   amount: string;
-  invalid: "amount" | "capped" | null;
+  invalid: boolean;
   onChange: (amount: string) => void;
 }) {
   const id = useId();
@@ -713,8 +685,8 @@ function OfferAmount({
               ? m.listing_composer_payment_amount()
               : toNumeric(payment.amount)
           }
-          aria-invalid={invalid !== null}
-          aria-describedby={invalid === null ? undefined : reasonId}
+          aria-invalid={invalid}
+          aria-describedby={invalid ? reasonId : undefined}
           onChange={onChange}
           className="w-28"
         />
@@ -730,13 +702,11 @@ function OfferAmount({
           </span>
         )}
       </div>
-      {invalid !== null && (
+      {invalid && (
         <p id={reasonId} className="text-xs text-destructive">
-          {invalid === "amount"
-            ? m.listing_offer_amount_invalid({
-                max: formatAmount(MAX_PAYMENT_AMOUNT, payment.currency),
-              })
-            : m.listing_offer_amount_capped()}
+          {m.listing_offer_amount_invalid({
+            max: formatAmount(MAX_PAYMENT_AMOUNT, payment.currency),
+          })}
         </p>
       )}
     </div>

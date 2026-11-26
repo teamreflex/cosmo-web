@@ -10,7 +10,6 @@ import { m } from "@/i18n/messages";
 import { endedNormally, posterName } from "@/lib/client/trade-listings";
 import {
   acceptanceOf,
-  acceptCapped,
   type Candidate,
   type ClosedListingState,
   hasRatio,
@@ -22,7 +21,6 @@ import {
   type TradeListing,
 } from "@/lib/universal/trade-listings";
 import { cn } from "@/lib/utils";
-import { CLAIM_CAP_CEILING } from "@apollo/trades/caps";
 import type { ListingAcceptance } from "@apollo/trades/lifecycle";
 import {
   IconAlertTriangle,
@@ -33,12 +31,12 @@ import {
   IconPencil,
   IconX,
 } from "@tabler/icons-react";
-import { Link, useLocation } from "@tanstack/react-router";
+import { useLocation } from "@tanstack/react-router";
 import { type ReactNode, useId, useState } from "react";
 import LinkCosmo from "../auth/link-cosmo";
 import SignIn from "../auth/sign-in";
 import { Alert, AlertDescription, AlertTitle } from "../ui/alert";
-import { Button, buttonVariants } from "../ui/button";
+import { Button } from "../ui/button";
 import AllocationPicker from "./allocation-picker";
 import BumpListingButton from "./bump-listing-button";
 import { ClosedAlert, ClosedStatus } from "./closed-banner";
@@ -62,8 +60,7 @@ import WithdrawListingDialog from "./withdraw-listing-dialog";
 /**
  * Who is looking at the listing, as the page needs it: how a closed listing
  * ended, the server's answer, and for anyone else `picker`, or `refused`
- * when their cap, the poster's side or busy trades stop Accept
- * (ListingStop).
+ * when the poster's side or busy trades stop Accept (ListingStop).
  */
 export type ListingRole =
   | { role: "closed"; state: ClosedListingState; tradeId: string | null }
@@ -71,7 +68,6 @@ export type ListingRole =
   | { role: "unlinked" }
   | Extract<ListingViewer, { role: "poster" | "claimer" | "offerer" }>
   | { role: "picker"; viewer: Candidate }
-  | { role: "refused"; reason: "cap"; claims: Candidate["claims"] }
   | { role: "refused"; reason: "blocked" }
   | { role: "refused"; reason: "busy" };
 
@@ -165,7 +161,6 @@ export default function ListingView({
         <>
           <RoleAlert
             listing={listing}
-            chosen={chosen}
             role={role}
             picks={picks}
             reasonId={reasonId}
@@ -238,7 +233,6 @@ export default function ListingView({
           snapshot={snapshot}
           onNotice={onNotice}
           onPickTaken={picks.dropOffered}
-          capped={acceptCapped(chosen, role.viewer)}
           {...dialogProps("confirm")}
         />
       )}
@@ -336,8 +330,6 @@ function ListingWants({
 
 type AlertProps = {
   listing: TradeListing;
-  /** the listing at the option a picking viewer gives */
-  chosen: ListingAt;
   role: ListingRole;
   picks: Picks | null;
   /** what the header's Accept is described by */
@@ -352,14 +344,7 @@ type AlertProps = {
  * that ended normally says so in the header instead.
  * Phones leave the picks to the bottom bar.
  */
-function RoleAlert({
-  listing,
-  chosen,
-  role,
-  picks,
-  reasonId,
-  detailId,
-}: AlertProps) {
+function RoleAlert({ listing, role, picks, reasonId, detailId }: AlertProps) {
   switch (role.role) {
     case "closed":
       return (
@@ -424,30 +409,22 @@ function RoleAlert({
           />
         );
       }
-      if (role.reason === "blocked") {
-        return (
-          <Alert role="status" variant="warning">
-            <IconAlertTriangle />
-            <AlertTitle id={reasonId}>
-              {m.trade_error_listing_unavailable()}
-            </AlertTitle>
-            <AlertDescription id={detailId}>
-              {m.listing_detail_blocked_body()}
-            </AlertDescription>
-          </Alert>
-        );
-      }
       return (
-        <CapAlert claims={role.claims} titleId={reasonId} detailId={detailId} />
+        <Alert role="status" variant="warning">
+          <IconAlertTriangle />
+          <AlertTitle id={reasonId}>
+            {m.trade_error_listing_unavailable()}
+          </AlertTitle>
+          <AlertDescription id={detailId}>
+            {m.listing_detail_blocked_body()}
+          </AlertDescription>
+        </Alert>
       );
     }
     case "picker":
       return (
         picks !== null && (
           <>
-            {acceptCapped(chosen, role.viewer) && (
-              <CapAlert claims={role.viewer.claims} titleId={detailId} />
-            )}
             {role.viewer.endedOffer !== null && (
               <EndedOfferAlert
                 listing={listing}
@@ -575,10 +552,7 @@ function RoleActions({
         </>
       );
     case "picker":
-    case "refused": {
-      // at their cap, a claimer on an option open to offers can still make one
-      const capped =
-        role.role === "picker" && acceptCapped(listing, role.viewer);
+    case "refused":
       return (
         <>
           {acceptance === "either" && (
@@ -603,12 +577,10 @@ function RoleActions({
               "data-disabled:pointer-events-none data-disabled:opacity-50",
               className,
             )}
-            disabled={picks === null || !picks.valid || capped}
+            disabled={picks === null || !picks.valid}
             focusableWhenDisabled
             aria-describedby={
-              role.role === "refused" || capped
-                ? `${reasonId} ${detailId}`
-                : reasonId
+              role.role === "refused" ? `${reasonId} ${detailId}` : reasonId
             }
             onClick={() => {
               if (picks !== null) onAccept(picks, acceptance === "offer");
@@ -618,51 +590,11 @@ function RoleActions({
               ? m.listing_detail_send_offer()
               : m.listing_detail_accept()}
           </Button>
-          {role.role === "refused" && role.reason === "cap" && (
-            <MyTradesButton className={className} />
-          )}
         </>
       );
-    }
     default:
       return null;
   }
-}
-
-/**
- * The viewer's claim cap reached: how many claims they hold against it,
- * what finishing one does, and below the ceiling that feedback raises it.
- * A rating removed since the viewer claimed can leave them holding more
- * claims than their cap now allows, which the alert then says.
- */
-function CapAlert({
-  claims: { active, cap },
-  titleId,
-  detailId,
-}: {
-  claims: Candidate["claims"];
-  titleId: string;
-  detailId?: string;
-}) {
-  const finish =
-    active > cap
-      ? m.listing_detail_cap_over_body({ count: active - cap + 1 })
-      : m.listing_detail_cap_body();
-  return (
-    <Alert role="status" variant="warning">
-      <IconAlertTriangle />
-      <AlertTitle id={titleId}>
-        {active > cap
-          ? m.listing_detail_cap_over_title({ active, cap })
-          : m.listing_detail_cap_title({ count: active })}
-      </AlertTitle>
-      <AlertDescription id={detailId}>
-        {cap >= CLAIM_CAP_CEILING
-          ? finish
-          : `${finish} ${m.listing_detail_cap_grows()}`}
-      </AlertDescription>
-    </Alert>
-  );
 }
 
 /**
@@ -705,18 +637,6 @@ function PickerBar({
       </span>
       {children}
     </>
-  );
-}
-
-// where a viewer at their claim cap goes to finish a trade
-function MyTradesButton({ className }: { className: string | undefined }) {
-  return (
-    <Link
-      to="/market/trades"
-      className={cn(buttonVariants({ variant: "outline" }), className)}
-    >
-      {m.my_trades_title()}
-    </Link>
   );
 }
 

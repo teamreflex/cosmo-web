@@ -150,8 +150,8 @@ export function unitsLeft(room: UnitsRoom) {
 /**
  * The most units of a listing one claim can take from the inventory, with
  * the allocation at that size. A claim is bounded by what the listing can
- * take now (unitsLeft), by the claim caps on each scaled row and on the
- * total, and by what the inventory can fill. Fewer units always fill when
+ * take now (unitsLeft), by MAX_PER_ROW on each scaled row and
+ * MAX_TOTAL_WANTED on the total, and by what the inventory can fill. Fewer units always fill when
  * more do, since a subset of a full allocation is still full, so the sizes
  * are tried from the largest down. When not even one unit fills, units is
  * 0 and the allocation is one unit's, which shows what's short.
