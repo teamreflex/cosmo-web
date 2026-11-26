@@ -412,6 +412,13 @@
     }
   ],
   "feedback_badge_none": "まだ評価はありません",
+  "feedback_chip_new": "新規",
+  "feedback_card_title": "トレードの評価",
+  "feedback_card_latest": "最新の評価",
+  "feedback_card_role_buyer": "購入者",
+  "feedback_card_role_seller": "出品者",
+  "feedback_card_role_trader": "交換者",
+  "feedback_card_see_all": "すべての評価を見る",
   "feedback_leave": "評価する",
   "feedback_days_left": [
     {

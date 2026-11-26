@@ -82,7 +82,8 @@ function Panel({
   );
 }
 
-function RatingLabel({ rating }: { rating: FeedbackRating }) {
+// a rating's icon and name in its colour, as the summary and the profile card list them
+export function RatingLabel({ rating }: { rating: FeedbackRating }) {
   const style = ratingStyles[rating];
   return (
     <span

@@ -412,6 +412,13 @@
     }
   ],
   "feedback_badge_none": "目前沒有評價",
+  "feedback_chip_new": "新",
+  "feedback_card_title": "交換評價",
+  "feedback_card_latest": "最新評價",
+  "feedback_card_role_buyer": "買家",
+  "feedback_card_role_seller": "賣家",
+  "feedback_card_role_trader": "交換者",
+  "feedback_card_see_all": "查看全部評價",
   "feedback_leave": "留下評價",
   "feedback_days_left": [
     {

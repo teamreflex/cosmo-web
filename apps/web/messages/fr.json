@@ -417,6 +417,13 @@
     }
   ],
   "feedback_badge_none": "Aucune évaluation pour l'instant",
+  "feedback_chip_new": "nouveau",
+  "feedback_card_title": "Évaluations d'échange",
+  "feedback_card_latest": "Dernières",
+  "feedback_card_role_buyer": "Acheteur",
+  "feedback_card_role_seller": "Vendeur",
+  "feedback_card_role_trader": "Échangeur",
+  "feedback_card_see_all": "Voir toutes les évaluations",
   "feedback_leave": "Laisser une évaluation",
   "feedback_days_left": [
     {

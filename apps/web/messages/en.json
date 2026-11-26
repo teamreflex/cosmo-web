@@ -417,6 +417,13 @@
     }
   ],
   "feedback_badge_none": "No feedback yet",
+  "feedback_chip_new": "new",
+  "feedback_card_title": "Trade feedback",
+  "feedback_card_latest": "Latest",
+  "feedback_card_role_buyer": "Buyer",
+  "feedback_card_role_seller": "Seller",
+  "feedback_card_role_trader": "Trader",
+  "feedback_card_see_all": "See all feedback",
   "feedback_leave": "Leave feedback",
   "feedback_days_left": [
     {

@@ -32,8 +32,8 @@ import { Suspense } from "react";
 
 /**
  * The feedback a profile's COSMO address received, so it shows the
- * address's history whichever Apollo account links it now. Nothing links
- * here yet; it opens by URL.
+ * address's history whichever Apollo account links it now. The profile
+ * header's feedback chip links here.
  */
 export const Route = createFileRoute("/@{$username}/feedback")({
   component: RouteComponent,

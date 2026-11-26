@@ -17,7 +17,7 @@ export function FeedbackComment({
 }) {
   if (text === null) {
     return (
-      <p className={cn("text-muted-foreground", className)}>
+      <p className={cn("text-muted-foreground italic", className)}>
         {m.feedback_no_comment()}
       </p>
     );

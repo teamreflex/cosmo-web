@@ -1,3 +1,4 @@
+import ProfileFeedbackChip from "@/components/feedback/profile-feedback-chip";
 import UserBalances, {
   ComoBalanceErrorFallback,
 } from "@/components/navbar/como-balances";
@@ -17,6 +18,7 @@ import { env } from "@/lib/env/client";
 import { defineHead } from "@/lib/meta";
 import { tokenBalancesQuery } from "@/lib/queries/como";
 import { currentAccountQuery, targetAccountQuery } from "@/lib/queries/core";
+import { feedbackSummaryQuery } from "@/lib/queries/feedback";
 import { pinsQuery } from "@/lib/queries/profile";
 import { profileIdentifier } from "@/lib/universal/cosmo-accounts";
 import { profileFrontendSchema } from "@/lib/universal/parsers";
@@ -58,6 +60,9 @@ export const Route = createFileRoute("/@{$username}")({
 
     void context.queryClient
       .query(tokenBalancesQuery(target.cosmo.address))
+      .catch(noop);
+    void context.queryClient
+      .query(feedbackSummaryQuery(target.cosmo.address))
       .catch(noop);
 
     return { account, target };
@@ -136,6 +141,12 @@ function RouteComponent() {
                     {/* content gets portaled in */}
                     <div className="flex items-center empty:hidden" id="help" />
                   </div>
+
+                  <ProfileFeedbackChip
+                    address={target.cosmo.address}
+                    username={profileIdentifier(target.cosmo)}
+                    hasAccount={target.user !== undefined}
+                  />
                 </div>
 
                 <div className="flex h-10 items-stretch divide-x divide-border [&>*:has(+:empty:last-child)]:border-e-0">

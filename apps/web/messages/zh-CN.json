@@ -412,6 +412,13 @@
     }
   ],
   "feedback_badge_none": "暂无评价",
+  "feedback_chip_new": "新",
+  "feedback_card_title": "交换评价",
+  "feedback_card_latest": "最新评价",
+  "feedback_card_role_buyer": "买家",
+  "feedback_card_role_seller": "卖家",
+  "feedback_card_role_trader": "交换者",
+  "feedback_card_see_all": "查看全部评价",
   "feedback_leave": "留下评价",
   "feedback_days_left": [
     {

@@ -210,6 +210,43 @@ export type FeedbackSummary = {
 };
 
 /**
+ * How many positive and negative ratings a share positive needs before a
+ * chip shows it, and how many ratings in all a profile needs to stop reading
+ * as new. Below it one negative swings the share too far to mean much.
+ */
+export const FEEDBACK_ESTABLISHED = 10;
+
+/**
+ * How a profile's feedback chip reads its summary.
+ * - `none`: no visible rating.
+ * - `counts`: each rating's count, while too few positive and negative
+ *   ratings make the share noisy. `isNew` while the profile has few ratings
+ *   in all.
+ * - `percent`: the share positive and how many ratings it has.
+ */
+export type FeedbackChipView =
+  | { kind: "none" }
+  | {
+      kind: "counts";
+      counts: Record<FeedbackRating, number>;
+      isNew: boolean;
+    }
+  | { kind: "percent"; percent: number; total: number };
+
+export function feedbackChipView(summary: FeedbackSummary): FeedbackChipView {
+  if (summary.total === 0) return { kind: "none" };
+  const { positive, negative } = summary.counts;
+  if (summary.percent === null || positive + negative < FEEDBACK_ESTABLISHED) {
+    return {
+      kind: "counts",
+      counts: summary.counts,
+      isNew: summary.total < FEEDBACK_ESTABLISHED,
+    };
+  }
+  return { kind: "percent", percent: summary.percent, total: summary.total };
+}
+
+/**
  * A visible rating on the feedback page. `role` is the rated party's.
  * `rater` is named as a trade names its parties, with their own feedback
  * score, null once their account is gone. `scored` says whether the rating

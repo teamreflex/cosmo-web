@@ -412,6 +412,13 @@
     }
   ],
   "feedback_badge_none": "아직 평가가 없습니다",
+  "feedback_chip_new": "신규",
+  "feedback_card_title": "교환 평가",
+  "feedback_card_latest": "최근 평가",
+  "feedback_card_role_buyer": "구매자",
+  "feedback_card_role_seller": "판매자",
+  "feedback_card_role_trader": "교환자",
+  "feedback_card_see_all": "모든 평가 보기",
   "feedback_leave": "평가하기",
   "feedback_days_left": [
     {
