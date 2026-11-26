@@ -5,6 +5,7 @@ import {
   percentStyle,
   ratedRoleLabels,
   ratingStyles,
+  roleNames,
 } from "@/lib/client/feedback";
 import { formatCount, partyName } from "@/lib/client/trade-listings";
 import {
@@ -22,7 +23,6 @@ import { cn } from "@/lib/utils";
 import {
   type FeedbackRating,
   feedbackRatings,
-  type FeedbackRole,
   feedbackRoles,
 } from "@apollo/database/web/types";
 import {
@@ -46,7 +46,6 @@ import {
 } from "../ui/hover-card";
 import { Skeleton } from "../ui/skeleton";
 import { Timestamp } from "../ui/timestamp";
-import { RatingLabel } from "./feedback-summary";
 import { FeedbackComment } from "./feedback-text";
 import RatingIcon from "./rating-icon";
 
@@ -54,19 +53,6 @@ import RatingIcon from "./rating-icon";
 const hoverQuery = "(hover: hover)";
 
 const heading = "text-xs font-medium text-muted-foreground";
-
-// a role on its own, as the card's "Rated as" grid names it
-const roleNames = {
-  buyer: m.feedback_card_role_buyer,
-  seller: m.feedback_card_role_seller,
-  trader: m.feedback_card_role_trader,
-} satisfies Record<FeedbackRole, () => string>;
-
-const barColors = {
-  positive: "bg-teal-700 dark:bg-teal-500",
-  neutral: "bg-muted-foreground/60",
-  negative: "bg-destructive",
-} satisfies Record<FeedbackRating, string>;
 
 type Props = {
   address: string;
@@ -292,7 +278,7 @@ function FeedbackCard({
               summary.counts[rating] > 0 && (
                 <span
                   key={rating}
-                  className={cn("min-w-1", barColors[rating])}
+                  className={cn("min-w-1", ratingStyles[rating].bar)}
                   style={{ flexGrow: summary.counts[rating] }}
                 />
               ),
@@ -403,6 +389,19 @@ function LatestSkeleton() {
         </div>
       ))}
     </CardSection>
+  );
+}
+
+// a rating's icon and name in its colour
+function RatingLabel({ rating }: { rating: FeedbackRating }) {
+  const style = ratingStyles[rating];
+  return (
+    <span
+      className={cn("inline-flex items-center gap-1.5 font-medium", style.text)}
+    >
+      <style.icon aria-hidden className="size-4 shrink-0" />
+      {style.label()}
+    </span>
   );
 }
 

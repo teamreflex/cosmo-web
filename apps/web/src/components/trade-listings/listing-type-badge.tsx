@@ -1,6 +1,7 @@
 import { listingTypeLabels } from "@/lib/client/trade-listings";
 import { cn } from "@/lib/utils";
 import type { ListingType } from "@apollo/trades/listing";
+import type { ReactNode } from "react";
 import { Badge } from "../ui/badge";
 
 const tones = {
@@ -12,18 +13,21 @@ const tones = {
 /**
  * One type a listing is (listingTypesOf()): a trade, a sale or a buy, in
  * the same colour on its feed row and its page. A listing whose options
- * make it several shows a badge for each.
+ * make it several shows a badge for each. `children` replaces the type's
+ * name, for a badge that names a party's side of that type instead.
  */
 export default function ListingTypeBadge({
   type,
   className,
+  children,
 }: {
   type: ListingType;
   className?: string;
+  children?: ReactNode;
 }) {
   return (
     <Badge className={cn(tones[type], className)}>
-      {listingTypeLabels[type]()}
+      {children ?? listingTypeLabels[type]()}
     </Badge>
   );
 }

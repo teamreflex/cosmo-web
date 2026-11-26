@@ -1,6 +1,4 @@
-import FeedbackEntries, {
-  RoleTabs,
-} from "@/components/feedback/feedback-entries";
+import FeedbackEntries from "@/components/feedback/feedback-entries";
 import FeedbackSummary from "@/components/feedback/feedback-summary";
 import {
   Empty,
@@ -24,6 +22,7 @@ import {
   feedbackSearchDefaults,
   feedbackSearchSchema,
 } from "@/lib/universal/feedback";
+import { feedbackRoles } from "@apollo/database/web/types";
 import { accountName } from "@apollo/util";
 import { IconStar, IconUserQuestion } from "@tabler/icons-react";
 import { noop, useSuspenseQueries } from "@tanstack/react-query";
@@ -93,31 +92,28 @@ function RouteComponent() {
 
       {summary.total > 0 ? (
         <>
-          <FeedbackSummary summary={summary} />
-          <div className="flex flex-col gap-3.5">
-            <RoleTabs
-              value={search.role}
-              roles={summary.roles}
-              total={summary.total}
+          <FeedbackSummary summary={summary} search={search} />
+          {/* a new filter suspends only the list, not the scoreboard */}
+          <Suspense fallback={<EntriesSkeleton />}>
+            <FeedbackEntries
+              address={cosmo.address}
+              ownerName={name}
+              search={search}
+              showRole={
+                feedbackRoles.filter((role) => summary.roles[role] > 0).length >
+                1
+              }
+              viewer={
+                account
+                  ? {
+                      userId: account.user.id,
+                      address: account.cosmo?.address ?? null,
+                      canRemove: hasPermission({ feedback: ["remove"] }),
+                    }
+                  : null
+              }
             />
-            {/* a new filter suspends only the list, not the role tabs */}
-            <Suspense fallback={<EntriesSkeleton />}>
-              <FeedbackEntries
-                address={cosmo.address}
-                ownerName={name}
-                search={search}
-                viewer={
-                  account
-                    ? {
-                        userId: account.user.id,
-                        address: account.cosmo?.address ?? null,
-                        canRemove: hasPermission({ feedback: ["remove"] }),
-                      }
-                    : null
-                }
-              />
-            </Suspense>
-          </div>
+          </Suspense>
         </>
       ) : !hasAccount ? (
         <Empty className="rounded-lg border">
@@ -163,11 +159,8 @@ function PendingComponent() {
   return (
     <div className="container flex flex-col gap-4.5 pt-5 pb-10">
       <Skeleton className="h-5 w-28 max-md:hidden" />
-      {/* the score and ratings panels */}
-      <div className="flex flex-col gap-3.5 md:flex-row md:flex-wrap">
-        <Skeleton className="h-32 rounded-lg md:flex-[1_1_240px]" />
-        <Skeleton className="h-32 rounded-lg md:flex-[1_1_240px]" />
-      </div>
+      {/* the scoreboard */}
+      <Skeleton className="h-72 rounded-lg sm:h-60 lg:h-40" />
       <EntriesSkeleton />
     </div>
   );
