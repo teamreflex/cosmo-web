@@ -2,7 +2,6 @@ import { Error } from "@/components/error-boundary";
 import GridLedgerSkeleton from "@/components/grid/grid-ledger-skeleton";
 import GridRenderer from "@/components/grid/grid-renderer";
 import HelpDialog from "@/components/grid/help-dialog";
-import Portal from "@/components/portal";
 import { findArtistForMember } from "@/hooks/use-artists";
 import { m } from "@/i18n/messages";
 import { defineHead } from "@/lib/meta";
@@ -68,9 +67,7 @@ function RouteComponent() {
     // keyed so the page's own state starts over on another profile
     <section key={target.cosmo.address} className="flex flex-col">
       <GridRenderer address={target.cosmo.address} />
-      <Portal to="#help">
-        <HelpDialog />
-      </Portal>
+      <HelpDialog />
     </section>
   );
 }

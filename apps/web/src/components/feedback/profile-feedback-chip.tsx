@@ -36,6 +36,7 @@ import {
 import { Link, useMatch } from "@tanstack/react-router";
 import { type PropsWithChildren, Suspense } from "react";
 import { ErrorBoundary } from "react-error-boundary";
+import { capsule } from "../profile/capsule";
 import {
   HoverCard,
   HoverCardContent,
@@ -51,6 +52,10 @@ import RatingShareBar from "./rating-share-bar";
 const hoverQuery = "(hover: hover)";
 
 const heading = "text-xs font-medium text-muted-foreground";
+
+// the link's own page shows it as active, where it has nowhere further to lead
+const activeClass =
+  "data-[status=active]:border-cosmo data-[status=active]:text-foreground";
 
 type Props = {
   address: string;
@@ -86,9 +91,15 @@ function FeedbackChip({ address, username, hasAccount }: Props) {
 
   if (view.kind === "none") {
     return hasAccount ? (
-      <span className="text-xs text-muted-foreground">
+      <Link
+        to="/@{$username}/feedback"
+        params={{ username }}
+        className={cn(capsule, activeClass)}
+      >
+        <IconArrowsExchange aria-hidden className="size-3.5" />
         {m.feedback_badge_none()}
-      </span>
+        <ChipChevron />
+      </Link>
     ) : null;
   }
 
@@ -114,13 +125,10 @@ function FeedbackChip({ address, username, hasAccount }: Props) {
         onPointerEnter={prefetchLatest}
         onFocus={prefetchLatest}
         render={<Link to="/@{$username}/feedback" params={{ username }} />}
-        className="group relative inline-flex h-7 items-center gap-1.5 rounded-md border border-border bg-card ps-2 pe-1.5 text-xs whitespace-nowrap text-muted-foreground tabular-nums transition-colors outline-none after:absolute after:inset-x-0 after:-inset-y-2 hover:border-foreground/20 hover:bg-popover focus-visible:ring-2 focus-visible:ring-ring/50 data-popup-open:border-foreground/20 data-popup-open:bg-popover data-[status=active]:border-cosmo data-[status=active]:text-foreground md:h-6.5"
+        className={cn(capsule, "gap-1.5 tabular-nums", activeClass)}
       >
         <ChipLabel view={view} />
-        <IconChevronRight
-          aria-hidden
-          className="size-3 group-data-[status=active]:hidden"
-        />
+        <ChipChevron />
       </HoverCardTrigger>
       <HoverCardContent
         align="start"
@@ -195,6 +203,15 @@ function ChipLabel({
       })}
       {view.isNew && <NewTag />}
     </>
+  );
+}
+
+function ChipChevron() {
+  return (
+    <IconChevronRight
+      aria-hidden
+      className="size-3 group-data-[status=active]:hidden"
+    />
   );
 }
 

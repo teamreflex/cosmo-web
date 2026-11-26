@@ -1,32 +1,18 @@
+import ProfileHelp from "@/components/profile/profile-help";
 import {
-  AlertDialog,
   AlertDialogAction,
   AlertDialogContent,
   AlertDialogDescription,
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-  AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { m } from "@/i18n/messages";
-import { IconHelp, IconSparkles } from "@tabler/icons-react";
-import { Button } from "../ui/button";
+import { IconSparkles } from "@tabler/icons-react";
 
 export default function HelpDialog() {
   return (
-    <AlertDialog>
-      <AlertDialogTrigger
-        render={
-          <Button
-            variant="ghost"
-            size="icon-xs"
-            className="text-muted-foreground"
-            aria-label={m.common_help()}
-          />
-        }
-      >
-        <IconHelp className="size-4" />
-      </AlertDialogTrigger>
+    <ProfileHelp>
       <AlertDialogContent>
         <AlertDialogHeader>
           <AlertDialogDescription className="sr-only">
@@ -52,6 +38,6 @@ export default function HelpDialog() {
           <AlertDialogAction>{m.common_continue()}</AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>
-    </AlertDialog>
+    </ProfileHelp>
   );
 }

@@ -1,7 +1,6 @@
 import ComoCalendar from "@/components/como/calendar";
 import HelpDialog from "@/components/como/help-dialog";
 import { Error } from "@/components/error-boundary";
-import Portal from "@/components/portal";
 import { useArtists } from "@/hooks/use-artists";
 import { m } from "@/i18n/messages";
 import { defineHead } from "@/lib/meta";
@@ -50,9 +49,7 @@ function RouteComponent() {
         </ClientOnly>
       </div>
 
-      <Portal to="#help">
-        <HelpDialog />
-      </Portal>
+      <HelpDialog />
     </main>
   );
 }

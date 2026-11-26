@@ -7,7 +7,6 @@ import Blockchain from "../collection/data-sources/blockchain";
 import BlockchainGroups from "../collection/data-sources/blockchain-groups";
 import CollectionFilters from "../collection/filter-contexts/collection-filters";
 import FiltersContainer from "../collection/filters-container";
-import Portal from "../portal";
 import HelpDialog from "./help-dialog";
 
 type Props = {
@@ -25,9 +24,7 @@ export default function ProfileRenderer({ targetCosmo }: Props) {
 
   return (
     <div className="relative flex flex-col">
-      <Portal to="#help">
-        <HelpDialog />
-      </Portal>
+      <HelpDialog />
 
       <FiltersContainer>
         <CollectionFilters

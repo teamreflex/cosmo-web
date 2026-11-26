@@ -1,4 +1,3 @@
-import Portal from "@/components/portal";
 import HelpDialog from "@/components/progress/help-dialog";
 import ProgressOverview, {
   ProgressOverviewError,
@@ -127,9 +126,7 @@ function RouteComponent() {
           </ErrorBoundary>
         </ProgressRenderer>
       )}
-      <Portal to="#help">
-        <HelpDialog />
-      </Portal>
+      <HelpDialog />
     </section>
   );
 }
