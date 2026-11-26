@@ -6,11 +6,11 @@ import {
 } from "@/lib/client/objekt-util";
 import { lazyWithPreload } from "@/lib/lazy";
 import type { Objekt } from "@/lib/universal/objekt-conversion";
-import { IconPhotoX } from "@tabler/icons-react";
 import { Fragment, Suspense, useState } from "react";
 import type { PropsWithChildren } from "react";
 import { ErrorBoundary } from "react-error-boundary";
 import ObjektAudio from "./objekt-audio";
+import ObjektBack from "./objekt-back";
 
 const ObjektVideo = lazyWithPreload(() => import("./objekt-video"));
 
@@ -128,9 +128,7 @@ export default function FlippableObjekt({ children, collection }: Props) {
               alt={collection.collectionId}
             />
           ) : (
-            <div className="flex h-full w-full items-center justify-center bg-accent">
-              <IconPhotoX className="aspect-square h-auto w-1/3 opacity-60" />
-            </div>
+            <ObjektBack collection={collection} />
           )}
         </div>
       </div>
