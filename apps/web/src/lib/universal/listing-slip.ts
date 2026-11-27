@@ -11,8 +11,9 @@ import type {
 /**
  * How a slip lays out its chips: a feed row's `compact` lines, which name
  * two collections and count the rest, sum up a range's several seasons or
- * classes and stop after a few lines, or the preview's `full` lines, which
- * name everything.
+ * classes and stop after a few lines, or an expanded row's `full` lines,
+ * which give every token and collection a line of its own and name every
+ * value.
  */
 export type SlipMode = "compact" | "full";
 
@@ -209,19 +210,24 @@ function wantLines(
           mode,
         ),
       ];
-    case "choice":
-      return [
-        collectionsLine(
-          key,
-          want.count,
-          want.options.map(({ collection, ...attributes }) => ({
-            attributes,
-            collection,
-            serial: null,
-          })),
-          mode,
-        ),
-      ];
+    case "choice": {
+      const shown = want.options.map(({ collection, ...attributes }) => ({
+        attributes,
+        collection,
+        serial: null,
+      }));
+      return mode === "compact"
+        ? [collectionsLine(key, want.count, shown, mode)]
+        : shown.map((each, index): SlipLine => ({
+            ...collectionsLine(
+              `${key}:${index}`,
+              index === 0 ? want.count : null,
+              [each],
+              mode,
+            ),
+            gutter: index === 0 ? null : { kind: "or" },
+          }));
+    }
     case "range":
       return want.ranges.map((range, index): SlipLine => ({
         key: `${key}:${index}`,
@@ -266,7 +272,7 @@ function paymentLine(
  * after the first, then the claimer's payment, on its own line after the
  * rows or alone.
  */
-export function optionLines(
+function optionLines(
   key: string,
   option: ListingOption<ListingFeedWant>,
   mode: SlipMode,
@@ -291,14 +297,19 @@ export function optionLines(
 export function askingLines(
   options: readonly ListingOption<ListingFeedWant>[],
 ): SlipLine[] {
-  return capLines(
-    options.flatMap((option, index) =>
-      optionLines(`${index}`, option, "compact").map(
-        (line, position): SlipLine =>
-          options.length > 1 && position === 0
-            ? { ...line, gutter: { kind: "option", number: index + 1 } }
-            : line,
-      ),
+  return capLines(numbered(options, "compact"));
+}
+
+// every option's lines, its number on its first when there are several
+function numbered(
+  options: readonly ListingOption<ListingFeedWant>[],
+  mode: SlipMode,
+): SlipLine[] {
+  return options.flatMap((option, index) =>
+    optionLines(`${index}`, option, mode).map((line, position): SlipLine =>
+      options.length > 1 && position === 0
+        ? { ...line, gutter: { kind: "option", number: index + 1 } }
+        : line,
     ),
   );
 }
@@ -348,15 +359,52 @@ export function offeringLines(
 }
 
 /**
- * Tokens as one line of collection chips, or none without any.
+ * Tokens as one line of collection chips, or a line each in full lines,
+ * none without any.
  */
 export function itemLines(
   items: readonly ListingFeedItem[],
   mode: SlipMode,
 ): SlipLine[] {
-  return items.length === 0
-    ? []
-    : [collectionsLine("items", null, items, mode)];
+  if (items.length === 0) return [];
+  return mode === "compact"
+    ? [collectionsLine("items", null, items, mode)]
+    : items.map((item) =>
+        collectionsLine(`items:${item.tokenId}`, null, [item], mode),
+      );
+}
+
+/**
+ * What a listing asks for in full: each option's lines, numbered when
+ * there are several.
+ */
+export function askingFullLines(
+  options: readonly ListingOption<ListingFeedWant>[],
+): SlipLine[] {
+  return numbered(options, "full");
+}
+
+/**
+ * Whether a row's compact lines leave anything out: collections or
+ * members past the first two, lines past the third, or a column of several
+ * seasons, numbers or classes summed up as a count. Only such a row
+ * expands, since its full lines would show nothing new otherwise.
+ */
+export function slipHides(lines: readonly SlipLine[]) {
+  return lines.some((line) =>
+    line.chips.some((chip) => {
+      switch (chip.kind) {
+        case "more":
+        case "lines":
+        case "values":
+          return true;
+        case "seasons":
+          return chip.seasons.length > 1;
+        default:
+          return false;
+      }
+    }),
+  );
 }
 
 /**

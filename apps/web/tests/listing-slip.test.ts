@@ -3,10 +3,13 @@ import type { ObjektAttributes, RangeFilter } from "@apollo/trades/range";
 import { describe, expect, test } from "bun:test";
 import {
   askingCards,
+  askingFullLines,
   askingLines,
   collectionChips,
+  itemLines,
   offeringLines,
   rangeChips,
+  slipHides,
 } from "../src/lib/universal/listing-slip";
 import type {
   ListingFeedItem,
@@ -248,4 +251,83 @@ test("askingCards takes the first three pictures across options", () => {
     { wants: [exact(1, "Kaede")], payment: null },
   ]);
   expect(kinds(cards)).toEqual(["objekt", "objekt", "range"]);
+});
+
+describe("full lines", () => {
+  test("an any of row gives each collection a line, or between them", () => {
+    const lines = askingFullLines([
+      {
+        wants: [
+          {
+            kind: "choice",
+            count: 2,
+            options: [
+              { ...attributes("Xinyu", "351A"), collection: null },
+              { ...attributes("Xinyu", "352A"), collection: null },
+            ],
+          },
+        ],
+        payment: null,
+      },
+    ]);
+    expect(lines).toMatchObject([
+      { gutter: null, count: 2, chips: [{ kind: "collection" }] },
+      { gutter: { kind: "or" }, count: null, chips: [{ kind: "collection" }] },
+    ]);
+  });
+
+  test("offered tokens each get a line with their serial", () => {
+    const lines = itemLines(
+      [item(1, "HeeJin", "348Z"), item(2, "HeeJin", "348Z")],
+      "full",
+    );
+    expect(lines.map((line) => line.chips)).toMatchObject([
+      [{ serial: 1 }],
+      [{ serial: 2 }],
+    ]);
+  });
+});
+
+describe("slipHides", () => {
+  test("a row naming everything has nothing to expand", () => {
+    expect(
+      slipHides(
+        askingLines([
+          {
+            wants: [ranges(1, [range({ season: ["Atom02"] })])],
+            payment: null,
+          },
+        ]),
+      ),
+    ).toBe(false);
+  });
+
+  test("collections past two, or seasons summed up, are hidden", () => {
+    expect(
+      slipHides(
+        offeringLines(
+          {
+            items: [
+              item(1, "HeeJin", "347Z"),
+              item(2, "HeeJin", "348Z"),
+              item(3, "Xinyu", "364Z"),
+            ],
+            options: [{ wants: [exact(1, "Kaede")], payment: null }],
+            units: { kind: "pool", unitSize: 1 },
+          },
+          "compact",
+        ),
+      ),
+    ).toBe(true);
+    expect(
+      slipHides(
+        askingLines([
+          {
+            wants: [ranges(1, [range({ season: ["Atom01", "Binary01"] })])],
+            payment: null,
+          },
+        ]),
+      ),
+    ).toBe(true);
+  });
 });

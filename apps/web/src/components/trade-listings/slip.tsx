@@ -2,6 +2,7 @@ import { cn } from "@/lib/utils";
 import { mergeProps } from "@base-ui/react/merge-props";
 import { useRender } from "@base-ui/react/use-render";
 import type { ComponentProps, ReactNode } from "react";
+import { Collapse } from "../ui/collapse";
 
 /**
  * The parts of a trade slip, shared by the Listings feed, My trades and
@@ -16,13 +17,14 @@ type Variant = "listing" | "trade";
  * md: give, divider, get. lg: listing is type, offering, arrow or ratio,
  * asking, from; trade is type, you send, arrow, you get, status, with,
  * time, its fixed columns narrower until xl so a single objekt's name and
- * number fit. A listing's divider is as wide as its ratio pill, and on a
- * screen that can't hover its rows and header keep room at their end for
- * the row's Details button.
+ * number fit. A listing's divider is as wide as its ratio pill, its rows
+ * and header keep room at their end for the row's expand button, and its
+ * rows space their expanded panel and footer themselves (SlipPanel,
+ * ListingSlipFooter), since a closed panel's empty grid row would add a gap.
  */
 const columns = {
   listing:
-    "md:grid-cols-[minmax(0,1.2fr)_56px_minmax(0,1.4fr)] lg:grid-cols-[96px_minmax(0,1.25fr)_56px_minmax(0,1.4fr)_170px] md:[@media(hover:none)]:pr-28",
+    "md:grid-cols-[minmax(0,1.2fr)_56px_minmax(0,1.4fr)] lg:grid-cols-[96px_minmax(0,1.25fr)_56px_minmax(0,1.4fr)_170px] md:pr-14 md:gap-y-0",
   trade:
     "md:grid-cols-[minmax(0,1fr)_16px_minmax(0,1fr)] lg:grid-cols-[64px_minmax(0,1fr)_20px_minmax(0,1fr)_150px_114px_96px] xl:grid-cols-[72px_minmax(0,1fr)_20px_minmax(0,1fr)_150px_160px_100px]",
 } satisfies Record<Variant, string>;
@@ -128,11 +130,22 @@ export function SlipColumnHeader({
   );
 }
 
-// a phone card stacks what is given over what is got, with the divider between
+// a side's column from md and its tint on a phone card, shared by its half and its expanded panel
 const sides = {
-  give: "max-md:row-start-1 md:col-start-1 lg:col-start-2 max-md:bg-teal-700/5 max-md:dark:bg-teal-500/5",
-  get: "max-md:row-start-3 md:col-start-3 lg:col-start-4 max-md:bg-amber-700/5 max-md:dark:bg-amber-500/5",
+  give: "md:col-start-1 lg:col-start-2 max-md:bg-teal-700/5 max-md:dark:bg-teal-500/5",
+  get: "md:col-start-3 lg:col-start-4 max-md:bg-amber-700/5 max-md:dark:bg-amber-500/5",
 };
+
+// a phone card stacks what is given, its expanded panel, the divider, what is got and its panel
+const halfRows = {
+  give: "max-md:row-start-1",
+  get: "max-md:row-start-4",
+} satisfies Record<keyof typeof sides, string>;
+
+const panelRows = {
+  give: "max-md:row-start-2",
+  get: "max-md:row-start-5",
+} satisfies Record<keyof typeof sides, string>;
 
 /**
  * One side of the trade, its tiles then its words: what the poster or
@@ -157,6 +170,7 @@ export function SlipHalf({
     <div
       className={cn(
         "flex min-w-0 items-center gap-3 max-md:p-3 md:row-start-1 md:gap-2.5",
+        halfRows[side],
         sides[side],
       )}
     >
@@ -172,12 +186,61 @@ export function SlipHalf({
   );
 }
 
+/**
+ * A side's expanded panel, which opens under its half: an inset box in the
+ * half's tint on a phone card, and from md a column of the row's second
+ * line, its words under the half's words, over the box SlipPanelBox draws
+ * across the row.
+ */
+export function SlipPanel({
+  side,
+  open,
+  id,
+  children,
+}: {
+  side: keyof typeof sides;
+  open: boolean;
+  id: string;
+  children: ReactNode;
+}) {
+  return (
+    <Collapse
+      id={id}
+      open={open}
+      className={cn(
+        "relative z-1 min-w-0 md:row-start-2 md:self-start",
+        panelRows[side],
+        sides[side],
+      )}
+    >
+      <div className="max-md:px-3 max-md:pb-3 md:pt-4 md:pb-1.5 md:pl-14.5">
+        <div className="max-md:rounded-md max-md:border max-md:border-border/60 max-md:bg-background max-md:p-2">
+          {children}
+        </div>
+      </div>
+    </Collapse>
+  );
+}
+
+// from md, the inset box behind an open row's panels, across the row
+export function SlipPanelBox({ open }: { open: boolean }) {
+  return (
+    <span
+      aria-hidden
+      className={cn(
+        "max-md:hidden md:col-span-full md:row-start-2 md:mt-2.5 md:-mr-12 md:-ml-2 md:self-stretch md:rounded-md md:border md:border-border/60 md:bg-background",
+        !open && "md:hidden",
+      )}
+    />
+  );
+}
+
 // between the halves: a dashed rule across a phone card, whose arrow or ratio sits on its middle; from md its own column
 export function SlipDivider({ className, ...props }: ComponentProps<"span">) {
   return (
     <span
       className={cn(
-        "relative text-muted-foreground max-md:row-start-2 max-md:border-t max-md:border-dashed md:col-start-2 md:row-start-1 lg:col-start-3",
+        "relative text-muted-foreground max-md:row-start-3 max-md:border-t max-md:border-dashed md:col-start-2 md:row-start-1 lg:col-start-3",
         className,
       )}
       {...props}
@@ -243,7 +306,7 @@ export function SlipFanCard({
 
 /**
  * A listing slip's footer. Below md one line: the end, then the time, with
- * room at its far end for the row's Details button; the type badges sit in
+ * room at its far end for the row's Show all button; the type badges sit in
  * the offering half's corner instead (SlipHalf's `corner`). From md one
  * line of badges, time and end; from lg each takes its column.
  */
@@ -257,7 +320,7 @@ export function ListingSlipFooter({
   end: ReactNode;
 }) {
   return (
-    <span className="col-span-full flex min-w-0 items-center gap-1.5 max-md:row-start-4 max-md:border-t max-md:border-dashed max-md:py-2 max-md:pr-24 max-md:pl-3 max-md:text-xs md:row-start-2 md:gap-2 lg:contents">
+    <span className="col-span-full flex min-w-0 items-center gap-1.5 max-md:row-start-6 max-md:border-t max-md:border-dashed max-md:py-2 max-md:pr-28 max-md:pl-3 max-md:text-xs md:row-start-3 md:mt-2.5 md:gap-2 lg:contents">
       <span className="flex items-center gap-2 max-md:contents lg:col-start-1 lg:row-start-1 lg:flex-col lg:items-start lg:gap-1">
         <span className="flex shrink-0 gap-1.5 max-md:hidden md:contents">
           {types}
@@ -290,7 +353,7 @@ export function TradeSlipFooter({
   time: ReactNode;
 }) {
   return (
-    <span className="col-span-full flex min-w-0 items-center gap-2 max-md:row-start-4 max-md:grid max-md:grid-cols-[minmax(0,1fr)_auto] max-md:gap-y-1.5 max-md:border-t max-md:border-dashed max-md:px-3 max-md:py-2 max-md:text-xs md:row-start-2 lg:contents">
+    <span className="col-span-full flex min-w-0 items-center gap-2 max-md:row-start-6 max-md:grid max-md:grid-cols-[minmax(0,1fr)_auto] max-md:gap-y-1.5 max-md:border-t max-md:border-dashed max-md:px-3 max-md:py-2 max-md:text-xs md:row-start-2 lg:contents">
       <span className="flex max-md:col-start-1 max-md:row-start-2 lg:col-start-1 lg:row-start-1">
         {type}
       </span>

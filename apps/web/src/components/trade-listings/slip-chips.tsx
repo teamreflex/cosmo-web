@@ -1,5 +1,6 @@
 import { useArtists } from "@/hooks/use-artists";
 import { m } from "@/i18n/messages";
+import { getObjektFrontImageUrl } from "@/lib/client/objekt-util";
 import {
   askingPriceText,
   chipObjektName,
@@ -18,15 +19,14 @@ import { IconCash } from "@tabler/icons-react";
 import type { CSSProperties, ReactNode } from "react";
 
 /**
- * A chip's size: `sm` on a feed row's lines, `md` on the listing page and
- * in a listing's preview.
+ * A chip's size: `sm` on a slip's lines, `md` on the listing page.
  */
 const sizes = {
   sm: { chip: "h-6 px-2.25", image: "size-4", withImage: "pl-0.75" },
   md: { chip: "h-7 px-2.5", image: "size-5", withImage: "pl-1" },
 };
 
-export type ChipSize = keyof typeof sizes;
+type ChipSize = keyof typeof sizes;
 
 /**
  * One value of a want or an offer as a rounded chip, an artist's logo or a
@@ -77,16 +77,22 @@ export function Chip({
  */
 export function SlipChipItem({
   chip,
-  size,
+  list = false,
 }: {
   chip: SlipChip;
-  size: ChipSize;
+  /** a collection reads as its picture, name and serial instead */
+  list?: boolean;
 }) {
   switch (chip.kind) {
     case "collection":
-      return (
+      return list ? (
+        <CollectionItem
+          attributes={chip.attributes}
+          collection={chip.collection}
+          serial={chip.serial}
+        />
+      ) : (
         <CollectionChip
-          size={size}
           attributes={chip.attributes}
           collection={chip.collection}
           serial={chip.serial}
@@ -94,15 +100,15 @@ export function SlipChipItem({
         />
       );
     case "artist":
-      return <ArtistChip size={size} artist={chip.artist} />;
+      return <ArtistChip size="sm" artist={chip.artist} />;
     case "member":
-      return <MemberChip size={size} member={chip.member} />;
+      return <MemberChip size="sm" member={chip.member} />;
     case "seasons":
-      return <SeasonsChip size={size} seasons={chip.seasons} />;
+      return <SeasonsChip size="sm" seasons={chip.seasons} />;
     case "value":
       return (
         <Chip
-          size={size}
+          size="sm"
           className={cn(chip.column === "collectionNo" && "font-mono")}
         >
           {chip.column === "onOffline"
@@ -112,29 +118,23 @@ export function SlipChipItem({
       );
     case "values":
       return (
-        <Chip size={size}>
+        <Chip size="sm">
           {chip.column === "class"
             ? m.listing_chip_classes({ count: chip.count })
             : m.listing_chip_numbers({ count: chip.count })}
         </Chip>
       );
     case "payment":
-      return (
-        <PaymentChip
-          size={size}
-          payment={chip.payment}
-          perUnit={chip.perUnit}
-        />
-      );
+      return <PaymentChip payment={chip.payment} perUnit={chip.perUnit} />;
     case "more":
       return (
-        <Chip size={size} className="font-mono text-muted-foreground">
+        <Chip size="sm" className="font-mono text-muted-foreground">
           {m.listing_chip_more({ count: chip.count })}
         </Chip>
       );
     case "lines":
       return (
-        <Chip size={size} className="border-dashed text-muted-foreground">
+        <Chip size="sm" className="border-dashed text-muted-foreground">
           {m.listing_chip_more_lines({ count: chip.count })}
         </Chip>
       );
@@ -142,17 +142,55 @@ export function SlipChipItem({
 }
 
 /**
+ * A collection in an expanded row's list: its picture, then its name and
+ * serial.
+ */
+function CollectionItem({
+  attributes,
+  collection,
+  serial,
+}: {
+  attributes: ObjektAttributes;
+  collection: Objekt.Collection | null;
+  serial: number | null;
+}) {
+  return (
+    <li className="flex min-w-0 items-center gap-2.5">
+      {collection === null ? (
+        <span className="h-9.25 w-6 shrink-0 rounded-[3px] bg-muted" />
+      ) : (
+        <img
+          src={getObjektFrontImageUrl(collection, "xs")}
+          alt=""
+          width={24}
+          height={37}
+          loading="lazy"
+          decoding="async"
+          className="h-9.25 w-6 shrink-0 rounded-[3px] bg-muted object-cover object-top"
+        />
+      )}
+      <span dir="auto" className="min-w-0 truncate text-xs font-medium">
+        {chipObjektName(collection, attributes)}
+      </span>
+      {serial !== null && (
+        <span className="font-mono text-xs text-muted-foreground tabular-nums">
+          {formatSerial(serial)}
+        </span>
+      )}
+    </li>
+  );
+}
+
+/**
  * A collection as its member's chip, "HeeJin Atom02 201Z", in the member's
  * colour, with a lone token's serial or how many copies a side holds.
  */
 function CollectionChip({
-  size,
   attributes,
   collection,
   serial,
   copies,
 }: {
-  size: ChipSize;
   attributes: ObjektAttributes;
   collection: Objekt.Collection | null;
   serial: number | null;
@@ -162,7 +200,7 @@ function CollectionChip({
   const member = getMember(attributes.member);
   return (
     <Chip
-      size={size}
+      size="sm"
       image={member?.profileImageUrl}
       style={
         member === undefined ? undefined : { "--tint": member.primaryColorHex }
@@ -284,21 +322,19 @@ export function SeasonsChip({
  * "$3.00 each", with whether it takes offers.
  */
 function PaymentChip({
-  size,
   payment,
   perUnit,
 }: {
-  size: ChipSize;
   payment: ListingPayment;
   perUnit: boolean;
 }) {
   return (
     <Chip
-      size={size}
+      size="sm"
       lead={
         <IconCash aria-hidden className="size-3.5 shrink-0 text-emerald-500" />
       }
-      className={cn(size === "sm" ? "pl-1.5" : "pl-2")}
+      className="pl-1.5"
     >
       {perUnit && payment.amount !== null
         ? perUnitPriceText({ ...payment, amount: payment.amount })

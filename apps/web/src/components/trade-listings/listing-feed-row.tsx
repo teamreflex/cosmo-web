@@ -6,32 +6,29 @@ import {
 } from "@/lib/client/trade-listings";
 import {
   askingCards,
+  askingFullLines,
   askingLines,
   offeringCards,
   offeringLines,
+  slipHides,
 } from "@/lib/universal/listing-slip";
 import type {
   ListingFeedRow as FeedRow,
   ListingSlip,
 } from "@/lib/universal/trade-listings";
+import { cn } from "@/lib/utils";
 import {
   IconArrowDown,
   IconArrowRight,
-  IconChevronRight,
+  IconChevronDown,
 } from "@tabler/icons-react";
 import { Link } from "@tanstack/react-router";
-import { type ReactNode, useId } from "react";
+import { type ReactNode, useId, useState } from "react";
 import FeedbackBadge from "../feedback/feedback-badge";
 import UserAvatar from "../profile/user-avatar";
 import { Button } from "../ui/button";
-import { DrawerTrigger } from "../ui/drawer";
-import { HoverCardTrigger } from "../ui/hover-card";
 import { Timestamp } from "../ui/timestamp";
 import { RatioText } from "./listing-header";
-import {
-  listingDetailsDrawer,
-  listingPreviewCard,
-} from "./listing-preview-handles";
 import ListingTypeBadge from "./listing-type-badge";
 import {
   ListingSlipFooter,
@@ -39,6 +36,8 @@ import {
   SlipDivider,
   SlipHalf,
   SlipItem,
+  SlipPanel,
+  SlipPanelBox,
 } from "./slip";
 import { SlipFan } from "./slip-fan";
 import { SlipLines } from "./slip-lines";
@@ -73,14 +72,15 @@ export default function ListingFeedRow({ row }: { row: FeedRow }) {
  * A listing as a slip that opens it: two halves over a footer below md,
  * one line from md and the header's columns from lg. Each half is a fan of
  * its first pictures beside lines of chips. A ratio (listingRatio())
- * replaces the arrow; a bundle keeps the arrow. `children` end the slip: after the time on a phone, and in the
- * last column from lg.
+ * replaces the arrow; a bundle keeps the arrow. `children` end the slip:
+ * after the time on a phone, and in the last column from lg.
  *
- * Hovering the slip from md opens the list's preview card, and its Details
- * button opens the list's drawer on a phone or any screen that can't hover
- * (ListingPreviews), each naming what the lines sum up. The button sits
- * beside the link, not in it, and takes the link's text as its
- * description, so a screen reader can tell one row's button from another.
+ * A slip whose lines leave something out (slipHides()) expands in place,
+ * as the profile's trade rows do: its chevron from md, or Show all on a
+ * phone card, opens a panel under each half listing every objekt,
+ * collection and value. The panels sit inside the link, so an open slip
+ * still opens the listing; the buttons sit beside it, since a button
+ * can't sit in a link.
  *
  * No `content-visibility: auto` here: WebKit never painted rows that first
  * laid out under the market notice's scroll lock.
@@ -92,24 +92,38 @@ export function ListingSlipRow({
   row: ListingSlip;
   children: ReactNode;
 }) {
+  const [open, setOpen] = useState(false);
+  const giveId = useId();
+  const getId = useId();
   const ratio = pillRatio(row, row.posted);
-  const linkId = useId();
+  const offering = offeringLines(row, "compact");
+  const asking = askingLines(row.options);
+  const expandable = slipHides(offering) || slipHides(asking);
   const types = listingTypesOfListing(row).map((type) => (
     <ListingTypeBadge key={type} type={type} />
   ));
+  const toggleLabel = open
+    ? m.listing_slip_show_less()
+    : m.listing_slip_show_all();
+  const chevron = cn(
+    "transition-transform motion-reduce:transition-none",
+    open && "rotate-180",
+  );
+  const toggle = {
+    "aria-expanded": open,
+    "aria-controls": `${giveId} ${getId}`,
+    onClick: () => setOpen((prev) => !prev),
+  };
   return (
-    <SlipItem className="relative transition-colors md:hover:bg-secondary/50">
+    <SlipItem
+      className={cn(
+        "relative transition-colors md:hover:bg-secondary/50",
+        open && "md:bg-secondary/30",
+      )}
+    >
       <Slip
         variant="listing"
-        render={
-          <HoverCardTrigger
-            handle={listingPreviewCard}
-            payload={row}
-            delay={500}
-            render={<Link to="/market/listing/$id" params={{ id: row.id }} />}
-          />
-        }
-        id={linkId}
+        render={<Link to="/market/listing/$id" params={{ id: row.id }} />}
         className="outline-none max-md:hover:bg-secondary max-md:focus-visible:border-ring max-md:focus-visible:bg-secondary md:focus-visible:bg-secondary/50"
       >
         <SlipHalf
@@ -118,7 +132,7 @@ export function ListingSlipRow({
           thumbs={<SlipFan cards={offeringCards(row)} />}
           corner={types}
         >
-          <SlipLines lines={offeringLines(row, "compact")} size="sm" />
+          <SlipLines lines={offering} />
         </SlipHalf>
 
         <SlipDivider className="md:flex md:justify-center">
@@ -144,8 +158,20 @@ export function ListingSlipRow({
           label={m.market_listings_column_asking()}
           thumbs={<SlipFan cards={askingCards(row.options)} />}
         >
-          <SlipLines lines={askingLines(row.options)} size="sm" />
+          <SlipLines lines={asking} />
         </SlipHalf>
+
+        {expandable && (
+          <>
+            <SlipPanelBox open={open} />
+            <SlipPanel side="give" open={open} id={giveId}>
+              <SlipLines lines={offeringLines(row, "full")} list />
+            </SlipPanel>
+            <SlipPanel side="get" open={open} id={getId}>
+              <SlipLines lines={askingFullLines(row.options)} list />
+            </SlipPanel>
+          </>
+        )}
 
         <ListingSlipFooter
           types={types}
@@ -163,22 +189,30 @@ export function ListingSlipRow({
         />
       </Slip>
 
-      {/* at a phone card footer's far end, or the end of a row that can't hover, each of which leaves it room; the hit area reaches 44px */}
-      <DrawerTrigger
-        handle={listingDetailsDrawer}
-        payload={row}
-        aria-describedby={linkId}
-        render={
+      {expandable && (
+        <>
+          {/* at a phone card footer's far end, which leaves it room; the hit area reaches 44px */}
           <Button
             variant="outline"
             size="xs"
-            className="absolute right-2 bottom-1.25 z-10 rounded-full border-cosmo/50 bg-card text-cosmo before:absolute before:-inset-2.5 md:top-1/2 md:right-4 md:bottom-auto md:hidden md:-translate-y-1/2 dark:text-cosmo-text md:[@media(hover:none)]:inline-flex"
-          />
-        }
-      >
-        {m.listing_slip_details()}
-        <IconChevronRight data-icon="inline-end" />
-      </DrawerTrigger>
+            {...toggle}
+            className="absolute right-2 bottom-1.25 z-10 rounded-full border-cosmo/50 bg-card text-cosmo before:absolute before:-inset-2.5 md:hidden dark:text-cosmo-text"
+          >
+            {toggleLabel}
+            <IconChevronDown data-icon="inline-end" className={chevron} />
+          </Button>
+          {/* in the room the row keeps at its end, level with its first line */}
+          <Button
+            variant="ghost"
+            size="icon"
+            {...toggle}
+            aria-label={toggleLabel}
+            className="absolute top-10.5 right-2 z-10 -translate-y-1/2 rounded-full text-muted-foreground before:absolute before:-inset-1 max-md:hidden"
+          >
+            <IconChevronDown className={chevron} />
+          </Button>
+        </>
+      )}
     </SlipItem>
   );
 }

@@ -120,7 +120,7 @@ function TradeRow({ row }: { row: MyTradeRow }) {
           label={m.my_trades_column_send()}
           thumbs={<SlipFan cards={tradeSideCards(row.send)} />}
         >
-          <SlipLines lines={itemLines(row.send.items, "compact")} size="sm" />
+          <SlipLines lines={itemLines(row.send.items, "compact")} />
           <PaymentCaption side={row.send} />
         </SlipHalf>
 
@@ -136,7 +136,7 @@ function TradeRow({ row }: { row: MyTradeRow }) {
           label={m.my_trades_column_get()}
           thumbs={<SlipFan cards={tradeSideCards(row.get)} />}
         >
-          <SlipLines lines={itemLines(row.get.items, "compact")} size="sm" />
+          <SlipLines lines={itemLines(row.get.items, "compact")} />
           <PaymentCaption side={row.get} />
         </SlipHalf>
 

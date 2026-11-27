@@ -96,6 +96,16 @@ export default function UpdateDialog() {
 
 const updates = [
   {
+    date: "2026-11-28",
+    changes: [
+      "Market page has been redesigned with better mobile support",
+      "My Trades now shows your listings",
+      "Feedback is now viewable on profiles",
+      "Profile images can now be set from your collection",
+      "Objekt backs have a recreated stand-in for those missing the real images",
+    ],
+  },
+  {
     date: "2026-11-22",
     changes: [
       "Transferable status for all objekts has been fixed and should now be accurate going forward.",

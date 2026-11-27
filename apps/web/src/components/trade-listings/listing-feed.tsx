@@ -34,7 +34,6 @@ import { Skeleton } from "../ui/skeleton";
 import ListingFeedHeader from "./listing-feed-header";
 import ListingFeedRow from "./listing-feed-row";
 import ListingFeedSkeleton from "./listing-feed-skeleton";
-import ListingPreviews from "./listing-preview";
 import { SlipItems, SlipList } from "./slip";
 
 type Props<TQueryKey extends QueryKey> = {
@@ -128,7 +127,6 @@ function Rows<TQueryKey extends QueryKey>({
           <ListingFeedRow key={row.id} row={row} />
         ))}
       </SlipItems>
-      <ListingPreviews />
 
       <Portal to="#pagination">
         <InfiniteQueryNext
