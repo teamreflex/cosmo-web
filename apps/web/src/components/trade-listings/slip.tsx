@@ -213,8 +213,8 @@ export function SlipPanel({
         sides[side],
       )}
     >
-      <div className="max-md:px-3 max-md:pb-3 md:pt-4 md:pb-1.5 md:pl-14.5">
-        <div className="max-md:rounded-md max-md:border max-md:border-border/60 max-md:bg-background max-md:p-2">
+      <div className="max-md:px-3 max-md:pb-3 md:pt-5.5 md:pb-3 md:pl-14.5">
+        <div className="max-md:rounded-md max-md:border max-md:border-border/60 max-md:bg-background max-md:p-2.5">
           {children}
         </div>
       </div>

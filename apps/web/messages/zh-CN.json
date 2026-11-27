@@ -2251,6 +2251,7 @@
   "listing_chip_more_lines": "另外 {count} 项",
   "listing_slip_show_all": "显示全部",
   "listing_slip_show_less": "收起",
+  "listing_slip_any_one_of": "任选其一",
   "market_listings_column_type": "类型",
   "market_listings_column_offering": "提供",
   "market_listings_column_asking": "想要",

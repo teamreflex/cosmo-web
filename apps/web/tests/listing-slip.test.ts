@@ -254,7 +254,7 @@ test("askingCards takes the first three pictures across options", () => {
 });
 
 describe("full lines", () => {
-  test("an any of row gives each collection a line, or between them", () => {
+  test("an any of row's choices share a line marked as a choice", () => {
     const lines = askingFullLines([
       {
         wants: [
@@ -271,19 +271,21 @@ describe("full lines", () => {
       },
     ]);
     expect(lines).toMatchObject([
-      { gutter: null, count: 2, chips: [{ kind: "collection" }] },
-      { gutter: { kind: "or" }, count: null, chips: [{ kind: "collection" }] },
+      {
+        count: 2,
+        anyOf: true,
+        chips: [{ kind: "collection" }, { kind: "collection" }],
+      },
     ]);
   });
 
-  test("offered tokens each get a line with their serial", () => {
+  test("offered tokens share a line, each with its serial", () => {
     const lines = itemLines(
       [item(1, "HeeJin", "348Z"), item(2, "HeeJin", "348Z")],
       "full",
     );
     expect(lines.map((line) => line.chips)).toMatchObject([
-      [{ serial: 1 }],
-      [{ serial: 2 }],
+      [{ serial: 1 }, { serial: 2 }],
     ]);
   });
 });

@@ -12,8 +12,7 @@ import type {
  * How a slip lays out its chips: a feed row's `compact` lines, which name
  * two collections and count the rest, sum up a range's several seasons or
  * classes and stop after a few lines, or an expanded row's `full` lines,
- * which give every token and collection a line of its own and name every
- * value.
+ * which name every token, collection and value.
  */
 export type SlipMode = "compact" | "full";
 
@@ -59,13 +58,15 @@ type SummedColumn = "collectionNo" | "class";
  * One line of a slip side: what goes in its gutter, `and` ("+") before a
  * further want or payment, `or` before a further range of one want, or
  * the number of the option it starts; its count, on a want's first line;
- * and its chips.
+ * its chips; and whether they are an "any of" row's choices (`anyOf`), of
+ * which the claimer gives one.
  */
 export type SlipLine = {
   key: string;
   gutter: { kind: "and" | "or" } | { kind: "option"; number: number } | null;
   count: number | null;
   chips: SlipChip[];
+  anyOf: boolean;
 };
 
 // how many collections or members a compact line names before counting the rest
@@ -208,32 +209,30 @@ function wantLines(
             },
           ],
           mode,
+          false,
         ),
       ];
-    case "choice": {
-      const shown = want.options.map(({ collection, ...attributes }) => ({
-        attributes,
-        collection,
-        serial: null,
-      }));
-      return mode === "compact"
-        ? [collectionsLine(key, want.count, shown, mode)]
-        : shown.map((each, index): SlipLine => ({
-            ...collectionsLine(
-              `${key}:${index}`,
-              index === 0 ? want.count : null,
-              [each],
-              mode,
-            ),
-            gutter: index === 0 ? null : { kind: "or" },
-          }));
-    }
+    case "choice":
+      return [
+        collectionsLine(
+          key,
+          want.count,
+          want.options.map(({ collection, ...attributes }) => ({
+            attributes,
+            collection,
+            serial: null,
+          })),
+          mode,
+          true,
+        ),
+      ];
     case "range":
       return want.ranges.map((range, index): SlipLine => ({
         key: `${key}:${index}`,
         gutter: index === 0 ? null : { kind: "or" },
         count: index === 0 ? want.count : null,
         chips: rangeChips(`${key}:${index}`, range, mode),
+        anyOf: false,
       }));
   }
 }
@@ -243,12 +242,14 @@ function collectionsLine(
   count: number | null,
   shown: readonly CollectionShown[],
   mode: SlipMode,
+  anyOf: boolean,
 ): SlipLine {
   return {
     key,
     gutter: null,
     count,
     chips: collectionChips(key, shown, mode),
+    anyOf,
   };
 }
 
@@ -264,6 +265,7 @@ function paymentLine(
     gutter: follows ? { kind: "and" } : null,
     count: null,
     chips: [{ kind: "payment", key, payment, perUnit }],
+    anyOf: false,
   };
 }
 
@@ -359,19 +361,15 @@ export function offeringLines(
 }
 
 /**
- * Tokens as one line of collection chips, or a line each in full lines,
- * none without any.
+ * Tokens as one line of collection chips, or none without any.
  */
 export function itemLines(
   items: readonly ListingFeedItem[],
   mode: SlipMode,
 ): SlipLine[] {
-  if (items.length === 0) return [];
-  return mode === "compact"
-    ? [collectionsLine("items", null, items, mode)]
-    : items.map((item) =>
-        collectionsLine(`items:${item.tokenId}`, null, [item], mode),
-      );
+  return items.length === 0
+    ? []
+    : [collectionsLine("items", null, items, mode, false)];
 }
 
 /**

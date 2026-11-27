@@ -153,7 +153,11 @@ export function chipObjektName(
   return `${attributes.member} ${attributes.season} ${collectionNumber(collection, attributes)}`;
 }
 
-function collectionNumber(
+/**
+ * A collection's number, "201Z". Without its collection it comes from the
+ * copied slug.
+ */
+export function collectionNumber(
   collection: Objekt.Collection | null,
   attributes: ObjektAttributes,
 ) {

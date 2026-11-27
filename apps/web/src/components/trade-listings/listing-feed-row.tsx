@@ -165,10 +165,10 @@ export function ListingSlipRow({
           <>
             <SlipPanelBox open={open} />
             <SlipPanel side="give" open={open} id={giveId}>
-              <SlipLines lines={offeringLines(row, "full")} list />
+              <SlipLines lines={offeringLines(row, "full")} grid />
             </SlipPanel>
             <SlipPanel side="get" open={open} id={getId}>
-              <SlipLines lines={askingFullLines(row.options)} list />
+              <SlipLines lines={askingFullLines(row.options)} grid />
             </SlipPanel>
           </>
         )}

@@ -4,6 +4,7 @@ import { getObjektFrontImageUrl } from "@/lib/client/objekt-util";
 import {
   askingPriceText,
   chipObjektName,
+  collectionNumber,
   formatAmount,
   onOfflineLabel,
 } from "@/lib/client/trade-listings";
@@ -77,16 +78,16 @@ export function Chip({
  */
 export function SlipChipItem({
   chip,
-  list = false,
+  card = false,
 }: {
   chip: SlipChip;
-  /** a collection reads as its picture, name and serial instead */
-  list?: boolean;
+  /** a collection reads as its card instead */
+  card?: boolean;
 }) {
   switch (chip.kind) {
     case "collection":
-      return list ? (
-        <CollectionItem
+      return card ? (
+        <CollectionCard
           attributes={chip.attributes}
           collection={chip.collection}
           serial={chip.serial}
@@ -142,10 +143,10 @@ export function SlipChipItem({
 }
 
 /**
- * A collection in an expanded row's list: its picture, then its name and
- * serial.
+ * A collection in an expanded row's grid: its card, named in full on
+ * hover, over a token's serial or else the collection's number.
  */
-function CollectionItem({
+function CollectionCard({
   attributes,
   collection,
   serial,
@@ -154,29 +155,30 @@ function CollectionItem({
   collection: Objekt.Collection | null;
   serial: number | null;
 }) {
+  const name = chipObjektName(collection, attributes);
   return (
-    <li className="flex min-w-0 items-center gap-2.5">
+    <li
+      title={serial === null ? name : `${name} ${formatSerial(serial)}`}
+      className="flex w-11 flex-col items-center gap-1.5"
+    >
       {collection === null ? (
-        <span className="h-9.25 w-6 shrink-0 rounded-[3px] bg-muted" />
+        <span className="h-17 w-11 rounded-[3px] bg-muted" />
       ) : (
         <img
           src={getObjektFrontImageUrl(collection, "xs")}
-          alt=""
-          width={24}
-          height={37}
+          alt={name}
+          width={44}
+          height={68}
           loading="lazy"
           decoding="async"
-          className="h-9.25 w-6 shrink-0 rounded-[3px] bg-muted object-cover object-top"
+          className="h-17 w-11 rounded-[3px] bg-muted object-cover object-top"
         />
       )}
-      <span dir="auto" className="min-w-0 truncate text-xs font-medium">
-        {chipObjektName(collection, attributes)}
+      <span className="font-mono text-xxs leading-none text-muted-foreground tabular-nums">
+        {serial === null
+          ? collectionNumber(collection, attributes)
+          : formatSerial(serial)}
       </span>
-      {serial !== null && (
-        <span className="font-mono text-xs text-muted-foreground tabular-nums">
-          {formatSerial(serial)}
-        </span>
-      )}
     </li>
   );
 }

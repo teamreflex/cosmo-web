@@ -2249,6 +2249,7 @@
   "listing_chip_more_lines": "외 {count}개",
   "listing_slip_show_all": "모두 보기",
   "listing_slip_show_less": "접기",
+  "listing_slip_any_one_of": "이 중 하나",
   "market_listings_column_type": "종류",
   "market_listings_column_offering": "제시",
   "market_listings_column_asking": "요청",
