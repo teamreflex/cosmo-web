@@ -15,6 +15,7 @@ import type {
 } from "@apollo/trades/lifecycle";
 import type { PaymentItem } from "@apollo/trades/payment";
 import type { PaymentStatus, TradeItemStatus } from "@apollo/trades/transfers";
+import { addr } from "@apollo/util";
 import type { z } from "zod";
 import type { PublicUser } from "./auth";
 import type { FeedbackRep, TradeFeedbackView } from "./feedback";
@@ -50,13 +51,54 @@ export type TradeNamedItem = {
 // an objekt item as the trade page shows it
 export type TradeItemView = TradeNamedItem & {
   id: number;
+  // its position in the trade's `state.items`, which item events name
+  index: number;
   sender: TradeSide;
   transferredAt: Date | null;
   txHash: string | null;
   // its sender locked it in Apollo while it's still owed, which COSMO ignores
   locked: boolean;
   status: TradeItemStatus;
+  // another copy its receiver accepted in place of the pinned token
+  substitute: TradeSubstitute | null;
 };
+
+/**
+ * Where another copy of an objekt came from: the item's sender's pinned
+ * address, an address someone linked on Apollo, or one nobody did.
+ */
+export type SubstituteSource =
+  | { kind: "sender" }
+  | { kind: "known"; username: string }
+  | { kind: "unknown"; address: string };
+
+export function substituteSource(
+  from: string,
+  senderAddress: string | null,
+  known: ReadonlyMap<string, { username: string }>,
+): SubstituteSource {
+  const address = addr(from);
+  if (senderAddress !== null && address === addr(senderAddress)) {
+    return { kind: "sender" };
+  }
+  const account = known.get(address);
+  return account === undefined
+    ? { kind: "unknown", address }
+    : { kind: "known", username: account.username };
+}
+
+// another copy its receiver accepted in place of an objekt
+export type TradeSubstitute = {
+  tokenId: number;
+  serial: number | null;
+  from: SubstituteSource;
+};
+
+/**
+ * A drained transfer of another copy of an objekt's collection to its
+ * receiver, which they could accept in its place.
+ */
+export type SubstituteCandidate = TradeSubstitute & { hash: string; at: Date };
 
 /**
  * A trade's payment as its page shows it: the stored item (PaymentItem),

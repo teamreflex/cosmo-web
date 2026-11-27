@@ -370,12 +370,17 @@ async function readPosterSide(listing: {
       if (row.acceptedAt === null) {
         throw new Error(`trade ${row.id} was never accepted`);
       }
-      const { from, to } = tradeSides(row);
+      const { to } = tradeSides(row);
       const trade = {
         tradeId: row.id,
         claimer: claimer(row),
         acceptedAt: row.acceptedAt,
-        tokenIds: from.map((item) => item.tokenId),
+        // a pick and any copy its receiver accepted in its place, which may have come from the pool
+        tokenIds: row.items.flatMap((item) =>
+          item.sender === "from" && item.kind === "objekt"
+            ? [item.tokenId, item.substituteTokenId].flatMap((id) => id ?? [])
+            : [],
+        ),
         units: row.units,
         givenCount: to.length,
         payment: tradePayment(row.items),

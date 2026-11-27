@@ -527,6 +527,13 @@ export type PaymentMethod = (typeof paymentMethods)[number];
 export type TradeEvent =
   | { type: "accepted" }
   | { type: "item_transferred"; itemId: number; hash: string }
+  // the item's receiver accepted another copy of its collection, `tokenId`, in place of the pinned token
+  | {
+      type: "substitute_accepted";
+      itemId: number;
+      tokenId: number;
+      hash: string;
+    }
   // the payment's sender said they paid it, which settles nothing
   | { type: "marked_paid"; itemId: number }
   // the payment's recipient said it arrived, and by which method

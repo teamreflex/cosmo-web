@@ -26,6 +26,7 @@ export const tradeErrorCodes = [
   "trade_own",
   "trade_party_banned",
   "payment_method_unaccepted",
+  "substitute_unavailable",
   "offer_own",
   "offer_unavailable",
   "offer_expired",

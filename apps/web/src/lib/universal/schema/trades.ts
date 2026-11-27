@@ -38,6 +38,18 @@ export const confirmPaymentInputSchema = tradeIdInputSchema.extend({
   method: z.enum(paymentMethods),
 });
 
+// an objekt the caller is owed, for the other copies they could accept in its place
+export const substituteCandidatesInputSchema = tradeIdInputSchema.extend({
+  itemId: z.int().positive(),
+});
+
+// the receiver of an objekt accepts another copy, named by its transfer, in its place
+export const acceptSubstituteInputSchema =
+  substituteCandidatesInputSchema.extend({
+    tokenId: z.int().nonnegative(),
+    hash: z.string().regex(/^0x[0-9a-f]{64}$/i),
+  });
+
 /**
  * A staff action names the dispute report it was taken from, or null for a
  * trade with no dispute, so a stale view can't act on a trade that has since

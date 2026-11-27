@@ -47,6 +47,8 @@ export type TradeEvent =
   | { type: "withdraw"; by: TradeSide }
   // the drain saw a token reach its receiver
   | { type: "transfer"; item: number }
+  // the item's receiver accepted another copy of its collection that reached them
+  | { type: "accept_substitute"; item: number; by: TradeSide }
   // the payment's sender says they paid it
   | { type: "mark_paid"; item: number; by: TradeSide }
   // the payment's recipient says it arrived
@@ -112,6 +114,7 @@ export function transition(
     case "withdraw":
       return answerOffer(trade, event);
     case "transfer":
+    case "accept_substitute":
     case "mark_paid":
     case "confirm_payment":
       return updateItem(trade, event);
@@ -129,13 +132,20 @@ export function transition(
 export type PartyActionRefusal = TransitionRefusal | "deadline_passed";
 
 /**
- * A party cancelling, disputing, marking a payment it sent paid or confirming one it received, judged with what the trade's row doesn't hold: whether its deadline has passed the drain's watermark, and whether a token has reached its receiver before the drain recorded it. A trade that moved on is refused first, then one past its deadline, then a cancel once anything has started. A disputed trade's clock is stopped, so its caller passes the deadline as not passed.
+ * A party cancelling, disputing, marking a payment it sent paid, confirming one it received or accepting another copy of an objekt it is owed, judged with what the trade's row doesn't hold: whether its deadline has passed the drain's watermark, and whether a token has reached its receiver before the drain recorded it. A trade that moved on is refused first, then one past its deadline, then a cancel once anything has started. A disputed trade's clock is stopped, so its caller passes the deadline as not passed.
  */
 export function partyAction(
   trade: TradeState,
   event: Extract<
     TradeEvent,
-    { type: "cancel" | "dispute" | "mark_paid" | "confirm_payment" }
+    {
+      type:
+        | "cancel"
+        | "dispute"
+        | "mark_paid"
+        | "confirm_payment"
+        | "accept_substitute";
+    }
   >,
   facts: { deadlinePassed: boolean; arrived: boolean },
 ): { ok: true; trade: TradeState } | { ok: false; reason: PartyActionRefusal } {
@@ -178,13 +188,16 @@ function answerOffer(
 }
 
 /**
- * A token arriving, a payment's sender marking it paid, or its recipient
- * confirming it arrived. All are still recorded while disputed. Marking
- * paid changes no status, and is refused once the payment is confirmed.
+ * A token arriving, an objekt's receiver accepting another copy in its
+ * place, a payment's sender marking it paid, or its recipient confirming it
+ * arrived. All are still recorded while disputed. Marking paid changes no
+ * status, and is refused once the payment is confirmed.
  */
 function updateItem(
   { status, items }: TradeState,
-  event: EventOf<"transfer" | "mark_paid" | "confirm_payment">,
+  event: EventOf<
+    "transfer" | "accept_substitute" | "mark_paid" | "confirm_payment"
+  >,
 ): TransitionResult {
   if (status !== "accepted" && status !== "disputed") {
     return refuse("wrong_status");
@@ -195,6 +208,14 @@ function updateItem(
   switch (event.type) {
     case "transfer":
       if (item?.kind !== "objekt") return refuse("no_such_item");
+      if (item.transferred) return refuse("already_done");
+      return settle(
+        status,
+        items.with(event.item, { ...item, transferred: true }),
+      );
+    case "accept_substitute":
+      if (item?.kind !== "objekt") return refuse("no_such_item");
+      if (event.by === item.sender) return refuse("wrong_party");
       if (item.transferred) return refuse("already_done");
       return settle(
         status,
@@ -738,6 +759,34 @@ export function tradeListings(
     listings.set(listingId, tokens);
   }
   return listings;
+}
+
+/**
+ * Each listing's picks a completed trade takes out of its pool, leaving out
+ * listings it took none from. A pick whose receiver accepted another copy in
+ * its place still leaves, unless that copy is one of the same listing's
+ * pool rows (`pooled`): the drain took that copy out when it left the
+ * poster, so either way the pool loses exactly the one copy given.
+ */
+export function leavingPicks(
+  items: readonly Pick<
+    TradeOfferItem,
+    "listingId" | "tokenId" | "substituteTokenId"
+  >[],
+  pooled: readonly Pick<TradeOfferItem, "offerId" | "tokenId">[],
+): [string, number[]][] {
+  return [
+    ...tradeListings(
+      items.filter(
+        ({ listingId, substituteTokenId }) =>
+          substituteTokenId === null ||
+          !pooled.some(
+            (row) =>
+              row.offerId === listingId && row.tokenId === substituteTokenId,
+          ),
+      ),
+    ),
+  ].filter(([, tokenIds]) => tokenIds.length > 0);
 }
 
 /**

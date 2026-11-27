@@ -31,7 +31,7 @@ function transfer(
       from,
       to,
       timestamp: new Date(BASE + minute * 60_000),
-      tokenId: 1,
+      tokenId: "1",
       objektId: id,
       collectionId: "collection",
     },

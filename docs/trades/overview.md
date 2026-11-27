@@ -36,8 +36,9 @@ Apollo matches people who want to swap objekts and records each swap, but never 
     |     a token at its pinned receiver: item sent (chain time, tx hash)
     |
     +-- every item done ------------------------------------------> completed
-    |   (tokens seen by the drain, a payment confirmed received  picks leave the pool
-    |    by its recipient in $confirmPayment)
+    |   (tokens seen by the drain, another copy accepted by its   picks leave the pool
+    |    receiver in $acceptSubstitute, a payment confirmed
+    |    received by its recipient in $confirmPayment)
     +-- a party cancels, nothing sent or arrived yet ------------> cancelled
     +-- a party opens a dispute, or a party is banned -----------> disputed
     +-- trade-timers: deadline_at <= the drain's watermark
@@ -90,7 +91,7 @@ Apollo matches people who want to swap objekts and records each swap, but never 
 - **Windows or limits**: `timers.ts` and `caps.ts`. `CLAIM_WINDOW` applies to claims and accepted offers alike.
 - **A listing's terms**: the schemas in `listing.ts`, shared by post and edit, and `checkTerms()` and `insertTerms()` in `lib/server/trades/listings.server.ts`.
 - **The listing page or feed**: `lib/server/trades/detail.server.ts` and `feed.server.ts` read, and the verdicts they share with the page are pure in `lib/universal/trade-listings.ts` (`apps/web/tests/listing-viewer.test.ts`). The composer's form rules are in `lib/universal/trade-listing-form.ts` (`tests/trade-listing-form.test.ts`).
-- **A timeline event**: the `TradeEvent` union in `packages/database/src/web/types.ts`, its schema in `packages/chat/src/items.ts`, its renderer in `components/trades/trade-events.tsx`, and its strings in all six locales.
+- **A timeline event**: the `TradeEvent` union in `packages/database/src/web/types.ts`, its schema in `packages/chat/src/items.ts`, its renderer in `components/trades/trade-events.tsx`, and its strings in all six locales. apps/chat decodes events with that schema and passes an unknown type on as `{ type }` alone, so a new event ships in apps/chat with or before the web app, or the chat timeline reads it as "Trade updated".
 - **A notification type**: the end of `tradeTypesAfterRetired` in `types.ts`, which feeds `tradeNotificationTypes` and the `notification_type` pg enum, so it needs a migration (see [docs/migrations.md](../migrations.md)). It is bell-only until it gets a bit in `EMAIL_NOTIFICATION_BITS` ([notification-emails.md](notification-emails.md#who-is-mailed)).
 - **A refusal code**: `tradeErrorCodes` in `lib/universal/errors/trades.ts` and its message in `lib/client/errors/trades.ts`.
 

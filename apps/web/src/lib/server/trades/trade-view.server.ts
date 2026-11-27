@@ -28,18 +28,22 @@ import {
 } from "../../universal/feedback";
 import {
   offerCloser,
+  substituteSource,
   type TradeDispute,
   type TradeItemView,
   type TradeNamedItem,
   type TradeParty,
   type TradePartyName,
   type TradeStage,
+  type TradeSubstitute,
   type TradeView,
 } from "../../universal/trades";
 import { type ServerUser, toPublicUser } from "../auth.server";
+import { fetchKnownAddresses } from "../cosmo-accounts.server";
 import { db } from "../db";
 import { feedbackRepColumns } from "../feedback.server";
 import { readIndexed } from "./feed.server";
+import type { TokenState } from "./holdings.server";
 
 /**
  * A trade's payment as its page shows it (TradePaymentView), and the
@@ -60,6 +64,27 @@ function paymentViewOf(
       status: paymentStatus(payment.progress.stage, state.status),
     },
     paymentMethods,
+  };
+}
+
+/**
+ * The copy an item's receiver accepted in place of its pinned token, with
+ * its serial and where it came from, or null for an item without one.
+ */
+function substituteView(
+  item: Pick<TradeOfferItem, "sender" | "substituteTokenId" | "substituteFrom">,
+  states: ReadonlyMap<number, TokenState>,
+  known: ReadonlyMap<string, { username: string }>,
+  addresses: Record<TradeSide, string | null>,
+): TradeSubstitute | null {
+  if (item.substituteTokenId === null || item.substituteFrom === null) {
+    return null;
+  }
+  const token = states.get(item.substituteTokenId);
+  return {
+    tokenId: item.substituteTokenId,
+    serial: token?.kind === "found" ? token.serial : null,
+    from: substituteSource(item.substituteFrom, addresses[item.sender], known),
   };
 }
 
@@ -292,7 +317,16 @@ export async function readTradeView(
   const objekts = [...row.items, ...(counter?.items ?? [])];
   const indexed = await readIndexed(
     [...new Set(objekts.flatMap((item) => item.slug ?? []))],
-    [...new Set(objekts.flatMap((item) => item.tokenId ?? []))],
+    [
+      ...new Set([
+        ...objekts.flatMap((item) => item.tokenId ?? []),
+        ...row.items.flatMap((item) => item.substituteTokenId ?? []),
+      ]),
+    ],
+  );
+  // the accounts behind the addresses accepted copies came from
+  const known = await fetchKnownAddresses(
+    row.items.flatMap((item) => item.substituteFrom ?? []),
   );
   const toNamedItem = (item: {
     tokenId: number | null;
@@ -366,7 +400,7 @@ export async function readTradeView(
       ),
       to: toTradeParty(row.toUserId, row.toUser, row.toCosmo, row.toStats),
     },
-    items: row.items.flatMap((item): TradeItemView[] => {
+    items: row.items.flatMap((item, index): TradeItemView[] => {
       if (item.kind === "payment") return [];
       const token =
         item.tokenId === null ? undefined : indexed.states.get(item.tokenId);
@@ -374,9 +408,14 @@ export async function readTradeView(
         {
           ...toNamedItem(item),
           id: item.id,
+          index,
           sender: item.sender,
           transferredAt: item.transferredAt,
           txHash: item.txHash,
+          substitute: substituteView(item, indexed.states, known, {
+            from: row.fromAddress,
+            to: row.toAddress,
+          }),
           locked:
             isOpenTrade(state.status) &&
             item.tokenId !== null &&

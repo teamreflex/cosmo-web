@@ -47,6 +47,12 @@ const KnownTradeEvent = Schema.Union([
     itemId: Schema.Int,
     hash: Schema.String,
   }),
+  Schema.Struct({
+    type: Schema.Literal("substitute_accepted"),
+    itemId: Schema.Int,
+    tokenId: Schema.Int,
+    hash: Schema.String,
+  }),
   Schema.Struct({ type: Schema.Literal("marked_paid"), itemId: Schema.Int }),
   Schema.Struct({
     type: Schema.Literal("payment_confirmed"),

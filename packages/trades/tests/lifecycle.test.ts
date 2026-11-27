@@ -10,6 +10,7 @@ import {
   claimTerms,
   type DeadlineOwed,
   editUnitsRefusal,
+  leavingPicks,
   type ListingAcceptance,
   listingAcceptance,
   listingClosing,
@@ -280,6 +281,20 @@ describe("partyAction", () => {
     expect(marked(false)).toEqual(payment("to", false, true));
   });
 
+  test("accept_substitute: refused past the deadline, recorded before it", () => {
+    const accept = { type: "accept_substitute", item: 0, by: "to" } as const;
+    const settle = (deadlinePassed: boolean) => {
+      const result = partyAction(
+        trade("accepted", [objekt("from"), objekt("to", true)]),
+        accept,
+        { deadlinePassed, arrived: false },
+      );
+      return result.ok ? result.trade.status : result.reason;
+    };
+    expect(settle(true)).toBe("deadline_passed");
+    expect(settle(false)).toBe("completed");
+  });
+
   test("dispute: an arrival doesn't stop it", () => {
     expect(
       reason(trade("accepted", sixObjekts()), "dispute", {
@@ -330,6 +345,89 @@ describe("transition: items", () => {
     transition(trade("accepted", items), { type: "transfer", item: 0 });
     expect(items).toEqual([objekt("from"), objekt("to")]);
   });
+});
+
+describe("transition: accepting another copy", () => {
+  test("the receiver accepting the last objekt completes the trade", () => {
+    expect(
+      transition(trade("accepted", [objekt("from"), objekt("to", true)]), {
+        type: "accept_substitute",
+        item: 0,
+        by: "to",
+      }),
+    ).toEqual({
+      ok: true,
+      trade: {
+        status: "completed",
+        items: [objekt("from", true), objekt("to", true)],
+      },
+    });
+  });
+
+  test("an accepted copy leaves the trade open while something is still owed", () => {
+    expect(
+      statusAfter(trade("accepted", [objekt("from"), objekt("to")]), {
+        type: "accept_substitute",
+        item: 0,
+        by: "to",
+      }),
+    ).toBe("accepted");
+  });
+
+  test("the sender can't accept a copy of their own objekt", () => {
+    expect(
+      statusAfter(trade("accepted", [objekt("from"), objekt("to", true)]), {
+        type: "accept_substitute",
+        item: 0,
+        by: "from",
+      }),
+    ).toBe("wrong_party");
+  });
+
+  test("refused once the item has transferred", () => {
+    expect(
+      statusAfter(trade("accepted", [objekt("from", true), objekt("to")]), {
+        type: "accept_substitute",
+        item: 0,
+        by: "to",
+      }),
+    ).toBe("already_done");
+  });
+
+  test("refused for a payment or a missing item", () => {
+    for (const item of [1, 5]) {
+      expect(
+        statusAfter(trade("accepted", sale(true)), {
+          type: "accept_substitute",
+          item,
+          by: "from",
+        }),
+      ).toBe("no_such_item");
+    }
+  });
+
+  test("a disputed trade records it but stays disputed", () => {
+    expect(
+      statusAfter(trade("disputed", [objekt("from"), objekt("to", true)]), {
+        type: "accept_substitute",
+        item: 0,
+        by: "to",
+      }),
+    ).toBe("disputed");
+  });
+
+  test.each(["pending", "completed"] as const)(
+    "refused on a %s trade",
+    (status) => {
+      expect(
+        statusAfter(trade(status, [objekt("from"), objekt("to", true)]), {
+          type: "accept_substitute",
+          item: 0,
+          by: "to",
+        }),
+      ).toBe("wrong_status");
+    },
+  );
 });
 
 describe("transition: timing out", () => {
@@ -1053,6 +1151,43 @@ describe("tradeListings", () => {
 
   test("a direct offer has no listing", () => {
     expect(tradeListings([{ listingId: null, tokenId: 2 }]).size).toBe(0);
+  });
+});
+
+describe("leavingPicks", () => {
+  const pick = (tokenId: number, substituteTokenId: number | null = null) => ({
+    listingId: "a",
+    tokenId,
+    substituteTokenId,
+  });
+
+  test("every pick leaves when nothing was substituted", () => {
+    expect(leavingPicks([pick(1), pick(2)], [])).toEqual([["a", [1, 2]]]);
+  });
+
+  test("a pick still leaves when its accepted copy wasn't in the pool", () => {
+    expect(leavingPicks([pick(1, 9)], [])).toEqual([["a", [1]]]);
+  });
+
+  test("a pick stays when its accepted copy was one of the same pool's rows", () => {
+    expect(
+      leavingPicks([pick(1, 9), pick(2)], [{ offerId: "a", tokenId: 9 }]),
+    ).toEqual([["a", [2]]]);
+  });
+
+  test("a copy pooled in another listing doesn't keep the pick", () => {
+    expect(leavingPicks([pick(1, 9)], [{ offerId: "b", tokenId: 9 }])).toEqual([
+      ["a", [1]],
+    ]);
+  });
+
+  test("a buy listing takes no picks", () => {
+    expect(
+      leavingPicks(
+        [{ listingId: "buy", tokenId: null, substituteTokenId: null }],
+        [],
+      ),
+    ).toEqual([]);
   });
 });
 

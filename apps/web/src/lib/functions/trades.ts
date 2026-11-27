@@ -11,6 +11,12 @@ import {
 } from "@/lib/server/trades/feed.server";
 import { readIndexerTokens } from "@/lib/server/trades/holdings.server";
 import {
+  readSubstituteCandidates,
+  readSubstituteTarget,
+  readSubstituteTransfer,
+  usedTransfers,
+} from "@/lib/server/trades/substitute.server";
+import {
   deadlinePassed,
   readTradeView,
   toPartyName,
@@ -26,13 +32,17 @@ import {
   notifyUsers,
   partyRefusals,
   partyTrade,
+  refuseClash,
   refuseTrade,
+  updateLockedTrade,
 } from "@/lib/server/trades/trade.server";
 import {
+  acceptSubstituteInputSchema,
   confirmPaymentInputSchema,
   markPaidInputSchema,
   myTradesInputSchema,
   openDisputeInputSchema,
+  substituteCandidatesInputSchema,
   tradeIdInputSchema,
 } from "@/lib/universal/schema/trades";
 import {
@@ -50,6 +60,7 @@ import {
   tradeOffers,
   user,
 } from "@apollo/database/web/schema";
+import { bumpUpdatedAt } from "@apollo/database/web/sql";
 import {
   endedTradeStatuses,
   openTradeStatuses,
@@ -578,6 +589,117 @@ export const $confirmPayment = createServerFn({ method: "POST" })
           actorId: null,
           tokenId: null,
         });
+      }
+    });
+    await publishTradeUpdates([data.tradeId]);
+  });
+
+/**
+ * The drained transfers of other copies of an objekt the caller is owed,
+ * which they could accept in its place, newest first.
+ */
+export const $fetchSubstituteCandidates = createServerFn({ method: "GET" })
+  .validator(substituteCandidatesInputSchema)
+  .middleware([authenticatedMiddleware])
+  .handler(async ({ data, context }) =>
+    readSubstituteCandidates(
+      await readSubstituteTarget(
+        context.session.user.id,
+        data.tradeId,
+        data.itemId,
+      ),
+    ),
+  );
+
+/**
+ * The receiver of an objekt accepts another copy of its collection in place
+ * of the pinned token, named by a drained transfer to their pinned address
+ * since the trade was accepted. The item records that transfer and copy,
+ * and counts as sent as if the drain had seen it arrive, so an accept that
+ * settles the trade completes it here, as $confirmPayment does. A disputed
+ * trade records it and stays with staff.
+ */
+export const $acceptSubstitute = createServerFn({ method: "POST" })
+  .validator(acceptSubstituteInputSchema)
+  .middleware([authenticatedMiddleware])
+  .handler(async ({ data, context }) => {
+    const userId = context.session.user.id;
+    await consumeRateLimit({
+      key: `trade-accept-substitute:${userId}`,
+      limit: 10,
+      window: "10 minutes",
+    });
+
+    const target = await readSubstituteTarget(
+      userId,
+      data.tradeId,
+      data.itemId,
+    );
+    const transfer = await readSubstituteTransfer(
+      target,
+      data.tokenId,
+      data.hash,
+    );
+    await db.transaction(async (tx) => {
+      const { users, trade, by } = await lockPartyTrade(
+        tx,
+        userId,
+        data.tradeId,
+        target,
+      );
+
+      const item = trade.items.findIndex(({ id }) => id === data.itemId);
+      const result = partyAction(
+        trade.state,
+        { type: "accept_substitute", item, by },
+        {
+          deadlinePassed:
+            trade.state.status === "accepted" && (await isDue(tx, trade)),
+          arrived: false,
+        },
+      );
+      if (!result.ok) refuseTrade(partyRefusals[result.reason]);
+
+      // one transfer settles one item, and the drain has recorded this one, behind the watermark, on any item it reached as pinned
+      if ((await usedTransfers(tx, [data])).length > 0) {
+        refuseTrade("substitute_unavailable");
+      }
+
+      const settled = {
+        transferredAt: transfer.at,
+        txHash: data.hash,
+        substituteTokenId: data.tokenId,
+        substituteFrom: transfer.from,
+      };
+      await refuseClash(
+        tx
+          .update(tradeOfferItems)
+          .set(settled)
+          .where(eq(tradeOfferItems.id, data.itemId)),
+        "trade_offer_items_substitute_idx",
+        "substitute_unavailable",
+      );
+      await insertTradeEvent(tx, trade.id, {
+        type: "substitute_accepted",
+        itemId: data.itemId,
+        tokenId: data.tokenId,
+        hash: data.hash,
+      });
+      if (result.trade.status === "completed") {
+        // lockTrade() read the items before the accepted copy was written
+        const items = trade.items.map((row) =>
+          row.id === data.itemId ? { ...row, ...settled } : row,
+        );
+        await endTrade(tx, { ...trade, items }, result.trade, users);
+        await insertTradeEvent(tx, trade.id, { type: "completed", by: null });
+        await notifyUsers(tx, users, {
+          type: "trade_completed",
+          offerId: trade.id,
+          actorId: null,
+          tokenId: null,
+        });
+      } else {
+        await updateLockedTrade(tx, trade, { updatedAt: bumpUpdatedAt });
       }
     });
     await publishTradeUpdates([data.tradeId]);

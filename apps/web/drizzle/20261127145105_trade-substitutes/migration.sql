@@ -1,0 +1,4 @@
+ALTER TABLE "trade_offer_items" ADD COLUMN "substitute_token_id" integer;--> statement-breakpoint
+ALTER TABLE "trade_offer_items" ADD COLUMN "substitute_from" citext;--> statement-breakpoint
+CREATE UNIQUE INDEX "trade_offer_items_substitute_idx" ON "trade_offer_items" ("substitute_token_id","tx_hash") WHERE "substitute_token_id" IS NOT NULL;--> statement-breakpoint
+ALTER TABLE "trade_offer_items" ADD CONSTRAINT "trade_offer_items_substitute_chk" CHECK (("substitute_token_id" IS NULL) = ("substitute_from" IS NULL) AND ("substitute_token_id" IS NULL OR ("kind" = 'objekt' AND "transferred_at" IS NOT NULL)));

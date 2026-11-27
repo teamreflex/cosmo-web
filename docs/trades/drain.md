@@ -34,7 +34,7 @@
 
 ## Rules
 
-- Only the exact token ids pinned on the trade count. A party who sends a different copy sorts it out in chat or through a dispute.
+- Only the exact token ids pinned on the trade count. When another copy of the collection arrives instead, its receiver can accept it in the pinned token's place ([lifecycle.md](lifecycle.md#accepting-a-different-copy)); the drain never matches one itself.
 - Reaching the receiver's pinned address delivers the item from whichever wallet it came, so a sender who routes it through another of their wallets still delivers.
 - An item that arrives counts as sent for later rows in the same batch, so a token passed on in one batch is recorded once and not reported as moved.
 - A live trade whose token moves elsewhere or turns untransferable only gets a timeline event. Its status doesn't change and nobody is notified; the trade page shows the event.

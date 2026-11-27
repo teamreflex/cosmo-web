@@ -8,6 +8,7 @@ import {
 import {
   itemName,
   offerRoles,
+  pinnedLabel,
   tradeTimeFormat,
   txUrl,
 } from "@/lib/client/trades";
@@ -66,6 +67,8 @@ export function describeEvent(
       );
     case "item_transferred":
       return describeTransfer(trade, side, event);
+    case "substitute_accepted":
+      return describeSubstitute(trade, side, event);
     case "completed":
       return (
         <>
@@ -489,21 +492,66 @@ function describeTransfer(
           markup={bold}
         />
       )}{" "}
-      <a
-        href={txUrl(event.hash)}
-        target="_blank"
-        rel="noopener"
-        aria-label={m.trade_page_view_transfer()}
-        title={m.trade_page_view_transfer()}
-        className="inline-flex align-middle text-muted-foreground hover:text-foreground"
-      >
-        <IconExternalLink className="size-3.5" />
-      </a>
+      {transferLink(event.hash)}
     </>
+  );
+}
+
+// a transfer's link to the block explorer, inline after an event's text
+function transferLink(hash: string) {
+  return (
+    <a
+      href={txUrl(hash)}
+      target="_blank"
+      rel="noopener"
+      aria-label={m.trade_page_view_transfer()}
+      title={m.trade_page_view_transfer()}
+      className="inline-flex align-middle text-muted-foreground hover:text-foreground"
+    >
+      <IconExternalLink className="size-3.5" />
+    </a>
   );
 }
 
 // the reason staff gave for an action they took on the trade
 export function eventNote(event: TradeEvent) {
   return "note" in event ? event.note : null;
+}
+
+/**
+ * The receiver accepting another copy in place of a pinned objekt: "You
+ * accepted X #00002 in place of #00001", or "@y accepted …" for the sender
+ * and staff.
+ */
+function describeSubstitute(
+  trade: TradeView,
+  side: TradeSide | null,
+  event: Extract<TradeEvent, { type: "substitute_accepted" }>,
+) {
+  const item = trade.items.find(({ id }) => id === event.itemId);
+  if (item === undefined) return null;
+  const receiver = otherSide(item.sender);
+  const inputs = {
+    objekt: itemName({ ...item, serial: item.substitute?.serial ?? null }),
+    pinned: pinnedLabel(item),
+  };
+
+  return (
+    <>
+      {receiver === side ? (
+        <ParaglideMessage
+          message={m.trade_page_event_substitute_you}
+          inputs={inputs}
+          markup={bold}
+        />
+      ) : (
+        <ParaglideMessage
+          message={m.trade_page_event_substitute_them}
+          inputs={{ ...inputs, name: partyName(trade.parties[receiver]) }}
+          markup={bold}
+        />
+      )}{" "}
+      {transferLink(event.hash)}
+    </>
+  );
 }

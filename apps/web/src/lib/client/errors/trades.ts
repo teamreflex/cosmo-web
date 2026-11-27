@@ -76,6 +76,8 @@ export function formatTradeError(code: string): string | null {
       return m.trade_error_trade_party_banned();
     case "payment_method_unaccepted":
       return m.trade_error_payment_method_unaccepted();
+    case "substitute_unavailable":
+      return m.trade_error_substitute_unavailable();
     case "offer_own":
       return m.trade_error_offer_own();
     case "offer_unavailable":

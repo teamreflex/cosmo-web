@@ -8,7 +8,7 @@
 | -------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------- |
 | `pending`                                                | a direct offer, a counter, an offer on a listing ([offers.md](offers.md))                                                         |
 | `accepted`                                               | a claim, an accepted offer, a staff extend                                                                                        |
-| `completed`                                              | every item done: a token's arrival (drain) or a payment's confirmation, a staff complete, a staff extend                          |
+| `completed`                                              | every item done: a token's arrival (drain), an accepted copy or a payment's confirmation, a staff complete, a staff extend        |
 | `cancelled`                                              | a party while nobody has acted: nothing sent, no payment marked paid or confirmed (`cancelled_by` names them), or staff           |
 | `timed_out`                                              | the deadline passed the watermark with nothing done: no token arrived, no payment confirmed or marked paid                        |
 | `disputed`                                               | a party's dispute, a ban (`party_banned`), the deadline with something done or marked paid and something owed (`deadline_passed`) |
@@ -23,6 +23,7 @@
 | ------------------------ | ----------------------------------------------- | --------------------------------------- | -------------------------------------------------- |
 | `accepted`               | every item sent                                 | drain                                   | `completed`                                        |
 | `accepted`               | the last item done is a payment confirmation    | the payment's recipient                 | `completed`                                        |
+| `accepted`               | the last item done is an accepted copy          | the objekt's receiver                   | `completed`                                        |
 | `accepted`               | `cancel`, nothing sent, arrived or marked paid  | a party not owed an unconfirmed payment | `cancelled`                                        |
 | `accepted`               | `dispute`, before the deadline                  | a party, or a ban                       | `disputed`                                         |
 | `accepted`               | `time_out`, deadline at or before the watermark | `trade-timers`                          | `timed_out` or `disputed`                          |
@@ -41,6 +42,16 @@
 
 - A dispute files a `trade` report, sets `dispute_report_id`, freezes the trade and notifies the other party.
 - A cancel notifies the other party and changes nothing on the listing's pool, since the picks never left it.
+
+## Accepting a different copy
+
+`$acceptSubstitute` (`lib/functions/trades.ts`) is an objekt's receiver accepting another copy of its collection in place of the pinned token; `$fetchSubstituteCandidates` lists the copies they can pick. Both read through `lib/server/trades/substitute.server.ts`.
+
+- A copy is a transfer to the receiver's pinned address from any account, since people trade from several, stamped between `accepted_at` (less a minute of clock slack) and the drain's watermark. The watermark bound means the drain has already recorded any pinned arrival that transfer was, and keeps out a hot-block transfer until it settles.
+- A transfer already recorded on any item, as a pinned arrival or an accepted copy, can't be accepted again. The partial unique index serialises two accepts of one transfer, which `FOR SHARE` party locks alone don't.
+- It goes through `partyAction()` like a payment confirmation: `trade_status_changed` when the trade is neither accepted nor disputed or the caller sends the objekt, then `trade_deadline_passed` on an accepted trade past its deadline. A transfer that no longer fits is `substitute_unavailable`.
+- It writes the copy onto the item ([data-model.md](data-model.md#items-trade_offer_items)), a `substitute_accepted` event, and settles the item as a drained arrival would: on an accepted trade the last item done completes it with `endTrade()`, a `completed` event and `trade_completed` to both, and otherwise it bumps `updated_at` and notifies nobody. A disputed trade records it and stays with staff.
+- Nothing detects a different copy on its own: a receiver who never accepts one can still cancel, and the deadline judges the pinned tokens only.
 
 ## Payments
 
@@ -113,7 +124,7 @@ Staff act through `lib/functions/staff-trades.ts` and `actOnTrade()` in `lib/ser
 
 ## Item status and next steps
 
-- `itemStatus()` in `transfers.ts` is what the trade page shows per objekt: `sent` (the drain recorded it), `arrived` (at its receiver before the drain saw it), `waiting`, `not_started` (pending offer), `moved`, `untransferable`, or `not_sent` on an ended trade.
+- `itemStatus()` in `transfers.ts` is what the trade page shows per objekt: `sent` (the drain recorded it), `arrived` (at its receiver before the drain saw it), `waiting`, `not_started` (pending offer), `moved`, `untransferable`, or `not_sent` on an ended trade. An accepted copy reads `sent`; the page names it from the view's `substitute`.
 - `paymentStatus()` is the same for a payment: `confirmed`, `paid` (marked by its sender), `waiting`, `not_started` or `not_confirmed`, since Apollo never sees the money move.
 - `nextStep()` decides what My trades marks as waiting on you, and which step it names: answering a pending offer you didn't propose, or on an accepted trade before its deadline passes the watermark, sending the tokens you still owe, then marking paid a payment you send, or confirming a payment you are owed.
-- The trade page offers Mark paid and Confirm received where `partyAction()` allows them, as it does Cancel and Open dispute.
+- The trade page offers Mark paid and Confirm received where `partyAction()` allows them, as it does Cancel and Open dispute, and a "wrong serial?" link under a `waiting`, `moved` or `untransferable` objekt the viewer is owed.

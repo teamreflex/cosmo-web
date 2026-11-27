@@ -2,7 +2,11 @@ import {
   $fetchCounterMatches,
   $fetchOfferSerials,
 } from "@/lib/functions/lists";
-import { $fetchMyTrades, $fetchTrade } from "@/lib/functions/trades";
+import {
+  $fetchMyTrades,
+  $fetchSubstituteCandidates,
+  $fetchTrade,
+} from "@/lib/functions/trades";
 import type { MyTradesCursor, MyTradesTab } from "@/lib/universal/trades";
 import { infiniteQueryOptions, queryOptions } from "@tanstack/react-query";
 
@@ -49,6 +53,19 @@ export const counterMatchesQuery = (tradeId: string) =>
     queryFn: ({ signal }) =>
       $fetchCounterMatches({ signal, data: { tradeId } }),
     staleTime: 1000 * 60,
+  });
+
+/**
+ * The drained transfers of other copies of an objekt the viewer is owed,
+ * which they could accept in its place. Read each time the dialog opens,
+ * since the drain may have caught up.
+ */
+export const substituteCandidatesQuery = (tradeId: string, itemId: number) =>
+  queryOptions({
+    queryKey: [...tradesKey, "substitutes", tradeId, itemId],
+    queryFn: ({ signal }) =>
+      $fetchSubstituteCandidates({ signal, data: { tradeId, itemId } }),
+    staleTime: 0,
   });
 
 /**

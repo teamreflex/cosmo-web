@@ -40,6 +40,7 @@ export type DisputeItemRow = {
   sender: TradeSide;
   kind: TradeItemKind;
   tokenId: number | null;
+  substituteTokenId: number | null;
   member: string | null;
   season: string | null;
   amount: string | null;
@@ -53,6 +54,7 @@ export type DisputeItemRow = {
 const disputeObjektSchema = z.object({
   sender: z.enum(tradeSides),
   tokenId: z.int(),
+  substituteTokenId: z.int().nullable(),
   member: z.string(),
   season: z.string(),
 });
@@ -64,7 +66,7 @@ type DisputeItem =
 export type DisputeDetails = {
   parties: Record<TradeSide, DisputeParty>;
   items: readonly DisputeItemRow[];
-  // the indexer's collection number and serial, by token id
+  // the indexer's collection number and serial, by token id, accepted copies included
   tokens: ReadonlyMap<number, { collectionNo: string; serial: number }>;
 };
 
@@ -146,7 +148,10 @@ function partyName(party: DisputeParty) {
   return party.username ?? "Unnamed account";
 }
 
-// "JinSoul Atom01 344Z #00012" or "USD 12.50, confirmed via wise", one per line
+/**
+ * "JinSoul Atom01 344Z #00012", "JinSoul Atom01 344Z #00031, accepted in
+ * place of #00012" or "USD 12.50, confirmed via wise", one per line.
+ */
 function sideSummary(
   items: readonly DisputeItem[],
   tokens: DisputeDetails["tokens"],
@@ -173,8 +178,20 @@ function itemLabel(item: DisputeItem, tokens: DisputeDetails["tokens"]) {
         return `${amount}, not confirmed`;
     }
   }
-  const token = tokens.get(item.tokenId);
+  if (item.substituteTokenId === null) {
+    return objektLabel(item, item.tokenId, tokens);
+  }
+  const pinned = tokens.get(item.tokenId);
+  return `${objektLabel(item, item.substituteTokenId, tokens)}, accepted in place of ${pinned === undefined ? `token ${item.tokenId}` : formatSerial(pinned.serial)}`;
+}
+
+function objektLabel(
+  item: { member: string; season: string },
+  tokenId: number,
+  tokens: DisputeDetails["tokens"],
+) {
+  const token = tokens.get(tokenId);
   return token === undefined
-    ? `${item.member} ${item.season} (token ${item.tokenId})`
+    ? `${item.member} ${item.season} (token ${tokenId})`
     : `${item.member} ${item.season} ${token.collectionNo} ${formatSerial(token.serial)}`;
 }

@@ -168,6 +168,7 @@ Web limits are fixed windows consumed through `consumeRateLimit()` in `apps/web/
 | `trade-dispute:<user>`              | 5 / 10 min  | `$openDispute`                                                                                                         |
 | `trade-mark-paid:<user>`            | 10 / 10 min | `$markPaid`                                                                                                            |
 | `trade-confirm-payment:<user>`      | 10 / 10 min | `$confirmPayment`                                                                                                      |
+| `trade-accept-substitute:<user>`    | 10 / 10 min | `$acceptSubstitute`                                                                                                    |
 | `feedback:<user>`                   | 10 / 10 min | `$leaveFeedback`                                                                                                       |
 | `feedback-remove:<staff>`           | 30 / 10 min | `$removeFeedback` (staff)                                                                                              |
 | `report:<user>`                     | 5 / 10 min  | `$createReport`, and chat's `Report`: one shared budget                                                                |

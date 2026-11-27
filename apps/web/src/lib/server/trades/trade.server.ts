@@ -18,6 +18,7 @@ import type {
 } from "@apollo/database/web/types";
 import {
   endedTradeColumns,
+  leavingPicks,
   listingClosing,
   listingTransition,
   listingUnits,
@@ -188,6 +189,7 @@ export async function lockTrade(tx: WebTx, tradeId: string) {
       tokenId: tradeOfferItems.tokenId,
       listingId: tradeOfferItems.listingId,
       transferredAt: tradeOfferItems.transferredAt,
+      substituteTokenId: tradeOfferItems.substituteTokenId,
       markedPaidAt: tradeOfferItems.markedPaidAt,
       confirmedAt: tradeOfferItems.confirmedAt,
       amount: tradeOfferItems.amount,
@@ -301,23 +303,30 @@ export function answerOffer(
   return result.trade;
 }
 
-/**
- * Runs a write that makes trade items live, turning a clash on the
- * live-token index (a token another trade made live after the checks read
- * it) into `refusal`.
- */
-export async function refuseLiveClash(
+// runs a write, turning a clash on the unique index `index` into `refusal`
+export async function refuseClash(
   write: PromiseLike<unknown>,
+  index: string,
   refusal: TradeErrorCode,
 ) {
   try {
     await write;
   } catch (error) {
-    if (isPostgresError(error, "23505", "trade_offer_items_live_token_idx")) {
-      refuseTrade(refusal);
-    }
+    if (isPostgresError(error, "23505", index)) refuseTrade(refusal);
     throw error;
   }
+}
+
+/**
+ * Runs a write that makes trade items live, turning a clash on the
+ * live-token index (a token another trade made live after the checks read
+ * it) into `refusal`.
+ */
+export function refuseLiveClash(
+  write: PromiseLike<unknown>,
+  refusal: TradeErrorCode,
+) {
+  return refuseClash(write, "trade_offer_items_live_token_idx", refusal);
 }
 
 /**
@@ -391,9 +400,11 @@ export async function endTrade(
     .where(inArray(tradeOffers.id, [...listings.keys()]))
     .orderBy(asc(tradeOffers.id))
     .for("no key update");
-  // a buy listing's trade takes no pool tokens
-  const picks = [...listings].filter(([, tokenIds]) => tokenIds.length > 0);
-  if (next.status === "completed" && picks.length > 0) {
+  const picks =
+    next.status === "completed"
+      ? leavingPicks(trade.items, await pooledSubstitutes(tx, trade.items))
+      : [];
+  if (picks.length > 0) {
     await tx
       .update(tradeOfferItems)
       .set({ leftAt: sql`now()` })
@@ -412,6 +423,31 @@ export async function endTrade(
       );
   }
   await closeSpentListings(tx, [...listings.keys()], users);
+}
+
+/**
+ * The pool rows, among the listings a trade's picks came from, holding a
+ * copy its receiver accepted in place of a pick (leavingPicks()).
+ */
+async function pooledSubstitutes(tx: WebTx, items: LockedTrade["items"]) {
+  const pools = items.flatMap(({ listingId, substituteTokenId }) =>
+    listingId !== null && substituteTokenId !== null
+      ? [
+          and(
+            eq(tradeOfferItems.offerId, listingId),
+            eq(tradeOfferItems.tokenId, substituteTokenId),
+          ),
+        ]
+      : [],
+  );
+  if (pools.length === 0) return [];
+  return tx
+    .select({
+      offerId: tradeOfferItems.offerId,
+      tokenId: tradeOfferItems.tokenId,
+    })
+    .from(tradeOfferItems)
+    .where(or(...pools));
 }
 
 /**

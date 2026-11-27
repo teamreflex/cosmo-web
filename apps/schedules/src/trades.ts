@@ -21,6 +21,7 @@ import {
 } from "@apollo/trades/events";
 import {
   endedTradeColumns,
+  leavingPicks,
   listingClosing,
   listingTransition,
   listingUnits,
@@ -88,6 +89,7 @@ export type LiveTrade = Pick<
     | "listingId"
     | "live"
     | "transferredAt"
+    | "substituteTokenId"
     | "markedPaidAt"
     | "confirmedAt"
   >[];
@@ -141,6 +143,7 @@ export const lockLiveTrades = Effect.fn("lockLiveTrades")(function* (
       listingId: tradeOfferItems.listingId,
       live: tradeOfferItems.live,
       transferredAt: tradeOfferItems.transferredAt,
+      substituteTokenId: tradeOfferItems.substituteTokenId,
       markedPaidAt: tradeOfferItems.markedPaidAt,
       confirmedAt: tradeOfferItems.confirmedAt,
     })
@@ -239,9 +242,11 @@ export const endTrade = Effect.fn("endTrade")(function* (
   const listings = tradeListings(trade.items);
   if (listings.size > 0) {
     yield* lockListings(tx, [...listings.keys()]);
-    // a buy listing's trade takes no pool tokens
-    const picks = [...listings].filter(([, tokenIds]) => tokenIds.length > 0);
-    if (next.status === "completed" && picks.length > 0) {
+    const picks =
+      next.status === "completed"
+        ? leavingPicks(trade.items, yield* pooledSubstitutes(tx, trade.items))
+        : [];
+    if (picks.length > 0) {
       yield* tx
         .update(tradeOfferItems)
         .set({ leftAt: sql`now()` })
@@ -274,6 +279,34 @@ export const endTrade = Effect.fn("endTrade")(function* (
       }),
     ),
   };
+});
+
+/**
+ * The pool rows, among the listings a trade's picks came from, holding a
+ * copy its receiver accepted in place of a pick (leavingPicks()).
+ */
+const pooledSubstitutes = Effect.fn("pooledSubstitutes")(function* (
+  tx: WebTx,
+  items: LiveTrade["items"],
+) {
+  const pools = items.flatMap(({ listingId, substituteTokenId }) =>
+    listingId !== null && substituteTokenId !== null
+      ? [
+          and(
+            eq(tradeOfferItems.offerId, listingId),
+            eq(tradeOfferItems.tokenId, substituteTokenId),
+          ),
+        ]
+      : [],
+  );
+  if (pools.length === 0) return [];
+  return yield* tx
+    .select({
+      offerId: tradeOfferItems.offerId,
+      tokenId: tradeOfferItems.tokenId,
+    })
+    .from(tradeOfferItems)
+    .where(or(...pools));
 });
 
 /**

@@ -1,0 +1,164 @@
+{
+  "type": "diff",
+  "version": "10",
+  "dialect": "postgres",
+  "id": "0981d7a2-bdd4-4035-b429-d632ed5ceaf8",
+  "prevIds": [
+    "84cdac16-9abf-4870-9972-1d5c68fa0846"
+  ],
+  "footprints": [
+    {
+      "statementType": "add_column",
+      "statementTarget": [
+        "column",
+        "public",
+        "trade_offer_items",
+        "substitute_token_id"
+      ],
+      "writes": [
+        "s|col|public.trade_offer_items.substitute_token_id",
+        "n|col|public.trade_offer_items.substitute_token_id",
+        "e|col|public.trade_offer_items.substitute_token_id"
+      ],
+      "reads": [
+        "n|tbl|public.trade_offer_items",
+        "n|sch|public"
+      ]
+    },
+    {
+      "statementType": "add_column",
+      "statementTarget": [
+        "column",
+        "public",
+        "trade_offer_items",
+        "substitute_from"
+      ],
+      "writes": [
+        "s|col|public.trade_offer_items.substitute_from",
+        "n|col|public.trade_offer_items.substitute_from",
+        "e|col|public.trade_offer_items.substitute_from"
+      ],
+      "reads": [
+        "n|tbl|public.trade_offer_items",
+        "n|sch|public"
+      ]
+    },
+    {
+      "statementType": "create_index",
+      "statementTarget": [
+        "index",
+        "public",
+        "trade_offer_items",
+        "trade_offer_items_substitute_idx"
+      ],
+      "writes": [
+        "s|idx|public.trade_offer_items_substitute_idx",
+        "n|idx|public.trade_offer_items_substitute_idx",
+        "e|idx|public.trade_offer_items_substitute_idx",
+        "n|rel|public.trade_offer_items_substitute_idx"
+      ],
+      "reads": [
+        "n|tbl|public.trade_offer_items",
+        "n|sch|public",
+        "n|col|public.trade_offer_items.substitute_token_id",
+        "n|col|public.trade_offer_items.tx_hash"
+      ]
+    },
+    {
+      "statementType": "add_check",
+      "statementTarget": [
+        "table",
+        "public",
+        "trade_offer_items"
+      ],
+      "writes": [
+        "s|ck|public.trade_offer_items.trade_offer_items_substitute_chk",
+        "n|ck|public.trade_offer_items.trade_offer_items_substitute_chk",
+        "e|ck|public.trade_offer_items.trade_offer_items_substitute_chk",
+        "n|con|public.trade_offer_items.trade_offer_items_substitute_chk"
+      ],
+      "reads": [
+        "n|tbl|public.trade_offer_items",
+        "n|sch|public",
+        "n|col|public.trade_offer_items.substitute_token_id",
+        "n|col|public.trade_offer_items.substitute_from",
+        "n|col|public.trade_offer_items.kind",
+        "n|col|public.trade_offer_items.transferred_at"
+      ]
+    }
+  ],
+  "deltas": [
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "trade_offer_items",
+        "name": "substitute_token_id",
+        "type": "integer",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "trade_offer_items",
+        "name": "substitute_from",
+        "type": "citext",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "trade_offer_items",
+        "name": "trade_offer_items_substitute_idx",
+        "nameExplicit": true,
+        "columns": [
+          {
+            "value": "substitute_token_id",
+            "isExpression": false,
+            "asc": true,
+            "nullsFirst": false,
+            "opclass": null
+          },
+          {
+            "value": "tx_hash",
+            "isExpression": false,
+            "asc": true,
+            "nullsFirst": false,
+            "opclass": null
+          }
+        ],
+        "isUnique": true,
+        "where": "\"substitute_token_id\" IS NOT NULL",
+        "with": "",
+        "method": "btree",
+        "entityType": "indexes"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "trade_offer_items",
+        "name": "trade_offer_items_substitute_chk",
+        "value": "(\"substitute_token_id\" IS NULL) = (\"substitute_from\" IS NULL) AND (\"substitute_token_id\" IS NULL OR (\"kind\" = 'objekt' AND \"transferred_at\" IS NOT NULL))",
+        "entityType": "checks"
+      }
+    }
+  ]
+}
