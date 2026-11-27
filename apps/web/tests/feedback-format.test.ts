@@ -1,6 +1,7 @@
 import { describe, expect, test } from "bun:test";
 import {
   feedbackChipView,
+  feedbackReadsNew,
   formatPercentPositive,
 } from "../src/lib/universal/feedback";
 
@@ -22,13 +23,19 @@ describe("SCORE-17: percent formatting", () => {
 });
 
 describe("profile chip view", () => {
-  const summary = (positive: number, neutral: number, negative: number) => ({
+  const summary = (
+    positive: number,
+    neutral: number,
+    negative: number,
+    isNew = false,
+  ) => ({
     total: positive + neutral + negative,
     score: positive - negative,
     percent:
       positive + negative === 0 ? null : share(positive, positive + negative),
     counts: { positive, neutral, negative },
     roles: { buyer: 0, seller: 0, trader: 0 },
+    isNew,
   });
 
   test("no rating shows nothing", () => {
@@ -36,10 +43,9 @@ describe("profile chip view", () => {
   });
 
   test.each([
-    [8, 0, 1, { kind: "counts", isNew: true }],
-    [8, 1, 1, { kind: "counts", isNew: false }],
+    [8, 0, 1, { kind: "counts" }],
     [9, 0, 1, { kind: "percent" }],
-    [0, 12, 0, { kind: "counts", isNew: false }],
+    [0, 12, 0, { kind: "counts" }],
   ])(
     "%i positive, %i neutral, %i negative reads as %o",
     (positive, neutral, negative, expected) => {
@@ -48,4 +54,34 @@ describe("profile chip view", () => {
       ).toMatchObject(expected);
     },
   );
+
+  test.each([true, false])("counts carry a summary's isNew of %p", (isNew) => {
+    expect(feedbackChipView(summary(2, 0, 1, isNew))).toMatchObject({
+      kind: "counts",
+      isNew,
+    });
+  });
+});
+
+describe("a profile reading as new", () => {
+  const now = new Date("2026-06-15T00:00:00Z");
+  const daysAgo = (days: number) =>
+    new Date(now.getTime() - days * 24 * 60 * 60 * 1000);
+
+  test.each([
+    [1, 0, true],
+    [4, 13, true],
+    [5, 13, false],
+    [4, 14, false],
+    [1, 180, false],
+  ])(
+    "%i ratings, the first %i days ago, reads new: %p",
+    (total, days, expected) => {
+      expect(feedbackReadsNew(total, daysAgo(days), now)).toBe(expected);
+    },
+  );
+
+  test("no rating never reads new", () => {
+    expect(feedbackReadsNew(0, null, now)).toBe(false);
+  });
 });

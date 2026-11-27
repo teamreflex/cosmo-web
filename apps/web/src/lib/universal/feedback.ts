@@ -198,7 +198,8 @@ export const feedbackSearchDefaults = {
  * An address's received feedback as its feedback page shows it. `total` and
  * `counts` are its visible ratings, scored or not; `score` and `percent`
  * follow the scored ones alone. `roles` counts the visible ratings by the
- * role the address was rated in.
+ * role the address was rated in. `isNew` is `feedbackReadsNew()` as of the
+ * fetch.
  */
 export type FeedbackSummary = {
   total: number;
@@ -206,6 +207,7 @@ export type FeedbackSummary = {
   percent: number | null;
   counts: Record<FeedbackRating, number>;
   roles: Record<FeedbackRole, number>;
+  isNew: boolean;
 };
 
 // the roles an address has a visible rating in
@@ -215,17 +217,40 @@ export function ratedRoles(summary: FeedbackSummary) {
 
 /**
  * How many positive and negative ratings a share positive needs before a
- * chip shows it, and how many ratings in all a profile needs to stop reading
- * as new. Below it one negative swings the share too far to mean much.
+ * chip shows it. Below it one negative swings the share too far to mean much.
  */
 export const FEEDBACK_ESTABLISHED = 10;
+
+// how many visible ratings a profile needs to stop reading as new
+export const FEEDBACK_NEW_RATINGS = 5;
+
+// how long after its first visible rating a profile can read as new
+export const FEEDBACK_NEW_DAYS = 14;
+
+const DAY = 24 * 60 * 60 * 1000;
+
+/**
+ * Whether a profile reads as new to trading: it has few visible ratings and
+ * the first of them is recent, so a profile that rarely trades stops reading
+ * as new once that first rating ages. `firstAt` is null with no rating.
+ */
+export function feedbackReadsNew(
+  total: number,
+  firstAt: Date | null,
+  now: Date,
+) {
+  return (
+    firstAt !== null &&
+    total < FEEDBACK_NEW_RATINGS &&
+    now.getTime() - firstAt.getTime() < FEEDBACK_NEW_DAYS * DAY
+  );
+}
 
 /**
  * How a profile's feedback chip reads its summary.
  * - `none`: no visible rating.
  * - `counts`: each rating's count, while too few positive and negative
- *   ratings make the share noisy. `isNew` while the profile has few ratings
- *   in all.
+ *   ratings make the share noisy. `isNew` while the profile reads as new.
  * - `percent`: the share positive and how many ratings it has.
  */
 export type FeedbackChipView =
@@ -244,7 +269,7 @@ export function feedbackChipView(summary: FeedbackSummary): FeedbackChipView {
     return {
       kind: "counts",
       counts: summary.counts,
-      isNew: summary.total < FEEDBACK_ESTABLISHED,
+      isNew: summary.isNew,
     };
   }
   return { kind: "percent", percent: summary.percent, total: summary.total };

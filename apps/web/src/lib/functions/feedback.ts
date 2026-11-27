@@ -16,9 +16,10 @@ import {
   partyTrade,
   refuseTrade,
 } from "@/lib/server/trades/trade.server";
-import type {
-  FeedbackEntriesPage,
-  FeedbackSummary,
+import {
+  type FeedbackEntriesPage,
+  feedbackReadsNew,
+  type FeedbackSummary,
 } from "@/lib/universal/feedback";
 import {
   feedbackEntriesInputSchema,
@@ -47,6 +48,7 @@ import {
   eq,
   isNotNull,
   isNull,
+  min,
   type SQL,
   sql,
 } from "drizzle-orm";
@@ -279,6 +281,7 @@ export const $fetchFeedbackSummary = createServerFn({ method: "GET" })
         buyer: count(eq(role, ratedRole("buyer"))),
         seller: count(eq(role, ratedRole("seller"))),
         trader: count(eq(role, ratedRole("trader"))),
+        firstAt: min(tradeFeedback.createdAt),
       })
       .from(tradeFeedback)
       .where(
@@ -299,6 +302,7 @@ export const $fetchFeedbackSummary = createServerFn({ method: "GET" })
         negative: row.negative,
       },
       roles: { buyer: row.buyer, seller: row.seller, trader: row.trader },
+      isNew: feedbackReadsNew(row.total, row.firstAt, new Date()),
     };
   });
 

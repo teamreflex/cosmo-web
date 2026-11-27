@@ -33,6 +33,7 @@ The limits on posting, editing, claiming, cancelling, disputing and rating are i
 - Staff with `feedback: ["remove"]` remove a rating by stamping `removed_at`, which takes a scored rating back out of the stats.
 - Ratings show on `/@{username}/feedback`, with badges on listings and trades.
 - The profile header links to that page with a chip (`components/feedback/profile-feedback-chip.tsx`) that shows each rating's count until the address has `FEEDBACK_ESTABLISHED` positive and negative ratings, then the share positive, because one negative swings a short history's share too far.
+- The chip tags the address "new" while it has fewer than `FEEDBACK_NEW_RATINGS` visible ratings and its first is under `FEEDBACK_NEW_DAYS` old (`feedbackReadsNew()`). `$fetchFeedbackSummary` decides it on the server, because a clock read during render could differ between the server's HTML and hydration.
 - The chip's hover card opens only on a pointer that hovers; on a touch screen a tap follows the link.
 
 ## Notices
