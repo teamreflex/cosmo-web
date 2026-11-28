@@ -22,7 +22,9 @@ function trade(
   status: Exclude<TradeStatus, "pending" | "cancelled">,
   items: readonly TradeItemState[],
 ): TradeState {
-  return { status, items };
+  return status === "accepted" || status === "disputed"
+    ? { status, cancelRequest: null, items }
+    : { status, items };
 }
 
 const endedAt = new Date("2026-10-01T12:00:00Z");
@@ -62,6 +64,16 @@ describe("feedbackOpening eligibility", () => {
         status: "cancelled",
         cancelledBy: "from",
         items: [objekt("from"), objekt("to")],
+      }),
+    ).toBe("ineligible");
+  });
+
+  test("not a trade both parties agreed to cancel, even after something arrived", () => {
+    expect(
+      opening({
+        status: "cancelled",
+        cancelledBy: "both",
+        items: [objekt("from", true), objekt("to")],
       }),
     ).toBe("ineligible");
   });

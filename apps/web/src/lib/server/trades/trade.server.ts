@@ -17,11 +17,14 @@ import type {
   TradeSide,
 } from "@apollo/database/web/types";
 import {
+  cancelRequestCleared,
   endedTradeColumns,
+  leavingPicks,
   listingClosing,
   listingTransition,
   listingUnits,
   type PartyActionRefusal,
+  type PartyFacts,
   type TradeEvent,
   tradeListingId,
   tradeListings,
@@ -30,6 +33,7 @@ import {
   transition,
 } from "@apollo/trades/lifecycle";
 import { DRAIN_CURSOR_NAME, isTimedOut } from "@apollo/trades/timers";
+import { itemStatus } from "@apollo/trades/transfers";
 import { isEqual } from "@apollo/util";
 import { and, asc, eq, inArray, isNull, or, sql } from "drizzle-orm";
 import type { PgUpdateSetSource } from "drizzle-orm/pg-core";
@@ -41,6 +45,7 @@ import type {
 } from "../../universal/errors/trades";
 import { db, type DbOrTx, type WebTx } from "../db";
 import { isPostgresError } from "../util.server";
+import type { TokenState } from "./holdings.server";
 
 export function refuseTrade(code: TradeErrorCode): never {
   throw new ExpectedError(code);
@@ -168,6 +173,7 @@ export async function lockTrade(tx: WebTx, tradeId: string) {
       expiresAt: tradeOffers.expiresAt,
       endedAt: tradeOffers.endedAt,
       cancelledBy: tradeOffers.cancelledBy,
+      cancelRequestedBy: tradeOffers.cancelRequestedBy,
       proposedBy: tradeOffers.proposedBy,
       disputeReportId: tradeOffers.disputeReportId,
       paymentMethods: tradeOffers.paymentMethods,
@@ -188,6 +194,7 @@ export async function lockTrade(tx: WebTx, tradeId: string) {
       tokenId: tradeOfferItems.tokenId,
       listingId: tradeOfferItems.listingId,
       transferredAt: tradeOfferItems.transferredAt,
+      substituteTokenId: tradeOfferItems.substituteTokenId,
       markedPaidAt: tradeOfferItems.markedPaidAt,
       confirmedAt: tradeOfferItems.confirmedAt,
       amount: tradeOfferItems.amount,
@@ -261,6 +268,38 @@ export async function isDue(tx: WebTx, trade: LockedTrade) {
   );
 }
 
+// whether an accepted trade's deadline passed the drain's watermark; a disputed trade's clock is stopped
+export async function isPastDeadline(tx: WebTx, trade: LockedTrade) {
+  return trade.state.status === "accepted" && (await isDue(tx, trade));
+}
+
+/**
+ * What a party's cancel or request is judged by beyond the trade's row:
+ * whether its deadline passed, and whether a token reached its receiver
+ * before the drain recorded it, from the indexer read made before the
+ * transaction.
+ */
+export async function partyFacts(
+  tx: WebTx,
+  trade: LockedTrade,
+  tokens: ReadonlyMap<number, TokenState>,
+): Promise<PartyFacts> {
+  return {
+    deadlinePassed: await isPastDeadline(tx, trade),
+    arrived: trade.items.some((item) => {
+      const token =
+        item.tokenId === null ? undefined : tokens.get(item.tokenId);
+      return (
+        itemStatus(item, token?.kind === "found" ? token : undefined, {
+          status: trade.state.status,
+          fromAddress: trade.fromAddress,
+          toAddress: trade.toAddress,
+        }) === "arrived"
+      );
+    }),
+  };
+}
+
 /**
  * What a refused party action answers. The refusals a cancel or dispute
  * can't reach read as the trade having changed, and a counter to an offer
@@ -275,6 +314,11 @@ export const partyRefusals = {
   already_done: "trade_status_changed",
   no_such_item: "trade_status_changed",
   listing_offer: "offer_unavailable",
+  // the page offered a request that moved on: refetch into what it is now
+  cancel_not_needed: "trade_status_changed",
+  cancel_requested: "trade_status_changed",
+  no_cancel_request: "trade_status_changed",
+  transfer_pending: "trade_transfer_pending",
 } as const satisfies Record<PartyActionRefusal, TradeErrorCode>;
 
 /**
@@ -301,23 +345,30 @@ export function answerOffer(
   return result.trade;
 }
 
-/**
- * Runs a write that makes trade items live, turning a clash on the
- * live-token index (a token another trade made live after the checks read
- * it) into `refusal`.
- */
-export async function refuseLiveClash(
+// runs a write, turning a clash on the unique index `index` into `refusal`
+export async function refuseClash(
   write: PromiseLike<unknown>,
+  index: string,
   refusal: TradeErrorCode,
 ) {
   try {
     await write;
   } catch (error) {
-    if (isPostgresError(error, "23505", "trade_offer_items_live_token_idx")) {
-      refuseTrade(refusal);
-    }
+    if (isPostgresError(error, "23505", index)) refuseTrade(refusal);
     throw error;
   }
+}
+
+/**
+ * Runs a write that makes trade items live, turning a clash on the
+ * live-token index (a token another trade made live after the checks read
+ * it) into `refusal`.
+ */
+export function refuseLiveClash(
+  write: PromiseLike<unknown>,
+  refusal: TradeErrorCode,
+) {
+  return refuseClash(write, "trade_offer_items_live_token_idx", refusal);
 }
 
 /**
@@ -391,9 +442,11 @@ export async function endTrade(
     .where(inArray(tradeOffers.id, [...listings.keys()]))
     .orderBy(asc(tradeOffers.id))
     .for("no key update");
-  // a buy listing's trade takes no pool tokens
-  const picks = [...listings].filter(([, tokenIds]) => tokenIds.length > 0);
-  if (next.status === "completed" && picks.length > 0) {
+  const picks =
+    next.status === "completed"
+      ? leavingPicks(trade.items, await pooledSubstitutes(tx, trade.items))
+      : [];
+  if (picks.length > 0) {
     await tx
       .update(tradeOfferItems)
       .set({ leftAt: sql`now()` })
@@ -412,6 +465,31 @@ export async function endTrade(
       );
   }
   await closeSpentListings(tx, [...listings.keys()], users);
+}
+
+/**
+ * The pool rows, among the listings a trade's picks came from, holding a
+ * copy its receiver accepted in place of a pick (leavingPicks()).
+ */
+async function pooledSubstitutes(tx: WebTx, items: LockedTrade["items"]) {
+  const pools = items.flatMap(({ listingId, substituteTokenId }) =>
+    listingId !== null && substituteTokenId !== null
+      ? [
+          and(
+            eq(tradeOfferItems.offerId, listingId),
+            eq(tradeOfferItems.tokenId, substituteTokenId),
+          ),
+        ]
+      : [],
+  );
+  if (pools.length === 0) return [];
+  return tx
+    .select({
+      offerId: tradeOfferItems.offerId,
+      tokenId: tradeOfferItems.tokenId,
+    })
+    .from(tradeOfferItems)
+    .where(or(...pools));
 }
 
 /**
@@ -500,6 +578,24 @@ type Dispute = { reporterId: string; note: string | null } & (
 );
 
 /**
+ * Clears a waiting request to cancel once an item moved on under it, with
+ * the timeline event that says why, so nobody agrees to a cancel asked of a
+ * different trade. A trade that ended clears it with its status instead.
+ */
+export async function clearCancelRequest(
+  tx: WebTx,
+  trade: LockedTrade,
+  next: TradeState,
+) {
+  if (!cancelRequestCleared(trade.state, next)) return;
+  await updateLockedTrade(tx, trade, {
+    cancelRequestedBy: null,
+    updatedAt: bumpUpdatedAt,
+  });
+  await insertTradeEvent(tx, trade.id, { type: "cancel_request_cleared" });
+}
+
+/**
  * Files a trade report on a locked accepted trade and freezes the trade
  * under it: it becomes disputed, and its deadline stops counting until
  * staff act. Posts the timeline event and notifies `recipients`, the
@@ -526,6 +622,8 @@ export async function disputeTrade(
   await updateLockedTrade(tx, trade, {
     status: "disputed",
     disputeReportId: report.id,
+    // a ban leaves the trade to staff, so the parties can't agree it away
+    ...(dispute.by === "staff" && { cancelRequestedBy: null }),
   });
   await insertTradeEvent(
     tx,

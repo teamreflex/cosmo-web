@@ -1,6 +1,7 @@
 import {
   type ListingOfferMode,
   type ListingStatus,
+  type LiveTradeStatus,
   type OpenTradeStatus,
   openTradeStatuses,
   type TradeCanceller,
@@ -25,13 +26,17 @@ export type TradeItemState =
  * A trade's status and what each of its items has done, which is all a
  * transition needs. A pending offer is a direct offer or a counter, which
  * `from` proposes, or an offer on a listing, which its claimer `to`
- * proposes (tradeState() holds the two together), and a cancelled trade
+ * proposes (tradeState() holds the two together), a live trade carries the
+ * side asking the other to agree to cancel it, and a cancelled trade
  * carries who cancelled it, matching the table's checks.
  */
 export type TradeState = (
   | { status: "pending"; proposedBy: TradeSide }
+  | { status: LiveTradeStatus; cancelRequest: TradeSide | null }
   | { status: "cancelled"; cancelledBy: TradeCanceller }
-  | { status: Exclude<TradeStatus, "pending" | "cancelled"> }
+  | {
+      status: Exclude<TradeStatus, "pending" | LiveTradeStatus | "cancelled">;
+    }
 ) & { items: readonly TradeItemState[] };
 
 /**
@@ -47,13 +52,22 @@ export type TradeEvent =
   | { type: "withdraw"; by: TradeSide }
   // the drain saw a token reach its receiver
   | { type: "transfer"; item: number }
+  // the item's receiver accepted another copy of its collection that reached them
+  | { type: "accept_substitute"; item: number; by: TradeSide }
   // the payment's sender says they paid it
   | { type: "mark_paid"; item: number; by: TradeSide }
   // the payment's recipient says it arrived
   | { type: "confirm_payment"; item: number; by: TradeSide }
   | { type: "cancel"; by: TradeSide }
+  // a party asks the other to agree to cancel, where it can't cancel alone
+  | { type: "request_cancel"; by: TradeSide }
+  // the side that asked takes it back
+  | { type: "withdraw_cancel"; by: TradeSide }
+  // the other side keeps the trade going, or agrees, which cancels it
+  | { type: "decline_cancel"; by: TradeSide }
+  | { type: "agree_cancel"; by: TradeSide }
   // a party opens a dispute, or a ban freezes the trade as staff
-  | { type: "dispute"; by: TradeCanceller }
+  | { type: "dispute"; by: TradeSide | "staff" }
   // the deadline passed the drain's watermark
   | { type: "time_out" }
   | { type: "staff_complete" }
@@ -78,7 +92,13 @@ export type TransitionRefusal =
   // the item doesn't exist or is the wrong kind for the event
   | "no_such_item"
   // an offer on a listing is accepted or declined, never countered
-  | "listing_offer";
+  | "listing_offer"
+  // the side asking to cancel could cancel alone
+  | "cancel_not_needed"
+  // a request to cancel is already waiting on an answer
+  | "cancel_requested"
+  // there's no request to cancel to answer or take back
+  | "no_cancel_request";
 
 export type TransitionResult =
   { ok: true; trade: TradeState } | { ok: false; reason: TransitionRefusal };
@@ -94,12 +114,13 @@ const refuse = (reason: TransitionRefusal): TransitionResult => ({
  * An offer starts pending: the side that didn't propose it accepts, declines
  * or counters it, unless it offers on a listing, which can't be countered,
  * and the proposer may withdraw it. A listing claim starts accepted. Once
- * accepted, either party may cancel only while nothing has been sent or
- * confirmed; after that, a dispute is the only way out. A dispute freezes
- * the deadline and cancelling. Transfers and confirmations are still
- * recorded while disputed, but only staff complete, cancel or extend a
- * disputed trade. An accepted trade completes once every token has arrived
- * and every payment is confirmed, which an extend checks too.
+ * accepted, either party may cancel alone only while nothing has been sent
+ * or confirmed and they aren't owed a payment; otherwise, and once
+ * disputed, a party asks the other to agree to cancel. A dispute freezes
+ * the deadline. Transfers and confirmations are still recorded while
+ * disputed, but only staff complete or extend a disputed trade. An accepted
+ * trade completes once every token has arrived and every payment is
+ * confirmed, which an extend checks too.
  */
 export function transition(
   trade: TradeState,
@@ -112,6 +133,7 @@ export function transition(
     case "withdraw":
       return answerOffer(trade, event);
     case "transfer":
+    case "accept_substitute":
     case "mark_paid":
     case "confirm_payment":
       return updateItem(trade, event);
@@ -119,6 +141,11 @@ export function transition(
     case "dispute":
     case "time_out":
       return endEarly(trade, event);
+    case "request_cancel":
+    case "withdraw_cancel":
+    case "decline_cancel":
+    case "agree_cancel":
+      return askToCancel(trade, event);
     case "staff_complete":
     case "staff_cancel":
     case "staff_extend":
@@ -126,18 +153,19 @@ export function transition(
   }
 }
 
-export type PartyActionRefusal = TransitionRefusal | "deadline_passed";
+export type PartyActionRefusal =
+  | TransitionRefusal
+  | "deadline_passed"
+  // a token reached its receiver and the drain hasn't recorded it yet
+  | "transfer_pending";
 
 /**
- * A party cancelling, disputing, marking a payment it sent paid or confirming one it received, judged with what the trade's row doesn't hold: whether its deadline has passed the drain's watermark, and whether a token has reached its receiver before the drain recorded it. A trade that moved on is refused first, then one past its deadline, then a cancel once anything has started. A disputed trade's clock is stopped, so its caller passes the deadline as not passed.
+ * A party acting on a live trade, judged with what the trade's row doesn't hold: whether its deadline has passed the drain's watermark, and whether a token has reached its receiver before the drain recorded it. A trade that moved on is refused first, then one past its deadline, then a cancel once anything has started. Asking to cancel, or agreeing, waits while a token is on its way into the drain, which is about to clear any request. A disputed trade's clock is stopped, so its caller passes the deadline as not passed.
  */
 export function partyAction(
   trade: TradeState,
-  event: Extract<
-    TradeEvent,
-    { type: "cancel" | "dispute" | "mark_paid" | "confirm_payment" }
-  >,
-  facts: { deadlinePassed: boolean; arrived: boolean },
+  event: PartyEvent,
+  facts: PartyFacts,
 ): { ok: true; trade: TradeState } | { ok: false; reason: PartyActionRefusal } {
   const result = transition(trade, event);
   if (!result.ok && result.reason === "wrong_status") return result;
@@ -145,7 +173,69 @@ export function partyAction(
   if (result.ok && event.type === "cancel" && facts.arrived) {
     return refuse("already_started");
   }
+  if (
+    (event.type === "request_cancel" || event.type === "agree_cancel") &&
+    facts.arrived
+  ) {
+    return { ok: false, reason: "transfer_pending" };
+  }
   return result;
+}
+
+export type PartyEvent = Extract<
+  TradeEvent,
+  {
+    type:
+      | "cancel"
+      | "request_cancel"
+      | "withdraw_cancel"
+      | "decline_cancel"
+      | "agree_cancel"
+      | "dispute"
+      | "mark_paid"
+      | "confirm_payment"
+      | "accept_substitute";
+  }
+>;
+
+export type PartyFacts = { deadlinePassed: boolean; arrived: boolean };
+
+// whether a trade is accepted or disputed, the statuses that carry a request to cancel
+function isLiveTrade(
+  trade: TradeState,
+): trade is Extract<TradeState, { status: LiveTradeStatus }> {
+  return trade.status === "accepted" || trade.status === "disputed";
+}
+
+// the side waiting on the other to agree to cancel a live trade, or null
+export function cancelRequestOf(trade: TradeState): TradeSide | null {
+  return isLiveTrade(trade) ? trade.cancelRequest : null;
+}
+
+// whether a change left a trade live and cleared the request to cancel waiting on it, which an ending does with its status instead
+export function cancelRequestCleared(before: TradeState, after: TradeState) {
+  return (
+    cancelRequestOf(before) !== null &&
+    isLiveTrade(after) &&
+    after.cancelRequest === null
+  );
+}
+
+/**
+ * How a party's Cancel ends the trade: at once where it may cancel alone,
+ * by asking the other side where it may only ask, or not at all. It never
+ * asks while a request is waiting either way.
+ */
+export function cancelMode(
+  trade: TradeState,
+  by: TradeSide,
+  facts: PartyFacts,
+): "now" | "ask" | null {
+  if (partyAction(trade, { type: "cancel", by }, facts).ok) return "now";
+  if (partyAction(trade, { type: "request_cancel", by }, facts).ok) {
+    return "ask";
+  }
+  return null;
 }
 
 type EventOf<TType extends TradeEvent["type"]> = Extract<
@@ -174,17 +264,27 @@ function answerOffer(
   if (event.type === "counter" && trade.proposedBy === "to") {
     return refuse("listing_offer");
   }
-  return { ok: true, trade: { status: to, items: trade.items } };
+  return {
+    ok: true,
+    trade:
+      to === "accepted"
+        ? { status: to, cancelRequest: null, items: trade.items }
+        : { status: to, items: trade.items },
+  };
 }
 
 /**
- * A token arriving, a payment's sender marking it paid, or its recipient
- * confirming it arrived. All are still recorded while disputed. Marking
- * paid changes no status, and is refused once the payment is confirmed.
+ * A token arriving, an objekt's receiver accepting another copy in its
+ * place, a payment's sender marking it paid, or its recipient confirming it
+ * arrived. All are still recorded while disputed, and each clears a request
+ * to cancel made before it. Marking paid changes no status, and is refused
+ * once the payment is confirmed.
  */
 function updateItem(
   { status, items }: TradeState,
-  event: EventOf<"transfer" | "mark_paid" | "confirm_payment">,
+  event: EventOf<
+    "transfer" | "accept_substitute" | "mark_paid" | "confirm_payment"
+  >,
 ): TransitionResult {
   if (status !== "accepted" && status !== "disputed") {
     return refuse("wrong_status");
@@ -200,6 +300,14 @@ function updateItem(
         status,
         items.with(event.item, { ...item, transferred: true }),
       );
+    case "accept_substitute":
+      if (item?.kind !== "objekt") return refuse("no_such_item");
+      if (event.by === item.sender) return refuse("wrong_party");
+      if (item.transferred) return refuse("already_done");
+      return settle(
+        status,
+        items.with(event.item, { ...item, transferred: true }),
+      );
     case "mark_paid":
       if (item?.kind !== "payment") return refuse("no_such_item");
       if (event.by !== item.sender) return refuse("wrong_party");
@@ -208,6 +316,7 @@ function updateItem(
         ok: true,
         trade: {
           status,
+          cancelRequest: null,
           items: items.with(event.item, { ...item, stage: "marked" }),
         },
       };
@@ -229,10 +338,11 @@ function updateItem(
  * has acted and otherwise disputes it.
  */
 function endEarly(
-  { status, items }: TradeState,
+  trade: TradeState,
   event: EventOf<"cancel" | "dispute" | "time_out">,
 ): TransitionResult {
-  if (status !== "accepted") return refuse("wrong_status");
+  if (trade.status !== "accepted") return refuse("wrong_status");
+  const { items, cancelRequest } = trade;
 
   switch (event.type) {
     case "cancel":
@@ -261,7 +371,18 @@ function endEarly(
         trade: { status: "cancelled", cancelledBy: event.by, items },
       };
     case "dispute":
-      return { ok: true, trade: { status: "disputed", items } };
+      /**
+       * A party's dispute keeps a waiting request, which the other side
+       * may still agree to. A ban's leaves the trade to staff.
+       */
+      return {
+        ok: true,
+        trade: {
+          status: "disputed",
+          cancelRequest: event.by === "staff" ? null : cancelRequest,
+          items,
+        },
+      };
     case "time_out":
       /**
        * Something arrived, or a payment was marked paid, while something is
@@ -270,10 +391,52 @@ function endEarly(
        * already sent.
        */
       if (items.some(isDelivered)) {
-        return { ok: true, trade: { status: "disputed", items } };
+        return {
+          ok: true,
+          trade: { status: "disputed", cancelRequest, items },
+        };
       }
       return { ok: true, trade: { status: "timed_out", items } };
   }
+}
+
+/**
+ * A party asks the other to agree to cancel a live trade, where it can't
+ * cancel alone: it's owed a payment, something has been sent, or the trade
+ * is disputed. One request waits at a time. The side that asked may take it
+ * back, and the other side keeps the trade going or agrees, which cancels
+ * it for both.
+ */
+function askToCancel(
+  trade: TradeState,
+  event: EventOf<
+    "request_cancel" | "withdraw_cancel" | "decline_cancel" | "agree_cancel"
+  >,
+): TransitionResult {
+  if (!isLiveTrade(trade)) return refuse("wrong_status");
+  const { status, items, cancelRequest } = trade;
+  if (event.type === "request_cancel") {
+    if (cancelRequest !== null) return refuse("cancel_requested");
+    if (
+      status === "accepted" &&
+      endEarly(trade, { type: "cancel", by: event.by }).ok
+    ) {
+      return refuse("cancel_not_needed");
+    }
+    return { ok: true, trade: { status, cancelRequest: event.by, items } };
+  }
+  if (cancelRequest === null) return refuse("no_cancel_request");
+  // only the side that asked takes it back, and only the other side answers
+  if ((cancelRequest === event.by) !== (event.type === "withdraw_cancel")) {
+    return refuse("wrong_party");
+  }
+  return {
+    ok: true,
+    trade:
+      event.type === "agree_cancel"
+        ? { status: "cancelled", cancelledBy: "both", items }
+        : { status, cancelRequest: null, items },
+  };
 }
 
 /**
@@ -305,19 +468,19 @@ function resolveAsStaff(
 
 /**
  * An accepted trade completes once everything is done. A disputed one keeps
- * its status, since staff resolve it.
+ * its status, since staff resolve it. Either way a request to cancel made
+ * before the change is cleared.
  */
 function settle(
-  status: "accepted" | "disputed",
+  status: LiveTradeStatus,
   items: readonly TradeItemState[],
 ): TransitionResult {
   return {
     ok: true,
-    trade: {
-      status:
-        status === "accepted" && items.every(isDone) ? "completed" : status,
-      items,
-    },
+    trade:
+      status === "accepted" && items.every(isDone)
+        ? { status: "completed", items }
+        : { status, cancelRequest: null, items },
   };
 }
 
@@ -334,7 +497,7 @@ export function isDone(item: TradeItemState) {
  * it: a token arrived, or a payment was confirmed or marked paid.
  * Completing goes by isDone(), which doesn't count the mark.
  */
-function isDelivered(item: TradeItemState) {
+export function isDelivered(item: TradeItemState) {
   return item.kind === "payment" ? item.stage !== "unpaid" : isDone(item);
 }
 
@@ -718,6 +881,7 @@ export function endedTradeColumns(trade: TradeState) {
   return {
     status: trade.status,
     cancelledBy: trade.status === "cancelled" ? trade.cancelledBy : null,
+    cancelRequestedBy: null,
   };
 }
 
@@ -738,6 +902,34 @@ export function tradeListings(
     listings.set(listingId, tokens);
   }
   return listings;
+}
+
+/**
+ * Each listing's picks a completed trade takes out of its pool, leaving out
+ * listings it took none from. A pick whose receiver accepted another copy in
+ * its place still leaves, unless that copy is one of the same listing's
+ * pool rows (`pooled`): the drain took that copy out when it left the
+ * poster, so either way the pool loses exactly the one copy given.
+ */
+export function leavingPicks(
+  items: readonly Pick<
+    TradeOfferItem,
+    "listingId" | "tokenId" | "substituteTokenId"
+  >[],
+  pooled: readonly Pick<TradeOfferItem, "offerId" | "tokenId">[],
+): [string, number[]][] {
+  return [
+    ...tradeListings(
+      items.filter(
+        ({ listingId, substituteTokenId }) =>
+          substituteTokenId === null ||
+          !pooled.some(
+            (row) =>
+              row.offerId === listingId && row.tokenId === substituteTokenId,
+          ),
+      ),
+    ),
+  ].filter(([, tokenIds]) => tokenIds.length > 0);
 }
 
 /**
@@ -784,7 +976,10 @@ export function tradeItemState(
  * listing its claimer `to` proposed.
  */
 export function tradeState(
-  row: Pick<TradeOffer, "status" | "cancelledBy" | "proposedBy">,
+  row: Pick<
+    TradeOffer,
+    "status" | "cancelledBy" | "proposedBy" | "cancelRequestedBy"
+  >,
   rows: readonly Pick<
     TradeOfferItem,
     | "kind"
@@ -817,6 +1012,11 @@ export function tradeState(
     }
     case "accepted":
     case "disputed":
+      return {
+        status: row.status,
+        cancelRequest: row.cancelRequestedBy,
+        items,
+      };
     case "completed":
     case "timed_out":
     case "declined":

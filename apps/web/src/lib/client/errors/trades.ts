@@ -68,6 +68,8 @@ export function formatTradeError(code: string): string | null {
       return m.trade_error_trade_cancel_started_payment();
     case "trade_cancel_payment_due":
       return m.trade_error_trade_cancel_payment_due();
+    case "trade_transfer_pending":
+      return m.trade_error_trade_transfer_pending();
     case "trade_deadline_passed":
       return m.trade_error_trade_deadline_passed();
     case "trade_own":
@@ -76,6 +78,8 @@ export function formatTradeError(code: string): string | null {
       return m.trade_error_trade_party_banned();
     case "payment_method_unaccepted":
       return m.trade_error_payment_method_unaccepted();
+    case "substitute_unavailable":
+      return m.trade_error_substitute_unavailable();
     case "offer_own":
       return m.trade_error_offer_own();
     case "offer_unavailable":

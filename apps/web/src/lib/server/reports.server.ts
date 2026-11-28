@@ -738,11 +738,12 @@ type ReportTransition = {
 };
 
 /**
- * The statuses an action may leave and the columns it sets.
+ * The statuses an action may leave and the columns it sets. A trade's
+ * parties resolve its reports with no staff member, so `staffId` is null.
  */
 function reportTransition(
   action: ReportAction,
-  staffId: string,
+  staffId: string | null,
 ): ReportTransition {
   switch (action) {
     case "report:resolve":
@@ -758,6 +759,25 @@ function reportTransition(
     case "report:escalate":
       return { from: ["open"], set: { status: "escalated" } };
   }
+}
+
+/**
+ * Resolves every open or escalated report on a trade its parties agreed to
+ * cancel. No staff member acted, so it has no resolver and no audit row;
+ * the report page reads the trade's `both` canceller to say who settled it.
+ */
+export async function resolveReportsAsParties(tx: DbOrTx, tradeId: string) {
+  const { from, set } = reportTransition("report:resolve", null);
+  await tx
+    .update(reports)
+    .set(set)
+    .where(
+      and(
+        eq(reports.targetType, "trade"),
+        eq(reports.targetId, tradeId),
+        inArray(reports.status, from),
+      ),
+    );
 }
 
 /**

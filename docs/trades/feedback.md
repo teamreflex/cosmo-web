@@ -23,7 +23,7 @@ The limits on posting, editing, claiming, cancelling, disputing and rating are i
 ## Feedback
 
 - The parties of a completed trade, or of one staff cancelled, can rate each other for `FEEDBACK_WINDOW_DAYS` (14) after it ends (`feedbackOpening()`). The window equals `CHAT_RETENTION_DAYS`, so it closes as the chat is blanked.
-- A party-cancelled trade can't be rated, because a party can only cancel before anything is sent.
+- A party-cancelled trade can't be rated: a party cancels alone only before anything is sent, and a cancel both parties agreed to (`both`) blames neither.
 - A timed-out trade can't be rated, because a trade times out only when neither side sent anything, so neither stands out.
 - A disputed trade waits for staff to end it.
 - Each party rates once per trade (`trade_feedback_trade_side_idx`). A rating shows at once, can't be edited, and notifies the rated party.

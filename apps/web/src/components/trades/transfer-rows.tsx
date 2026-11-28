@@ -1,13 +1,18 @@
 import { m } from "@/i18n/messages";
-import { getObjektFrontImageUrl } from "@/lib/client/objekt-util";
 import {
   formatAmount,
   partyName,
   paymentMethodLabel,
 } from "@/lib/client/trade-listings";
-import { itemLabel, tradeTimeFormat, txUrl } from "@/lib/client/trades";
+import {
+  itemLabel,
+  pinnedLabel,
+  substituteSourceName,
+  tradeTimeFormat,
+  txUrl,
+} from "@/lib/client/trades";
 import { env } from "@/lib/env/client";
-import type { Objekt } from "@/lib/universal/objekt-conversion";
+import { substituteCandidatesQuery } from "@/lib/queries/trades";
 import type {
   TradeItemView,
   TradePaymentView,
@@ -18,14 +23,18 @@ import type { TradeSide } from "@apollo/database/web/types";
 import { otherSide, partyAction } from "@apollo/trades/lifecycle";
 import type { PaymentStatus, TradeItemStatus } from "@apollo/trades/transfers";
 import { formatSerial } from "@apollo/util";
+import { ParaglideMessage } from "@inlang/paraglide-js-react";
 import { IconCash, IconExternalLink, IconLock } from "@tabler/icons-react";
+import { noop, useQueryClient } from "@tanstack/react-query";
 import { type ReactNode, useState } from "react";
 import { tones } from "../trade-listings/state-tones";
 import { Badge } from "../ui/badge";
 import { Button, buttonVariants } from "../ui/button";
 import { Timestamp } from "../ui/timestamp";
+import AcceptSubstituteDialog from "./accept-substitute-dialog";
 import ConfirmPaymentDialog from "./confirm-payment-dialog";
 import MarkPaidDialog from "./mark-paid-dialog";
+import ObjektThumbnail from "./objekt-thumbnail";
 
 type Props = {
   trade: TradeView;
@@ -83,21 +92,35 @@ export default function TransferRows({ trade, side, children }: Props) {
               )}
             </h3>
             <ul>
-              {sent.map((item) => (
-                <TransferRow
-                  key={item.id}
-                  item={item}
-                  yours={sender === side}
-                  problemAt={
-                    trade.events.findLast(
-                      ({ event }) =>
-                        (event.type === "token_moved" ||
-                          event.type === "token_untransferable") &&
-                        event.tokenId === item.tokenId,
-                    )?.createdAt
-                  }
-                />
-              ))}
+              {sent.map((item) => {
+                const offer = substituteOffer(trade, item, side);
+                return (
+                  <TransferRow
+                    key={item.id}
+                    item={item}
+                    yours={sender === side}
+                    senderName={from}
+                    action={
+                      offer === null ? null : (
+                        <SubstituteAction
+                          trade={trade}
+                          item={item}
+                          senderName={from}
+                          completes={offer.status === "completed"}
+                        />
+                      )
+                    }
+                    problemAt={
+                      trade.events.findLast(
+                        ({ event }) =>
+                          (event.type === "token_moved" ||
+                            event.type === "token_untransferable") &&
+                          event.tokenId === item.tokenId,
+                      )?.createdAt
+                    }
+                  />
+                );
+              })}
               {payment !== null && (
                 <PaymentRow trade={trade} payment={payment} side={side} />
               )}
@@ -236,17 +259,92 @@ const paymentBadges = {
 } satisfies Record<PaymentStatus, { label: () => string; className: string }>;
 
 /**
+ * Whether the viewer may accept another copy in place of an objekt they are
+ * owed that hasn't arrived, the same judgement the server makes, and the
+ * trade it would leave. A token that reached them before the drain recorded
+ * it is about to settle the item, so it isn't offered.
+ */
+function substituteOffer(
+  trade: TradeView,
+  item: TradeItemView,
+  side: TradeSide | null,
+) {
+  if (side === null || item.status === "arrived") return null;
+  const result = partyAction(
+    trade.state,
+    { type: "accept_substitute", item: item.index, by: side },
+    {
+      deadlinePassed: trade.stage === "trade" && trade.deadlinePassed,
+      arrived: false,
+    },
+  );
+  return result.ok ? result.trade : null;
+}
+
+/**
+ * Wrong serial?, and the dialog it opens. Hovering or focusing the link
+ * starts the read of the copies, so the dialog usually opens with them.
+ */
+function SubstituteAction({
+  trade,
+  item,
+  senderName,
+  completes,
+}: {
+  trade: TradeView;
+  item: TradeItemView;
+  senderName: string;
+  completes: boolean;
+}) {
+  const queryClient = useQueryClient();
+  const [open, setOpen] = useState(false);
+  const prefetch = () =>
+    void queryClient
+      .query(substituteCandidatesQuery(trade.id, item.id))
+      .catch(noop);
+
+  return (
+    <>
+      <button
+        type="button"
+        onPointerEnter={prefetch}
+        onFocus={prefetch}
+        onClick={() => setOpen(true)}
+        className="cursor-pointer text-xs text-muted-foreground underline decoration-muted-foreground/60 decoration-dashed underline-offset-2 hover:text-foreground hover:decoration-foreground focus-visible:text-foreground focus-visible:decoration-foreground focus-visible:outline-none"
+      >
+        {m.trade_page_substitute_button()}
+      </button>
+      <AcceptSubstituteDialog
+        tradeId={trade.id}
+        listingId={trade.listingId}
+        item={item}
+        name={senderName}
+        completes={completes}
+        open={open}
+        onOpenChange={setOpen}
+      />
+    </>
+  );
+}
+
+/**
  * One objekt's transfer. A narrow list, on phones or beside the admin
- * queue, puts its serial and time on a second line.
+ * queue, puts its serial and time on a second line, and any action under
+ * them. A copy its receiver accepted in place of the pinned serial shows
+ * that copy's serial, the pinned one it stood in for and where it came from.
  */
 function TransferRow({
   item,
   yours,
+  senderName,
+  action,
   problemAt,
 }: {
   item: TradeItemView;
   /** whether the viewer sends it */
   yours: boolean;
+  senderName: string;
+  action: ReactNode;
   /** when the drain last saw the objekt move elsewhere or turn untransferable */
   problemAt: Date | undefined;
 }) {
@@ -267,41 +365,77 @@ function TransferRow({
 
   return (
     <li className="flex items-center gap-3 border-t border-border/60 px-4 py-2.5">
-      <Thumbnail collection={item.collection} />
-      <div className="flex min-w-0 flex-1 flex-wrap items-baseline gap-x-2 gap-y-0.5 @lg:flex-nowrap">
-        <span
-          className="min-w-0 truncate font-medium @max-lg:basis-full"
-          title={itemLabel(item)}
-        >
-          {itemLabel(item)}
-        </span>
-        {item.serial !== null && (
-          <span className="shrink-0 font-mono text-xs text-muted-foreground tabular-nums">
-            {formatSerial(item.serial)}
-          </span>
-        )}
-        {item.locked && (
+      <ObjektThumbnail collection={item.collection} />
+      {/* any action sits under the name as a quiet link, so the row's columns never move */}
+      <div className="flex min-w-0 flex-1 flex-col items-start gap-0.5">
+        <div className="flex max-w-full min-w-0 flex-wrap items-baseline gap-x-2 gap-y-0.5 @lg:flex-nowrap">
           <span
-            role="img"
-            aria-label={m.trade_page_item_locked({
-              appName: env.VITE_APP_NAME,
-            })}
-            title={m.trade_page_item_locked({ appName: env.VITE_APP_NAME })}
-            className="shrink-0 self-center text-muted-foreground"
+            className="min-w-0 truncate font-medium @max-lg:basis-full"
+            title={itemLabel(item)}
           >
-            <IconLock className="size-3.5" />
+            {itemLabel(item)}
           </span>
-        )}
-        {when !== null && (
-          <span className="text-xs text-muted-foreground @lg:hidden">
-            {when}
-          </span>
-        )}
+          {item.substitute === null ? (
+            item.serial !== null && (
+              <span className="shrink-0 font-mono text-xs text-muted-foreground tabular-nums">
+                {formatSerial(item.serial)}
+              </span>
+            )
+          ) : (
+            <>
+              {item.substitute.serial !== null && (
+                <span className="shrink-0 font-mono text-xs tabular-nums">
+                  {formatSerial(item.substitute.serial)}
+                </span>
+              )}
+              <span className="min-w-0 text-xs text-muted-foreground">
+                <ParaglideMessage
+                  message={m.trade_page_substitute_in_place_of}
+                  inputs={{
+                    pinned: pinnedLabel(item),
+                  }}
+                  markup={struck}
+                />
+                {" · "}
+                <ParaglideMessage
+                  message={m.trade_page_substitute_from}
+                  inputs={{
+                    name: substituteSourceName(
+                      item.substitute.from,
+                      senderName,
+                    ),
+                  }}
+                  markup={plain}
+                />
+              </span>
+            </>
+          )}
+          {item.locked && (
+            <span
+              role="img"
+              aria-label={m.trade_page_item_locked({
+                appName: env.VITE_APP_NAME,
+              })}
+              title={m.trade_page_item_locked({ appName: env.VITE_APP_NAME })}
+              className="shrink-0 self-center text-muted-foreground"
+            >
+              <IconLock className="size-3.5" />
+            </span>
+          )}
+          {when !== null && (
+            <span className="text-xs text-muted-foreground @lg:hidden">
+              {when}
+            </span>
+          )}
+        </div>
+        {action}
       </div>
       <span className="w-32 shrink-0 text-right text-xs text-muted-foreground tabular-nums @max-lg:hidden">
         {when}
       </span>
-      <ItemBadge {...statusBadges[status]} />
+      <ItemBadge
+        {...(item.substitute === null ? statusBadges[status] : substituteBadge)}
+      />
       {item.txHash === null ? (
         <span className="size-8 shrink-0 @max-lg:hidden" />
       ) : (
@@ -323,29 +457,23 @@ function TransferRow({
   );
 }
 
-/**
- * The objekt's front at thumbnail size, or a muted card of the same size
- * when the indexer has lost it or the image fails to load.
- */
-function Thumbnail({ collection }: { collection: Objekt.Collection | null }) {
-  const [failed, setFailed] = useState(false);
+// the pinned serial an accepted copy stood in for, struck through
+const struck = {
+  s: ({ children }: { children?: ReactNode }) => (
+    <s className="font-mono tabular-nums">{children}</s>
+  ),
+};
 
-  return collection === null || failed ? (
-    <span className="aspect-photocard w-7.5 shrink-0 rounded-[3px] bg-muted" />
-  ) : (
-    <img
-      src={getObjektFrontImageUrl(collection, "xs")}
-      alt=""
-      decoding="async"
-      // an image that failed before hydration never fires onError
-      ref={(img) => {
-        if (img?.complete && img.naturalWidth === 0) setFailed(true);
-      }}
-      onError={() => setFailed(true)}
-      className="aspect-photocard w-7.5 shrink-0 rounded-[3px] object-cover"
-    />
-  );
-}
+// a source's name in the row's own colour
+const plain = {
+  b: ({ children }: { children?: ReactNode }) => <>{children}</>,
+};
+
+// an objekt settled by a copy its receiver accepted in place of the pinned serial
+const substituteBadge = {
+  label: m.trade_page_item_substitute,
+  className: tones.teal,
+};
 
 const statusBadges = {
   sent: {

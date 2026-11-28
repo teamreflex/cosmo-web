@@ -353,7 +353,12 @@ test("recordChainEvents marks the item an arrival names and keeps the batch's or
         id: "trade-1",
         items,
         state: tradeState(
-          { status: "accepted", cancelledBy: null, proposedBy: null },
+          {
+            status: "accepted",
+            cancelledBy: null,
+            proposedBy: null,
+            cancelRequestedBy: null,
+          },
           items,
         ),
       },
@@ -365,6 +370,7 @@ test("recordChainEvents marks the item an arrival names and keeps the batch's or
   ).toEqual({
     state: {
       status: "accepted",
+      cancelRequest: null,
       items: [
         { kind: "objekt", sender: "from", transferred: false },
         { kind: "objekt", sender: "to", transferred: true },

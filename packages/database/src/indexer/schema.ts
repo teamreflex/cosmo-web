@@ -95,7 +95,8 @@ export const transfers = pgTable("transfer", {
     mode: "date",
     withTimezone: true,
   }).notNull(),
-  tokenId: integer("token_id").notNull(),
+  // text in the table, like objekt_id, which holds the same id
+  tokenId: varchar("token_id").notNull(),
   objektId: varchar("objekt_id", { length: 12 })
     .notNull()
     .references(() => objekts.id),

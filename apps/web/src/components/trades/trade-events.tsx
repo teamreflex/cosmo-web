@@ -8,6 +8,7 @@ import {
 import {
   itemName,
   offerRoles,
+  pinnedLabel,
   tradeTimeFormat,
   txUrl,
 } from "@/lib/client/trades";
@@ -66,6 +67,8 @@ export function describeEvent(
       );
     case "item_transferred":
       return describeTransfer(trade, side, event);
+    case "substitute_accepted":
+      return describeSubstitute(trade, side, event);
     case "completed":
       return (
         <>
@@ -90,6 +93,12 @@ export function describeEvent(
           markup={bold}
         />
       );
+    case "cancel_requested":
+    case "cancel_request_withdrawn":
+    case "cancel_request_declined":
+    case "cancel_agreed":
+    case "cancel_request_cleared":
+      return describeCancelRequest(side, nameOf, event);
     case "disputed":
       return describeDispute(trade, side, event);
     case "deadline_extended":
@@ -216,6 +225,59 @@ export function describeEvent(
         : describeOfferEvent(trade, side, event);
   }
 }
+
+/**
+ * A step of a request to cancel, as the party who took it reads it and as
+ * anyone else does. Clearing it is nobody's step.
+ */
+function describeCancelRequest(
+  side: TradeSide | null,
+  nameOf: (side: TradeSide) => string,
+  event: Extract<
+    TradeEvent,
+    {
+      type:
+        | "cancel_requested"
+        | "cancel_request_withdrawn"
+        | "cancel_request_declined"
+        | "cancel_agreed"
+        | "cancel_request_cleared";
+    }
+  >,
+) {
+  if (event.type === "cancel_request_cleared") {
+    return m.trade_page_event_cancel_request_cleared();
+  }
+  const copy = cancelRequestCopy[event.type];
+  return event.by === side ? (
+    copy.you()
+  ) : (
+    <ParaglideMessage
+      message={copy.them}
+      inputs={{ name: nameOf(event.by) }}
+      markup={bold}
+    />
+  );
+}
+
+const cancelRequestCopy = {
+  cancel_requested: {
+    you: m.trade_page_event_cancel_requested_you,
+    them: m.trade_page_event_cancel_requested_them,
+  },
+  cancel_request_withdrawn: {
+    you: m.trade_page_event_cancel_request_withdrawn_you,
+    them: m.trade_page_event_cancel_request_withdrawn_them,
+  },
+  cancel_request_declined: {
+    you: m.trade_page_event_cancel_request_declined_you,
+    them: m.trade_page_event_cancel_request_declined_them,
+  },
+  cancel_agreed: {
+    you: m.trade_page_event_cancel_agreed_you,
+    them: m.trade_page_event_cancel_agreed_them,
+  },
+};
 
 /**
  * Which wording the viewer reads: `you` on `actor`'s side, `them` on its
@@ -489,21 +551,66 @@ function describeTransfer(
           markup={bold}
         />
       )}{" "}
-      <a
-        href={txUrl(event.hash)}
-        target="_blank"
-        rel="noopener"
-        aria-label={m.trade_page_view_transfer()}
-        title={m.trade_page_view_transfer()}
-        className="inline-flex align-middle text-muted-foreground hover:text-foreground"
-      >
-        <IconExternalLink className="size-3.5" />
-      </a>
+      {transferLink(event.hash)}
     </>
+  );
+}
+
+// a transfer's link to the block explorer, inline after an event's text
+function transferLink(hash: string) {
+  return (
+    <a
+      href={txUrl(hash)}
+      target="_blank"
+      rel="noopener"
+      aria-label={m.trade_page_view_transfer()}
+      title={m.trade_page_view_transfer()}
+      className="inline-flex align-middle text-muted-foreground hover:text-foreground"
+    >
+      <IconExternalLink className="size-3.5" />
+    </a>
   );
 }
 
 // the reason staff gave for an action they took on the trade
 export function eventNote(event: TradeEvent) {
   return "note" in event ? event.note : null;
+}
+
+/**
+ * The receiver accepting another copy in place of a pinned objekt: "You
+ * accepted X #00002 in place of #00001", or "@y accepted …" for the sender
+ * and staff.
+ */
+function describeSubstitute(
+  trade: TradeView,
+  side: TradeSide | null,
+  event: Extract<TradeEvent, { type: "substitute_accepted" }>,
+) {
+  const item = trade.items.find(({ id }) => id === event.itemId);
+  if (item === undefined) return null;
+  const receiver = otherSide(item.sender);
+  const inputs = {
+    objekt: itemName({ ...item, serial: item.substitute?.serial ?? null }),
+    pinned: pinnedLabel(item),
+  };
+
+  return (
+    <>
+      {receiver === side ? (
+        <ParaglideMessage
+          message={m.trade_page_event_substitute_you}
+          inputs={inputs}
+          markup={bold}
+        />
+      ) : (
+        <ParaglideMessage
+          message={m.trade_page_event_substitute_them}
+          inputs={{ ...inputs, name: partyName(trade.parties[receiver]) }}
+          markup={bold}
+        />
+      )}{" "}
+      {transferLink(event.hash)}
+    </>
+  );
 }

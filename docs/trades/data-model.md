@@ -37,6 +37,8 @@ The trade tables live in `packages/database/src/web/schema.ts` under `#region Tr
 - `live` is true only on an accepted or disputed trade's items, and is set in the same statement as the status change.
 - `trade_offer_items_live_token_idx` (`UNIQUE (token_id) WHERE live`) keeps a token in at most one live trade. It is the last guard for every race on a token. A write that sets `live` goes through `refuseLiveClash()`, which turns the clash into a named refusal instead of a 500.
 - A pool row that leaves (given in a completed trade, or gone from the poster) gets `left_at` and stays as the listing's history. Every pool read filters `left_at IS NULL`, and `trade_offer_items_left_chk` lets only pool rows leave.
+- An objekt whose receiver accepted another copy keeps the pinned token in `token_id`, so `live` and the pool still mean that token. `substitute_token_id` and `substitute_from` name the copy and the address it came from, and `transferred_at` and `tx_hash` are the copy's transfer. `trade_offer_items_substitute_idx` lets one transfer settle at most one item as a copy.
+- A completed trade's pick leaves the pool even when its receiver accepted another copy, unless that copy was one of the same pool's rows, which the drain's break already took out (`leavingPicks()`). Either way the pool loses exactly the one copy given.
 - A pending offer's items are never live and reserve nothing.
 - `trade_offer_items.token_id` is an integer and the indexer's ids are text: convert at the boundary, as [docs/database.md](../database.md) describes.
 

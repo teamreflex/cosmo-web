@@ -48,6 +48,7 @@ async function postDispute(webhookUrl: string, alert: DisputeAlert) {
         sender: tradeOfferItems.sender,
         kind: tradeOfferItems.kind,
         tokenId: tradeOfferItems.tokenId,
+        substituteTokenId: tradeOfferItems.substituteTokenId,
         member: tradeOfferItems.member,
         season: tradeOfferItems.season,
         amount: tradeOfferItems.amount,
@@ -63,7 +64,9 @@ async function postDispute(webhookUrl: string, alert: DisputeAlert) {
 
   // the indexer's ids are text; web stores them as integers
   const tokenIds = items.flatMap((item) =>
-    item.tokenId === null ? [] : [String(item.tokenId)],
+    [item.tokenId, item.substituteTokenId].flatMap((id) =>
+      id === null ? [] : [String(id)],
+    ),
   );
   const tokens =
     tokenIds.length === 0

@@ -13,6 +13,9 @@ type Row = Parameters<typeof isEmailable>[0];
 type Recipient = NonNullable<
   ReturnType<Parameters<typeof planEmails>[0]["recipients"]["get"]>
 >;
+type Offer = NonNullable<
+  ReturnType<Parameters<typeof planEmails>[0]["offers"]["get"]>
+>;
 
 // an unread offer @Kairu received a minute ago
 function row(overrides: Partial<Row> = {}): Row {
@@ -29,7 +32,11 @@ function row(overrides: Partial<Row> = {}): Row {
 }
 
 // the emails for @Kairu's rows, all about one trade with trader B
-function plan(rows: Row[], recipient: Partial<Recipient> = {}) {
+function plan(
+  rows: Row[],
+  recipient: Partial<Recipient> = {},
+  offer: Partial<Offer> = {},
+) {
   return planEmails({
     rows: rows.filter((claimed) => isEmailable(claimed, NOW)),
     recipients: new Map([
@@ -56,8 +63,10 @@ function plan(rows: Row[], recipient: Partial<Recipient> = {}) {
           toUserId: "kairu",
           deadlineAt: null,
           expiresAt: null,
+          cancelRequestedBy: null,
           fromName: "TraderB",
           toName: "Kairu",
+          ...offer,
         },
       ],
     ]),
@@ -106,5 +115,41 @@ describe("planEmails", () => {
     expect(email?.to).toBe("kairu@apollo.test");
     expect(email?.rowIds).toEqual(["accepted-new", "accepted-old", "received"]);
     expect(email?.items.map((item) => item.id)).toEqual(email?.rowIds);
+  });
+
+  // trader B, the trade's `from` side, asked @Kairu to cancel
+  const cancelRequested = row({
+    id: "cancel-requested",
+    type: "trade_cancel_requested",
+  });
+
+  it.each(["accepted", "disputed"] as const)(
+    "mails a request to cancel that still stands on a %s trade",
+    (status) => {
+      const [email] = plan(
+        [cancelRequested],
+        {},
+        {
+          status,
+          cancelRequestedBy: "from",
+        },
+      );
+      expect(email?.rowIds).toEqual(["cancel-requested"]);
+    },
+  );
+
+  it.each([
+    ["was withdrawn", { cancelRequestedBy: null }],
+    ["was replaced by the recipient's own", { cancelRequestedBy: "to" }],
+    [
+      "outlived its cancelled trade",
+      { status: "cancelled", cancelRequestedBy: "from" },
+    ],
+    [
+      "outlived its completed trade",
+      { status: "completed", cancelRequestedBy: "from" },
+    ],
+  ] as const)("drops a request to cancel that %s", (_, offer) => {
+    expect(plan([cancelRequested], {}, offer)).toEqual([]);
   });
 });

@@ -757,6 +757,11 @@ export const tradeOffers = pgTable(
       .notNull()
       .default([]),
     cancelledBy: tradeCanceller("cancelled_by"),
+    /**
+     * The side asking the other to agree to cancel a live trade, or null.
+     * Every way a trade ends nulls it, and only a live trade's is read.
+     */
+    cancelRequestedBy: tradeSide("cancel_requested_by"),
     proposedBy: tradeSide("proposed_by"),
     disputeReportId: uuid("dispute_report_id").references(() => reports.id, {
       onDelete: "set null",
@@ -931,6 +936,14 @@ export const tradeOfferItems = pgTable(
     // chain time and hash of the transfer the drain matched
     transferredAt: tradeTimestamp("transferred_at"),
     txHash: varchar("tx_hash", { length: 66 }),
+    /**
+     * Another copy of the item's collection that its receiver accepted in
+     * place of `token_id`, and the address it came from. `transferred_at` and
+     * `tx_hash` are then that copy's transfer, while `token_id` stays the
+     * pinned token for the pool and the `live` reservation.
+     */
+    substituteTokenId: integer("substitute_token_id"),
+    substituteFrom: citext("substitute_from", { length: 42 }),
     // when a payment's sender marked it paid, a record that settles nothing
     markedPaidAt: tradeTimestamp("marked_paid_at"),
     // when a payment's recipient said it arrived, and `method` how
@@ -951,6 +964,10 @@ export const tradeOfferItems = pgTable(
     index("trade_offer_items_token_idx").on(t.tokenId),
     index("trade_offer_items_offer_idx").on(t.offerId),
     index("trade_offer_items_listing_idx").on(t.listingId),
+    // one transfer settles at most one item as an accepted copy
+    uniqueIndex("trade_offer_items_substitute_idx")
+      .on(t.substituteTokenId, t.txHash)
+      .where(sql`${t.substituteTokenId} IS NOT NULL`),
     check(
       "trade_offer_items_objekt_chk",
       sql`CASE ${t.kind} WHEN 'objekt' THEN num_nulls(${t.tokenId}, ${t.slug}, ${t.artist}, ${t.member}, ${t.season}, ${t.class}, ${t.onOffline}) = 0 AND num_nonnulls(${t.amount}, ${t.currency}, ${t.method}, ${t.markedPaidAt}, ${t.confirmedAt}) = 0 ELSE num_nonnulls(${t.tokenId}, ${t.slug}, ${t.artist}, ${t.member}, ${t.season}, ${t.class}, ${t.onOffline}, ${t.transferredAt}, ${t.txHash}) = 0 AND coalesce(${t.amount}, 0) > 0 AND ${t.currency} IS NOT NULL AND NOT ${t.live} END`,
@@ -958,6 +975,10 @@ export const tradeOfferItems = pgTable(
     check(
       "trade_offer_items_transfer_chk",
       sql`(${t.transferredAt} IS NULL) = (${t.txHash} IS NULL)`,
+    ),
+    check(
+      "trade_offer_items_substitute_chk",
+      sql`(${t.substituteTokenId} IS NULL) = (${t.substituteFrom} IS NULL) AND (${t.substituteTokenId} IS NULL OR (${t.kind} = 'objekt' AND ${t.transferredAt} IS NOT NULL))`,
     ),
     // only a listing's own pool rows leave, which have no listing_id and are never live
     check(

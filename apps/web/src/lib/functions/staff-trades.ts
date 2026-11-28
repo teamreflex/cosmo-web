@@ -18,6 +18,7 @@ import {
 } from "@/lib/universal/schema/trades";
 import { isBanActive } from "@apollo/auth/guard";
 import { tradeMessages } from "@apollo/database/web/schema";
+import { cancelRequestOf } from "@apollo/trades/lifecycle";
 import { extendedDeadline } from "@apollo/trades/timers";
 import { createServerFn } from "@tanstack/react-start";
 import { and, desc, eq, sql } from "drizzle-orm";
@@ -147,7 +148,14 @@ export const $staffExtendTradeDeadline = createServerFn({ method: "POST" })
           status: "accepted",
           deadlineAt,
           disputeReportId: null,
+          // staff moved the trade on, so a request made while disputed no longer stands
+          cancelRequestedBy: null,
         });
+        if (cancelRequestOf(trade.state) !== null) {
+          await insertTradeEvent(tx, trade.id, {
+            type: "cancel_request_cleared",
+          });
+        }
 
         await insertTradeEvent(tx, trade.id, {
           type: "deadline_extended",

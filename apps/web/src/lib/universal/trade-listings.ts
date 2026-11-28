@@ -867,7 +867,8 @@ export type ListingOfferSummary = {
 
 /**
  * A trade a claim or an accepted offer started from the poster's listing:
- * the pool objekts it took, how many the claimer gives, and where it stands
+ * the pool objekts it took, with any copy the claimer accepted in place of
+ * one, how many the claimer gives, and where it stands
  * as My trades says it (the poster's nextStep() on an accepted one).
  */
 export type ListingTrade = {

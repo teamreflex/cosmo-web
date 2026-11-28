@@ -63,7 +63,13 @@ type Recipient = Pick<
  */
 type NotifiedOffer = Pick<
   TradeOffer,
-  "id" | "status" | "fromUserId" | "toUserId" | "deadlineAt" | "expiresAt"
+  | "id"
+  | "status"
+  | "fromUserId"
+  | "toUserId"
+  | "deadlineAt"
+  | "expiresAt"
+  | "cancelRequestedBy"
 > & { fromName: string | null; toName: string | null };
 
 // what a trade or offer's party sends: an objekt by token, or a payment
@@ -121,11 +127,13 @@ const URGENCY = {
   offer_accepted: 0,
   listing_claimed: 1,
   trade_disputed: 2,
-  trade_cancelled: 3,
-  trade_dispute_resolved: 4,
-  trade_deadline_extended: 5,
-  offer_received: 6,
-  offer_countered: 7,
+  trade_cancel_requested: 3,
+  trade_cancelled: 4,
+  trade_cancel_agreed: 5,
+  trade_dispute_resolved: 6,
+  trade_deadline_extended: 7,
+  offer_received: 8,
+  offer_countered: 9,
 } as const satisfies Record<EmailNotificationType, number>;
 
 type EmailedRow = MailableNotification & {
@@ -169,10 +177,15 @@ function tradeSides(row: EmailedRow, mine: TradeSide, input: PlanInput) {
   return { youGet: side(otherSide(mine)), youSend: side(mine) };
 }
 
+// which party of the row's trade its recipient is
+function recipientSide(row: MailableNotification, offer: NotifiedOffer) {
+  return offer.fromUserId === row.userId ? "from" : "to";
+}
+
 // the row as its email item: who, what each side sends, and its type's facts
 function toItem(row: EmailedRow, input: PlanInput): NotificationItem {
   const { offer } = row;
-  const mine = offer.fromUserId === row.userId ? "from" : "to";
+  const mine = recipientSide(row, offer);
   const base = {
     id: row.id,
     party: mine === "from" ? offer.toName : offer.fromName,
@@ -187,6 +200,15 @@ function toItem(row: EmailedRow, input: PlanInput): NotificationItem {
     case "listing_claimed":
     case "trade_deadline_extended":
       return { ...base, type: row.type, deadlineAt: row.offer.deadlineAt };
+    // a disputed trade's deadline has stopped, so the email names none
+    case "trade_cancel_requested":
+      return {
+        ...base,
+        type: row.type,
+        deadlineAt: offer.status === "accepted" ? offer.deadlineAt : null,
+      };
+    case "trade_cancel_agreed":
+      return { ...base, type: row.type };
     case "trade_cancelled":
     case "trade_disputed":
       // a null actor means staff acted, as the bell reads it
@@ -201,8 +223,22 @@ function toItem(row: EmailedRow, input: PlanInput): NotificationItem {
 }
 
 /**
+ * Whether a row still needs mailing once its trade is read: a request to
+ * cancel only while the trade is live and the other side's request stands,
+ * since the asker may have withdrawn it, or the trade ended, before the row
+ * was claimed.
+ */
+function isCurrent(row: MailableNotification, offer: NotifiedOffer) {
+  if (row.type !== "trade_cancel_requested") return true;
+  return (
+    (offer.status === "accepted" || offer.status === "disputed") &&
+    offer.cancelRequestedBy === otherSide(recipientSide(row, offer))
+  );
+}
+
+/**
  * Groups mailable rows into one email per user, dropping those whose trade is
- * gone or whose recipient can't be mailed.
+ * gone or no longer needs them, or whose recipient can't be mailed.
  */
 export function planEmails(input: PlanInput) {
   const { recipients, offers, now } = input;
@@ -211,6 +247,7 @@ export function planEmails(input: PlanInput) {
     const offer = row.offerId === null ? undefined : offers.get(row.offerId);
     const recipient = recipients.get(row.userId);
     if (offer === undefined || recipient === undefined) return [];
+    if (!isCurrent(row, offer)) return [];
     if (!recipient.emailVerified || isBanActive(recipient, now)) return [];
     if (isOptedOut(recipient.emailNotifications, row.type)) return [];
     return [{ ...row, offer, to: recipient.email }];

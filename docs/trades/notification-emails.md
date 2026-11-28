@@ -19,8 +19,8 @@
        |          isEmailable() keeps rows of a mailed type, unread and under 24 h old
        |          read their recipients and trades; a failed read releases those rows
        v
-  3 planEmails()  drops a row about a trade that is gone, or whose recipient is unverified,
-       |          banned or opted out
+  3 planEmails()  drops a row about a trade that is gone, a request to cancel that no longer
+       |          stands, or a row whose recipient is unverified, banned or opted out
        |          -> one email per user
        v
   4 per user      Mailer.send() through @apollo/mail, aborted after 30 s
@@ -57,11 +57,13 @@
 - Categories exist only in the UI. Each switch on `/account#notifications` (`components/auth/account/notifications.tsx`) sets or clears its group of bits with `setCategoryEnabled()`, and shows on only while none of them is set, since a client can write any mask in bounds ([auth.md](../auth.md#client-written-user-fields)).
 - Only `email_verified` recipients are mailed. The account page is the only place that asks a user to verify: until then the switches are disabled beside the verify button, or a note to add an email when `hasDeliverableEmail()` refuses the stored one.
 - A recipient with an active ban (`isBanActive()`) is not mailed.
+- A `trade_cancel_requested` row is mailed only while its trade is accepted or disputed and `cancel_requested_by` is still the asker's side, because the asker can withdraw it, the recipient can answer it, or the trade can end before the row is claimed.
 - `NOTIFICATION_EMAILS` ([env](../../apps/schedules/README.md#environment)) is the kill switch, read by `Mailer`. While it is false the task still claims and stamps rows but mails none, so turning it on never mails a backlog, and `Mailer` reads no mail env, so the process boots without it.
 
 ## The email
 
 - `planEmails()` turns each row into a typed `NotificationItem` (`@apollo/mail`) carrying data, not copy: the other party, what the recipient gets and sends, and its type's facts (an offer's expiry, a send deadline, whether staff acted, a dispute's outcome). Each type's wording and the subject live in [`packages/mail`](../../packages/mail/README.md), as plain English strings, not Paraglide messages.
+- A request to cancel names its trade's deadline only while the trade is accepted, because a disputed trade's deadline has stopped.
 - The task reads each claimed trade's `trade_offer_items` and their objekts and collections from the indexer, so an item sums up both sides and shows their thumbnails; an objekt the indexer doesn't know is left out.
 - The subject is the most urgent item's (`URGENCY`: a started 48 h send deadline first), with " (+N more)" when the email covers more rows; the same item's line is the inbox preview.
 - Items are listed most urgent first, each with a button to `/trade/<id>`. The footer links to `/account#notifications`, the only opt-out, since the mail is transactional and carries no `List-Unsubscribe` header.

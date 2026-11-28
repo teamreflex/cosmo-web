@@ -210,7 +210,7 @@ const simulateTransfer = (command: Extract<Command, { type: "transfer" }>) =>
           from: objekt.owner,
           to: command.to,
           timestamp: command.at,
-          tokenId: Number(command.tokenId),
+          tokenId: command.tokenId,
           objektId: command.tokenId,
           collectionId: objekt.collectionId,
         });

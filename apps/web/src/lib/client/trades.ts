@@ -1,8 +1,12 @@
 import { m } from "@/i18n/messages";
-import type { TradeItemView, TradeView } from "@/lib/universal/trades";
+import type {
+  SubstituteSource,
+  TradeItemView,
+  TradeView,
+} from "@/lib/universal/trades";
 import type { TradeSide } from "@apollo/database/web/types";
 import { otherSide, type TradePart } from "@apollo/trades/lifecycle";
-import { formatSerial } from "@apollo/util";
+import { accountName, formatSerial, shortAddress } from "@apollo/util";
 import { formatError } from "./errors";
 import {
   formatPartnerTokenRefusal,
@@ -66,6 +70,31 @@ export function itemName(
   return item.serial === null
     ? itemLabel(item)
     : `${itemLabel(item)} ${formatSerial(item.serial)}`;
+}
+
+// the serial an item pins, "#00217", or its objekt where the indexer lost the serial
+export function pinnedLabel(
+  item: Pick<TradeItemView, "collection" | "slug" | "serial">,
+) {
+  return item.serial === null ? itemLabel(item) : formatSerial(item.serial);
+}
+
+/**
+ * Who another copy of an objekt came from: the sender as the page names
+ * them, another account's @name, or a short address nobody linked.
+ */
+export function substituteSourceName(
+  source: SubstituteSource,
+  senderName: string,
+) {
+  switch (source.kind) {
+    case "sender":
+      return senderName;
+    case "known":
+      return `@${accountName(source.username)}`;
+    case "unknown":
+      return shortAddress(source.address);
+  }
 }
 
 // a transfer on the chain's block explorer

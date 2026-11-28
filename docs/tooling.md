@@ -159,29 +159,31 @@ Keys and channels that more than one app touches, or that have a rule attached:
 
 Web limits are fixed windows consumed through `consumeRateLimit()` in `apps/web/src/lib/server/rate-limit.server.ts`, which throws `ExpectedError("rate_limited")` once a window is spent. Better Auth routes consume theirs in `hooks.before` ([`auth.md`](auth.md#email-addresses)). Chat's limits are in [`apps/chat/CLAUDE.md`](../apps/chat/CLAUDE.md#rate-limits).
 
-| Key                                 | Limit       | Consumed by                                                                                                            |
-| ----------------------------------- | ----------- | ---------------------------------------------------------------------------------------------------------------------- |
-| `listing-post:<user>`               | 10 / 10 min | `$postListing`                                                                                                         |
-| `listing-edit:<user>`               | 20 / 10 min | `$editListing`                                                                                                         |
-| `listing-claim:<user>`              | 10 / 10 min | `$claimListing`                                                                                                        |
-| `trade-cancel:<user>`               | 10 / 10 min | `$cancelTrade`                                                                                                         |
-| `trade-dispute:<user>`              | 5 / 10 min  | `$openDispute`                                                                                                         |
-| `trade-mark-paid:<user>`            | 10 / 10 min | `$markPaid`                                                                                                            |
-| `trade-confirm-payment:<user>`      | 10 / 10 min | `$confirmPayment`                                                                                                      |
-| `feedback:<user>`                   | 10 / 10 min | `$leaveFeedback`                                                                                                       |
-| `feedback-remove:<staff>`           | 30 / 10 min | `$removeFeedback` (staff)                                                                                              |
-| `report:<user>`                     | 5 / 10 min  | `$createReport`, and chat's `Report`: one shared budget                                                                |
-| `avatar:<user>`                     | 5 / 10 min  | `$setProfileImage`, because each call crops and uploads an image                                                       |
-| `account-deletion:<user>`           | 3 / 1 hour  | `$requestAccountDeletion`                                                                                              |
-| `cosmo-link-code:<user>`            | 10 / 1 hour | `$generateVerificationCode`                                                                                            |
-| `cosmo-link-target:<cosmo user id>` | 30 / 1 hour | `$generateVerificationCode`, for every caller it would not refuse anyway                                               |
-| `cosmo-link-verify:<user>`          | 10 / 10 min | `$verifyCosmoBio`, because each call can spend a COSMO request                                                         |
-| `change-email:<user>`               | 5 / 1 hour  | `POST /api/auth/change-email`, signed in                                                                               |
-| `verification-email:<user>`         | 5 / 1 hour  | `POST /api/auth/send-verification-email`, signed in                                                                    |
-| `verification-recipient:<email>`    | 10 / 1 hour | every verification mail to that address; a spent budget skips the send silently ([`auth.md`](auth.md#email-addresses)) |
-| `user-search:<ip>`                  | 15 / 1 min  | `$searchUsers`                                                                                                         |
-| `qr-recaptcha:<user>`               | 5 / 1 min   | `$fetchQrTicket`, because each call drives a browserless session                                                       |
-| `qr-ticket:<user>`                  | 60 / 1 min  | `$queryQrTicket`                                                                                                       |
+| Key                                 | Limit       | Consumed by                                                                                                                       |
+| ----------------------------------- | ----------- | --------------------------------------------------------------------------------------------------------------------------------- |
+| `listing-post:<user>`               | 10 / 10 min | `$postListing`                                                                                                                    |
+| `listing-edit:<user>`               | 20 / 10 min | `$editListing`                                                                                                                    |
+| `listing-claim:<user>`              | 10 / 10 min | `$claimListing`                                                                                                                   |
+| `trade-cancel:<user>`               | 10 / 10 min | `$cancelTrade`                                                                                                                    |
+| `trade-cancel-request:<user>`       | 10 / 10 min | `$requestCancel`, `$withdrawCancel`, `$declineCancel` and `$agreeCancel` together, so asking and taking back can't flood the bell |
+| `trade-dispute:<user>`              | 5 / 10 min  | `$openDispute`                                                                                                                    |
+| `trade-mark-paid:<user>`            | 10 / 10 min | `$markPaid`                                                                                                                       |
+| `trade-confirm-payment:<user>`      | 10 / 10 min | `$confirmPayment`                                                                                                                 |
+| `trade-accept-substitute:<user>`    | 10 / 10 min | `$acceptSubstitute`                                                                                                               |
+| `feedback:<user>`                   | 10 / 10 min | `$leaveFeedback`                                                                                                                  |
+| `feedback-remove:<staff>`           | 30 / 10 min | `$removeFeedback` (staff)                                                                                                         |
+| `report:<user>`                     | 5 / 10 min  | `$createReport`, and chat's `Report`: one shared budget                                                                           |
+| `avatar:<user>`                     | 5 / 10 min  | `$setProfileImage`, because each call crops and uploads an image                                                                  |
+| `account-deletion:<user>`           | 3 / 1 hour  | `$requestAccountDeletion`                                                                                                         |
+| `cosmo-link-code:<user>`            | 10 / 1 hour | `$generateVerificationCode`                                                                                                       |
+| `cosmo-link-target:<cosmo user id>` | 30 / 1 hour | `$generateVerificationCode`, for every caller it would not refuse anyway                                                          |
+| `cosmo-link-verify:<user>`          | 10 / 10 min | `$verifyCosmoBio`, because each call can spend a COSMO request                                                                    |
+| `change-email:<user>`               | 5 / 1 hour  | `POST /api/auth/change-email`, signed in                                                                                          |
+| `verification-email:<user>`         | 5 / 1 hour  | `POST /api/auth/send-verification-email`, signed in                                                                               |
+| `verification-recipient:<email>`    | 10 / 1 hour | every verification mail to that address; a spent budget skips the send silently ([`auth.md`](auth.md#email-addresses))            |
+| `user-search:<ip>`                  | 15 / 1 min  | `$searchUsers`                                                                                                                    |
+| `qr-recaptcha:<user>`               | 5 / 1 min   | `$fetchQrTicket`, because each call drives a browserless session                                                                  |
+| `qr-ticket:<user>`                  | 60 / 1 min  | `$queryQrTicket`                                                                                                                  |
 
 ## Sentry
 

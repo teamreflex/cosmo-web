@@ -16,12 +16,22 @@ import type {
   TradeViewer,
 } from "@/lib/universal/trades";
 import { cn } from "@/lib/utils";
-import type { TradeSide, TradeStatus } from "@apollo/database/web/types";
+import type {
+  TradeCanceller,
+  TradeSide,
+  TradeStatus,
+} from "@apollo/database/web/types";
 import {
+  cancelMode,
+  cancelRequestOf,
+  isDelivered,
   nextStep,
   otherSide,
   owedAtDeadline,
   partyAction,
+  type PartyEvent,
+  type PartyFacts,
+  type TradeState,
   transition,
 } from "@apollo/trades/lifecycle";
 import { CLAIM_WINDOW } from "@apollo/trades/timers";
@@ -67,6 +77,12 @@ import {
 import { Skeleton } from "../ui/skeleton";
 import { Tabs, TabsList, TabsTrigger } from "../ui/tabs";
 import { Timestamp } from "../ui/timestamp";
+import CancelRequestCard from "./cancel-request-card";
+import {
+  AgreeCancelDialog,
+  type CancelAskReason,
+  RequestCancelDialog,
+} from "./cancel-request-dialogs";
 import CancelTradeDialog from "./cancel-trade-dialog";
 import { LazyChatPanel } from "./chat/lazy-chat-panel";
 import CounterOfferSheet from "./counter-offer-sheet";
@@ -127,7 +143,9 @@ function PartyView({
   trade: Extract<Trade, { stage: "trade" }>;
   side: TradeSide;
 }) {
-  const [dialog, setDialog] = useState<"cancel" | "dispute" | null>(null);
+  const [dialog, setDialog] = useState<
+    "cancel" | "request" | "agree" | "dispute" | null
+  >(null);
   const feedbackLeave = useFeedbackLeave(trade, side);
   const { feedback } = trade;
   const counterparty = trade.parties[otherSide(side)];
@@ -149,16 +167,20 @@ function PartyView({
     (item) => item.sender === side && item.status === "waiting",
   ).length;
   const copyName = owing && waiting > 0 ? counterparty.cosmoUsername : null;
-  const cancel = partyAction(trade.state, { type: "cancel", by: side }, facts);
+  const cancelling = cancelOptions(trade.state, side, facts);
+  const { request, cancel } = cancelling;
   const offered = {
-    cancel: cancel.ok,
+    cancel: cancel === "now",
+    request: cancel === "ask",
+    agree: cancelling.agree,
     dispute: partyAction(trade.state, { type: "dispute", by: side }, facts).ok,
   };
   // an action the trade no longer offers closes its dialog for good
   if (dialog !== null && !offered[dialog]) setDialog(null);
-  const bar = copyName !== null || offered.cancel || offered.dispute;
+  const sent = trade.state.items.some(isDelivered);
+  const bar = copyName !== null || cancel !== null || offered.dispute;
   // Copy takes its own row in the phone bar when Cancel and Dispute join it
-  const barRows = copyName !== null && offered.cancel ? 2 : 1;
+  const barRows = copyName !== null && cancel !== null ? 2 : 1;
 
   return (
     <>
@@ -166,6 +188,26 @@ function PartyView({
         trade={trade}
         side={side}
         onLeave={feedbackLeave.leave}
+        notice={
+          request !== null && (
+            <CancelRequestCard
+              tradeId={trade.id}
+              listingId={trade.listingId}
+              name={partyName(counterparty)}
+              request={
+                request === side
+                  ? { mine: true, withdraw: cancelling.withdraw }
+                  : {
+                      mine: false,
+                      decline: cancelling.decline,
+                      agree: cancelling.agree,
+                      recording: cancelling.agreeLater,
+                    }
+              }
+              onAgree={() => setDialog("agree")}
+            />
+          )
+        }
         strip={
           <ActionStrip
             trade={trade}
@@ -177,7 +219,11 @@ function PartyView({
             {bar && (
               <div className="flex flex-wrap gap-2 max-md:hidden">
                 {copyName !== null && <CopyCosmoId username={copyName} />}
-                <PartyActions offered={offered} onOpen={setDialog} />
+                <PartyActions
+                  cancel={cancel}
+                  dispute={offered.dispute}
+                  onOpen={setDialog}
+                />
               </div>
             )}
           </ActionStrip>
@@ -198,7 +244,8 @@ function PartyView({
                       />
                     )}
                     <PartyActions
-                      offered={offered}
+                      cancel={cancel}
+                      dispute={offered.dispute}
                       onOpen={setDialog}
                       className="h-11 flex-1"
                     />
@@ -227,6 +274,26 @@ function PartyView({
         open={dialog === "cancel"}
         onOpenChange={(open) => setDialog(open ? "cancel" : null)}
       />
+      <RequestCancelDialog
+        tradeId={trade.id}
+        listingId={trade.listingId}
+        name={partyName(counterparty)}
+        reason={cancelling.askReason}
+        sent={sent}
+        open={dialog === "request"}
+        onOpenChange={(open) => setDialog(open ? "request" : null)}
+      />
+      <AgreeCancelDialog
+        tradeId={trade.id}
+        listingId={trade.listingId}
+        name={partyName(counterparty)}
+        side={side}
+        posterPart={trade.parts.from}
+        sent={sent}
+        disputed={trade.state.status === "disputed"}
+        open={dialog === "agree"}
+        onOpenChange={(open) => setDialog(open ? "agree" : null)}
+      />
       <OpenDisputeDialog
         tradeId={trade.id}
         listingId={trade.listingId}
@@ -237,6 +304,46 @@ function PartyView({
       />
     </>
   );
+}
+
+// what the viewer's Cancel does, and "recording" while it waits on the drain
+type CancelChoice = "now" | "ask" | "recording" | null;
+
+/**
+ * What the viewer's Cancel does, judged as the server would: cancels at
+ * once, asks the other party, waits on an arrival the drain is recording
+ * (which it would clear a request over), or nothing, including while a
+ * request waits, whose card stands in for it. Also why the viewer has to
+ * ask, and which answers a waiting request takes from them.
+ */
+function cancelOptions(state: TradeState, side: TradeSide, facts: PartyFacts) {
+  const allows = (event: PartyEvent) => partyAction(state, event, facts).ok;
+  const request = cancelRequestOf(state);
+  const alone = partyAction(state, { type: "cancel", by: side }, facts);
+  // what the viewer could do once the drain records an arrival, which may clear a request
+  const settled = { ...facts, arrived: false };
+  const later = facts.arrived && cancelMode(state, side, settled) !== null;
+  const askReason: CancelAskReason =
+    state.status === "disputed"
+      ? "disputed"
+      : !alone.ok && alone.reason === "payment_due"
+        ? "payment_due"
+        : "already_started";
+  const cancel: CancelChoice =
+    request === null
+      ? (cancelMode(state, side, facts) ?? (later ? "recording" : null))
+      : null;
+  return {
+    request,
+    cancel,
+    askReason,
+    withdraw: allows({ type: "withdraw_cancel", by: side }),
+    decline: allows({ type: "decline_cancel", by: side }),
+    agree: allows({ type: "agree_cancel", by: side }),
+    agreeLater:
+      facts.arrived &&
+      partyAction(state, { type: "agree_cancel", by: side }, settled).ok,
+  };
 }
 
 /**
@@ -433,6 +540,7 @@ function TradeLayout({
   chatReportId,
   onLeave,
   banner,
+  notice,
   strip,
   bar,
 }: {
@@ -444,6 +552,8 @@ function TradeLayout({
   /** opens the party's leave-feedback dialog */
   onLeave?: (feedbackWindow: FeedbackWindow) => void;
   banner?: ReactNode;
+  /** a party's notice above the trade's state, such as a request to cancel */
+  notice?: ReactNode;
   strip?: ReactNode;
   bar?: { rows: 1 | 2; children: ReactNode };
 }) {
@@ -509,6 +619,7 @@ function TradeLayout({
               chatTab && "max-lg:hidden",
             )}
           >
+            {notice}
             <StatePanel trade={trade} side={side} onLeave={onLeave} />
             <TransferRows trade={trade} side={side}>
               {strip}
@@ -648,29 +759,39 @@ function ActionStrip({
 
 /**
  * Cancel and Open dispute, each only where the server would allow it.
+ * Cancel shows disabled while a transfer the drain hasn't recorded holds
+ * back a request, which it would clear.
  */
 function PartyActions({
-  offered,
+  cancel,
+  dispute,
   onOpen,
   className,
 }: {
-  offered: { cancel: boolean; dispute: boolean };
-  onOpen: (dialog: "cancel" | "dispute") => void;
+  cancel: CancelChoice;
+  dispute: boolean;
+  onOpen: (dialog: "cancel" | "request" | "dispute") => void;
   className?: string;
 }) {
   return (
     <>
-      {offered.cancel && (
+      {cancel !== null && (
         <Button
           variant="outline"
           className={className}
-          onClick={() => onOpen("cancel")}
+          disabled={cancel === "recording"}
+          title={
+            cancel === "recording"
+              ? m.trade_error_trade_transfer_pending()
+              : undefined
+          }
+          onClick={() => onOpen(cancel === "now" ? "cancel" : "request")}
         >
           <IconX />
           {m.trade_page_cancel()}
         </Button>
       )}
-      {offered.dispute && (
+      {dispute && (
         <Button
           variant="destructive"
           className={className}
@@ -1021,7 +1142,8 @@ function StatePanel({
 }
 
 /**
- * Who cancelled the trade, the reason staff gave, that sent objekts aren't
+ * Who cancelled the trade, both parties when one agreed to the other's
+ * request, the reason staff gave, that sent objekts aren't
  * moved back, and whether its parties can rate each other.
  */
 function CancelledAlert({
@@ -1033,7 +1155,7 @@ function CancelledAlert({
   trade: Trade;
   side: TradeSide | null;
   onLeave?: (feedbackWindow: FeedbackWindow) => void;
-  cancelledBy: TradeSide | "staff";
+  cancelledBy: TradeCanceller;
 }) {
   const appName = env.VITE_APP_NAME;
   const cancel = trade.events.findLast(
@@ -1048,17 +1170,32 @@ function CancelledAlert({
       <AlertTitle>
         {cancelledBy === "staff"
           ? m.trade_page_cancelled_staff({ appName })
-          : cancelledBy === side
-            ? m.trade_page_cancelled_you()
-            : m.trade_page_cancelled_them({
-                name: partyName(trade.parties[cancelledBy]),
-              })}
+          : cancelledBy === "both"
+            ? side === null
+              ? m.trade_page_cancelled_both_staff({
+                  from: partyName(trade.parties.from),
+                  to: partyName(trade.parties.to),
+                })
+              : m.trade_page_cancelled_both({
+                  name: partyName(trade.parties[otherSide(side)]),
+                })
+            : cancelledBy === side
+              ? m.trade_page_cancelled_you()
+              : m.trade_page_cancelled_them({
+                  name: partyName(trade.parties[cancelledBy]),
+                })}
       </AlertTitle>
       {(note !== null || sent || unrated) && (
         <AlertDescription className="flex flex-col gap-1 text-pretty [&_p:not(:last-child)]:mb-0">
           {note !== null && <StaffNote note={note} />}
           {sent && <p>{m.trade_page_not_reversed({ appName })}</p>}
-          {unrated && <p>{m.feedback_no_transfer()}</p>}
+          {unrated && (
+            <p>
+              {cancelledBy === "both"
+                ? m.trade_page_cancel_agree_no_feedback()
+                : m.feedback_no_transfer()}
+            </p>
+          )}
         </AlertDescription>
       )}
       {onLeave !== undefined && (

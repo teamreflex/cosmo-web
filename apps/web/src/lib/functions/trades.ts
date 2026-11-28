@@ -2,14 +2,27 @@ import { db } from "@/lib/server/db";
 import { alertDispute } from "@/lib/server/discord.server";
 import { authenticatedMiddleware } from "@/lib/server/middlewares";
 import { consumeRateLimit } from "@/lib/server/rate-limit.server";
-import { fetchTradeChatReport } from "@/lib/server/reports.server";
+import {
+  fetchTradeChatReport,
+  resolveReportsAsParties,
+} from "@/lib/server/reports.server";
 import { publishTradeUpdates } from "@/lib/server/trade-events.server";
+import {
+  consumeCancelRequestLimit,
+  dropCancelRequest,
+} from "@/lib/server/trades/cancel.server";
 import {
   foldTradeItems,
   readIndexed,
   tradeSideSummary,
 } from "@/lib/server/trades/feed.server";
 import { readIndexerTokens } from "@/lib/server/trades/holdings.server";
+import {
+  readSubstituteCandidates,
+  readSubstituteTarget,
+  readSubstituteTransfer,
+  usedTransfers,
+} from "@/lib/server/trades/substitute.server";
 import {
   deadlinePassed,
   readTradeView,
@@ -18,21 +31,27 @@ import {
   watermarkExtra,
 } from "@/lib/server/trades/trade-view.server";
 import {
+  clearCancelRequest,
   disputeTrade,
   endTrade,
   insertTradeEvent,
   isDue,
   lockPartyTrade,
   notifyUsers,
+  partyFacts,
   partyRefusals,
   partyTrade,
+  refuseClash,
   refuseTrade,
+  updateLockedTrade,
 } from "@/lib/server/trades/trade.server";
 import {
+  acceptSubstituteInputSchema,
   confirmPaymentInputSchema,
   markPaidInputSchema,
   myTradesInputSchema,
   openDisputeInputSchema,
+  substituteCandidatesInputSchema,
   tradeIdInputSchema,
 } from "@/lib/universal/schema/trades";
 import {
@@ -50,6 +69,7 @@ import {
   tradeOffers,
   user,
 } from "@apollo/database/web/schema";
+import { bumpUpdatedAt } from "@apollo/database/web/sql";
 import {
   endedTradeStatuses,
   openTradeStatuses,
@@ -63,7 +83,6 @@ import {
   tradeParts,
   tradeState,
 } from "@apollo/trades/lifecycle";
-import { itemStatus } from "@apollo/trades/transfers";
 import { createServerFn } from "@tanstack/react-start";
 import {
   and,
@@ -164,6 +183,7 @@ export const $fetchMyTrades = createServerFn({ method: "GET" })
         status: tradeOffers.status,
         fromUserId: tradeOffers.fromUserId,
         cancelledBy: tradeOffers.cancelledBy,
+        cancelRequestedBy: tradeOffers.cancelRequestedBy,
         proposedBy: tradeOffers.proposedBy,
         deadlineAt: tradeOffers.deadlineAt,
         expiresAt: tradeOffers.expiresAt,
@@ -256,6 +276,7 @@ export const $fetchMyTrades = createServerFn({ method: "GET" })
           status: page.status,
           fromUserId: page.fromUserId,
           cancelledBy: page.cancelledBy,
+          cancelRequestedBy: page.cancelRequestedBy,
           proposedBy: page.proposedBy,
           deadlineAt: page.deadlineAt,
           expiresAt: page.expiresAt,
@@ -369,20 +390,7 @@ export const $cancelTrade = createServerFn({ method: "POST" })
       const result = partyAction(
         trade.state,
         { type: "cancel", by },
-        {
-          deadlinePassed: await isDue(tx, trade),
-          arrived: trade.items.some((item) => {
-            const token =
-              item.tokenId === null ? undefined : tokens.get(item.tokenId);
-            return (
-              itemStatus(item, token?.kind === "found" ? token : undefined, {
-                status: trade.state.status,
-                fromAddress: trade.fromAddress,
-                toAddress: trade.toAddress,
-              }) === "arrived"
-            );
-          }),
-        },
+        await partyFacts(tx, trade, tokens),
       );
       if (!result.ok) {
         // a payment marked paid or confirmed starts a trade too, which a payment trade's refusal says
@@ -401,6 +409,122 @@ export const $cancelTrade = createServerFn({ method: "POST" })
         users.filter((row) => row.id !== userId),
         {
           type: "trade_cancelled",
+          offerId: trade.id,
+          actorId: userId,
+          tokenId: null,
+        },
+      );
+    });
+    await publishTradeUpdates([data.tradeId]);
+  });
+
+/**
+ * Ask the other party of a live trade to agree to cancel it, where the
+ * caller can't cancel alone: they're owed a payment, something has been
+ * sent, or the trade is disputed. The trade carries on, its deadline still
+ * counting, until the other party answers or anything is sent or paid, and
+ * they are notified.
+ */
+export const $requestCancel = createServerFn({ method: "POST" })
+  .validator(tradeIdInputSchema)
+  .middleware([authenticatedMiddleware])
+  .handler(async ({ data, context }) => {
+    const userId = context.session.user.id;
+    await consumeCancelRequestLimit(userId);
+
+    const parties = await partyTrade(userId, data.tradeId);
+    // read before the transaction, so it never holds a connection on the indexer
+    const tokens = await readIndexerTokens(parties.tokenIds);
+    await db.transaction(async (tx) => {
+      const { users, trade, by } = await lockPartyTrade(
+        tx,
+        userId,
+        data.tradeId,
+        parties,
+      );
+
+      const result = partyAction(
+        trade.state,
+        { type: "request_cancel", by },
+        await partyFacts(tx, trade, tokens),
+      );
+      if (!result.ok) refuseTrade(partyRefusals[result.reason]);
+
+      await updateLockedTrade(tx, trade, {
+        cancelRequestedBy: by,
+        updatedAt: bumpUpdatedAt,
+      });
+      await insertTradeEvent(tx, trade.id, { type: "cancel_requested", by });
+      await notifyUsers(
+        tx,
+        users.filter((row) => row.id !== userId),
+        {
+          type: "trade_cancel_requested",
+          offerId: trade.id,
+          actorId: userId,
+          tokenId: null,
+        },
+      );
+    });
+    await publishTradeUpdates([data.tradeId]);
+  });
+
+export const $withdrawCancel = createServerFn({ method: "POST" })
+  .validator(tradeIdInputSchema)
+  .middleware([authenticatedMiddleware])
+  .handler(({ data, context }) =>
+    dropCancelRequest(context.session.user.id, data.tradeId, "withdraw_cancel"),
+  );
+
+export const $declineCancel = createServerFn({ method: "POST" })
+  .validator(tradeIdInputSchema)
+  .middleware([authenticatedMiddleware])
+  .handler(({ data, context }) =>
+    dropCancelRequest(context.session.user.id, data.tradeId, "decline_cancel"),
+  );
+
+/**
+ * Agree to the other party's request to cancel a live trade, which cancels
+ * it for both. It waits while a token is on its way into the drain, which
+ * would clear the request. A disputed trade's reports are resolved with it,
+ * the poster's objekts still in the pool are free again, and the side that
+ * asked is notified.
+ */
+export const $agreeCancel = createServerFn({ method: "POST" })
+  .validator(tradeIdInputSchema)
+  .middleware([authenticatedMiddleware])
+  .handler(async ({ data, context }) => {
+    const userId = context.session.user.id;
+    await consumeCancelRequestLimit(userId);
+
+    const parties = await partyTrade(userId, data.tradeId);
+    // read before the transaction, so it never holds a connection on the indexer
+    const tokens = await readIndexerTokens(parties.tokenIds);
+    await db.transaction(async (tx) => {
+      const { users, trade, by } = await lockPartyTrade(
+        tx,
+        userId,
+        data.tradeId,
+        parties,
+      );
+
+      const result = partyAction(
+        trade.state,
+        { type: "agree_cancel", by },
+        await partyFacts(tx, trade, tokens),
+      );
+      if (!result.ok) refuseTrade(partyRefusals[result.reason]);
+
+      await endTrade(tx, trade, result.trade, users);
+      if (trade.state.status === "disputed") {
+        await resolveReportsAsParties(tx, trade.id);
+      }
+      await insertTradeEvent(tx, trade.id, { type: "cancel_agreed", by });
+      await notifyUsers(
+        tx,
+        users.filter((row) => row.id !== userId),
+        {
+          type: "trade_cancel_agreed",
           offerId: trade.id,
           actorId: userId,
           tokenId: null,
@@ -518,6 +642,7 @@ export const $markPaid = createServerFn({ method: "POST" })
         type: "marked_paid",
         itemId: data.itemId,
       });
+      await clearCancelRequest(tx, trade, result.trade);
     });
     await publishTradeUpdates([data.tradeId]);
   });
@@ -569,6 +694,7 @@ export const $confirmPayment = createServerFn({ method: "POST" })
         itemId: data.itemId,
         method: data.method,
       });
+      await clearCancelRequest(tx, trade, result.trade);
       if (result.trade.status === "completed") {
         await endTrade(tx, trade, result.trade, users);
         await insertTradeEvent(tx, trade.id, { type: "completed", by: null });
@@ -578,6 +704,118 @@ export const $confirmPayment = createServerFn({ method: "POST" })
           actorId: null,
           tokenId: null,
         });
+      }
+    });
+    await publishTradeUpdates([data.tradeId]);
+  });
+
+/**
+ * The drained transfers of other copies of an objekt the caller is owed,
+ * which they could accept in its place, newest first.
+ */
+export const $fetchSubstituteCandidates = createServerFn({ method: "GET" })
+  .validator(substituteCandidatesInputSchema)
+  .middleware([authenticatedMiddleware])
+  .handler(async ({ data, context }) =>
+    readSubstituteCandidates(
+      await readSubstituteTarget(
+        context.session.user.id,
+        data.tradeId,
+        data.itemId,
+      ),
+    ),
+  );
+
+/**
+ * The receiver of an objekt accepts another copy of its collection in place
+ * of the pinned token, named by a drained transfer to their pinned address
+ * since the trade was accepted. The item records that transfer and copy,
+ * and counts as sent as if the drain had seen it arrive, so an accept that
+ * settles the trade completes it here, as $confirmPayment does. A disputed
+ * trade records it and stays with staff.
+ */
+export const $acceptSubstitute = createServerFn({ method: "POST" })
+  .validator(acceptSubstituteInputSchema)
+  .middleware([authenticatedMiddleware])
+  .handler(async ({ data, context }) => {
+    const userId = context.session.user.id;
+    await consumeRateLimit({
+      key: `trade-accept-substitute:${userId}`,
+      limit: 10,
+      window: "10 minutes",
+    });
+
+    const target = await readSubstituteTarget(
+      userId,
+      data.tradeId,
+      data.itemId,
+    );
+    const transfer = await readSubstituteTransfer(
+      target,
+      data.tokenId,
+      data.hash,
+    );
+    await db.transaction(async (tx) => {
+      const { users, trade, by } = await lockPartyTrade(
+        tx,
+        userId,
+        data.tradeId,
+        target,
+      );
+
+      const item = trade.items.findIndex(({ id }) => id === data.itemId);
+      const result = partyAction(
+        trade.state,
+        { type: "accept_substitute", item, by },
+        {
+          deadlinePassed:
+            trade.state.status === "accepted" && (await isDue(tx, trade)),
+          arrived: false,
+        },
+      );
+      if (!result.ok) refuseTrade(partyRefusals[result.reason]);
+
+      // one transfer settles one item, and the drain has recorded this one, behind the watermark, on any item it reached as pinned
+      if ((await usedTransfers(tx, [data])).length > 0) {
+        refuseTrade("substitute_unavailable");
+      }
+
+      const settled = {
+        transferredAt: transfer.at,
+        txHash: data.hash,
+        substituteTokenId: data.tokenId,
+        substituteFrom: transfer.from,
+      };
+      await refuseClash(
+        tx
+          .update(tradeOfferItems)
+          .set(settled)
+          .where(eq(tradeOfferItems.id, data.itemId)),
+        "trade_offer_items_substitute_idx",
+        "substitute_unavailable",
+      );
+      await insertTradeEvent(tx, trade.id, {
+        type: "substitute_accepted",
+        itemId: data.itemId,
+        tokenId: data.tokenId,
+        hash: data.hash,
+      });
+      if (result.trade.status === "completed") {
+        // lockTrade() read the items before the accepted copy was written
+        const items = trade.items.map((row) =>
+          row.id === data.itemId ? { ...row, ...settled } : row,
+        );
+        await endTrade(tx, { ...trade, items }, result.trade, users);
+        await insertTradeEvent(tx, trade.id, { type: "completed", by: null });
+        await notifyUsers(tx, users, {
+          type: "trade_completed",
+          offerId: trade.id,
+          actorId: null,
+          tokenId: null,
+        });
+      } else {
+        await updateLockedTrade(tx, trade, { updatedAt: bumpUpdatedAt });
+        await clearCancelRequest(tx, trade, result.trade);
       }
     });
     await publishTradeUpdates([data.tradeId]);

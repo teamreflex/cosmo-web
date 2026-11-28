@@ -132,6 +132,7 @@ export const sendNotificationEmailsTask = {
                 toUserId: tradeOffers.toUserId,
                 deadlineAt: tradeOffers.deadlineAt,
                 expiresAt: tradeOffers.expiresAt,
+                cancelRequestedBy: tradeOffers.cancelRequestedBy,
                 fromName: fromAccount.username,
                 toName: toAccount.username,
               })
