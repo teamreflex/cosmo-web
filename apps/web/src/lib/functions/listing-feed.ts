@@ -2,6 +2,7 @@ import { toPublicUser } from "@/lib/server/auth.server";
 import { db } from "@/lib/server/db";
 import { feedbackRepColumns } from "@/lib/server/feedback.server";
 import { authenticatedMiddleware } from "@/lib/server/middlewares";
+import { fetchRosters } from "@/lib/server/objekts/filter-data.server";
 import {
   hydrateListings,
   listingFeedWhere,
@@ -94,10 +95,9 @@ function toPage<T extends { id: string; bumpedAt: Date }>(rows: T[]) {
 export const $fetchListingFeed = createServerFn({ method: "GET" })
   .validator(listingFeedInputSchema)
   .handler(async ({ data }): Promise<ListingFeedPage> => {
+    const where = listingFeedWhere(data, await fetchRosters());
     const rows = await db.query.tradeOffers.findMany({
-      where: {
-        RAW: (t) => inArray(t.id, pageIds(listingFeedWhere(data), data.cursor)),
-      },
+      where: { RAW: (t) => inArray(t.id, pageIds(where, data.cursor)) },
       columns: {
         ...slipColumns.columns,
         fromUserId: true,
@@ -143,7 +143,7 @@ export const $fetchListingFeedTotal = createServerFn({ method: "GET" })
     const [row] = await db
       .select({ total: sql<number>`count(*)::int`.mapWith(Number) })
       .from(tradeOffers)
-      .where(listingFeedWhere(data));
+      .where(listingFeedWhere(data, await fetchRosters()));
     return row?.total ?? 0;
   });
 

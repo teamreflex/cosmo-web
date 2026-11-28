@@ -1,6 +1,7 @@
 import { clearTag, redis } from "@/lib/server/cache.server";
 import { setCosmoKey } from "@/lib/server/encryption.server";
 import { staffMiddleware } from "@/lib/server/middlewares";
+import { ROSTERS_CACHE_KEY } from "@/lib/server/objekts/filter-data.server";
 import { cosmoKeySchema } from "@/lib/universal/schema/cosmo-key";
 import { cosmoKeyCacheKey, pinCacheKey } from "@apollo/util-server";
 import { createServerFn } from "@tanstack/react-start";
@@ -18,12 +19,13 @@ export const $clearArtistsCache = createServerFn({ method: "POST" })
   });
 
 /**
- * Clear the cached filter data (collections, seasons, classes).
+ * Clear the cached filter data (collections, seasons, classes) and the
+ * artist rosters the feed scopes range wants by.
  */
 export const $clearFilterDataCache = createServerFn({ method: "POST" })
   .middleware([staffMiddleware({ site: ["manage"] })])
   .handler(async () => {
-    await clearTag(FILTER_DATA_CACHE_KEY);
+    await clearTag(FILTER_DATA_CACHE_KEY, ROSTERS_CACHE_KEY);
   });
 
 /**

@@ -1,6 +1,31 @@
 import { collections } from "@apollo/database/indexer/schema";
 import { asc } from "drizzle-orm";
+import { remember } from "../cache.server";
 import { indexer } from "../db/indexer";
+
+export const ROSTERS_CACHE_KEY = "artist-rosters";
+
+/**
+ * Each artist's members as the indexer names them, keyed by the artist as
+ * the trade tables store it. No member name belongs to two artists.
+ * Cached for 1 hour.
+ */
+export function fetchRosters() {
+  return remember(ROSTERS_CACHE_KEY, 60 * 60, async () => {
+    const rows = await indexer
+      .selectDistinct({
+        artist: collections.artist,
+        member: collections.member,
+      })
+      .from(collections);
+
+    const rosters: Record<string, string[]> = {};
+    for (const { artist, member } of rows) {
+      (rosters[artist] ??= []).push(member);
+    }
+    return rosters;
+  });
+}
 
 /**
  * Fetch all unique collections from the index.

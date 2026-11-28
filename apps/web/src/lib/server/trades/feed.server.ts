@@ -101,6 +101,9 @@ const wantColumns = {
 
 type FeedSide = ListingFeedInput["filters"]["offering"];
 
+// each artist's members, as fetchRosters() reads them
+type Rosters = Readonly<Record<string, readonly string[]>>;
+
 // the narrowed columns of one side; an empty column doesn't narrow
 function narrowed(side: FeedSide) {
   return feedColumns.flatMap((column) => {
@@ -118,7 +121,11 @@ function narrowed(side: FeedSide) {
  * artists narrowing, it matches when one of its want rows names one of them
  * (lookingForConditions()).
  */
-function offeringConditions(side: FeedSide, artists: string[]) {
+function offeringConditions(
+  side: FeedSide,
+  artists: string[],
+  rosters: Rosters,
+) {
   const columns = narrowed(side);
   if (columns.length === 0 && artists.length === 0) return [];
   const offering = offeredConditions(columns, artists);
@@ -126,7 +133,7 @@ function offeringConditions(side: FeedSide, artists: string[]) {
   return [
     or(
       and(...offering),
-      and(buy, ...lookingForConditions({ artist: artists })),
+      and(buy, ...lookingForConditions({ artist: artists }, rosters)),
     ),
   ];
 }
@@ -157,16 +164,60 @@ function offeredConditions(
 }
 
 /**
+ * The artists a range must belong to when the side narrows artists or
+ * members: the narrowed artists, and those whose rosters hold a narrowed
+ * member, both when both narrow.
+ */
+function rangeArtistScope(side: FeedSide, rosters: Rosters) {
+  const members = side.member ?? [];
+  const ofMembers = members.length
+    ? Object.keys(rosters).filter((artist) =>
+        rosters[artist]?.some((member) => members.includes(member)),
+      )
+    : undefined;
+  if (!side.artist?.length) return ofMembers;
+  return ofMembers
+    ? side.artist.filter((artist) => ofMembers.includes(artist))
+    : side.artist;
+}
+
+/**
+ * A range belongs to one of `artists` when it names one of them, or names
+ * no artist but one of their members, or neither, which is any artist.
+ * Its members stand in for its artist since each belongs to one, so a
+ * range of HeeJin never reads as idntt's.
+ */
+function rangeOfArtists(artists: string[], rosters: Rosters) {
+  if (artists.length === 0) return sql`false`;
+  const members = artists.flatMap((artist) => rosters[artist] ?? []);
+  return or(
+    arrayOverlaps(tradeListingWantRanges.artists, artists),
+    and(
+      sql`${tradeListingWantRanges.artists} = '{}'`,
+      or(
+        sql`${tradeListingWantRanges.members} = '{}'`,
+        ...(members.length
+          ? [arrayOverlaps(tradeListingWantRanges.members, members)]
+          : []),
+      ),
+    ),
+  );
+}
+
+/**
  * Looking for: some single want row holds every narrowed value. Exact rows
  * match on their copied values; a range row matches when one of its ranges
  * holds them all, where a column holds a value when it's empty (any value)
- * or shares one; a choice row matches when one of its collections holds
- * them all. So the season of one range or collection and the member of
- * another don't add up. The payment row never matches.
+ * or shares one, and the range belongs to the narrowed artists and the
+ * narrowed members' artists (rangeOfArtists()); a choice row matches when
+ * one of its collections holds them all. So the season of one range or
+ * collection and the member of another don't add up. The payment row
+ * never matches.
  */
-function lookingForConditions(side: FeedSide) {
+function lookingForConditions(side: FeedSide, rosters: Rosters) {
   const columns = narrowed(side);
   if (columns.length === 0) return [];
+  const scope = rangeArtistScope(side, rosters);
 
   const exact = and(
     eq(tradeListingWants.kind, "exact"),
@@ -183,10 +234,12 @@ function lookingForConditions(side: FeedSide) {
         .where(
           and(
             eq(tradeListingWantRanges.wantId, tradeListingWants.id),
-            ...columns.map(({ column, values }) => {
+            ...columns.flatMap(({ column, values }) => {
+              if (column === "artist") return [];
               const stored = wantColumns[column].range;
-              return or(sql`${stored} = '{}'`, arrayOverlaps(stored, values));
+              return [or(sql`${stored} = '{}'`, arrayOverlaps(stored, values))];
             }),
+            ...(scope === undefined ? [] : [rangeOfArtists(scope, rosters)]),
           ),
         ),
     ),
@@ -369,17 +422,19 @@ export function postedCount(listingId: AnyColumn) {
  * of their pool live trades hold. Values within a column are ORed and
  * columns ANDed, each side on one objekt or want row, so Looking for
  * matches a listing when any of its options does. `type` narrows on the
- * types its options make it (typeConditions()). Arrays bind through
+ * types its options make it (typeConditions()). `rosters` scopes range
+ * wants to their members' artists (fetchRosters()). Arrays bind through
  * `arrayOverlaps` and `inArray` only.
  */
 export function listingFeedWhere(
   input: Pick<ListingFeedInput, "filters" | "artists" | "type">,
+  rosters: Rosters,
 ) {
   return and(
     openListing,
     ...typeConditions(input.type),
-    ...offeringConditions(input.filters.offering, input.artists),
-    ...lookingForConditions(input.filters.lookingFor),
+    ...offeringConditions(input.filters.offering, input.artists, rosters),
+    ...lookingForConditions(input.filters.lookingFor, rosters),
   );
 }
 

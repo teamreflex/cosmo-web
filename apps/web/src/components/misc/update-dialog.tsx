@@ -96,6 +96,13 @@ export default function UpdateDialog() {
 
 const updates = [
   {
+    date: "2026-11-29",
+    changes: [
+      "Trades can now be resolved when one side sends the wrong serial",
+      "Trades can also be canceled without a staff member if both sides agree",
+    ],
+  },
+  {
     date: "2026-11-28",
     changes: [
       "Market page has been redesigned with better mobile support",
