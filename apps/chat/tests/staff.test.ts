@@ -70,7 +70,7 @@ describe("staff", () => {
     );
   });
 
-  test("read-chat-global keeps reading once the last open report closes, but stops writing", async () => {
+  test("read-chat-global keeps reading once the last open report closes, and write-chat-global keeps writing", async () => {
     const state = world();
     openDispute(state);
     await run(
@@ -93,15 +93,27 @@ describe("staff", () => {
         });
         const [message] = yield* stream.take(1);
         expect(message).toMatchObject({ _tag: "Message", id: messageId });
-        expect(
-          yield* outcome(
-            admin.Send({ tradeId: TRADE, body: Redacted.make("hello") }),
-          ),
-        ).toBe("StaffAccessRequired");
+        const sent = yield* admin.Send({
+          tradeId: TRADE,
+          body: Redacted.make("following up"),
+        });
+        const [reply] = yield* stream.take(1);
+        expect(reply).toMatchObject({
+          _tag: "Message",
+          id: sent.messageId,
+          sender: { _tag: "Staff" },
+        });
         expect(yield* outcome(admin.Remove({ messageId }))).toBe(
           "StaffAccessRequired",
         );
-        expect(state.audit).toEqual([]);
+        expect(state.audit).toEqual([
+          {
+            staffId: "admin",
+            action: "trade:message",
+            targetId: String(sent.messageId),
+            reportId: null,
+          },
+        ]);
       }),
     );
   });

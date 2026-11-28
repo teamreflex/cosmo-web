@@ -43,6 +43,10 @@ const rows = [
     expected: { user: false, tester: false, moderator: false, admin: true },
   },
   {
+    permissions: { trade: ["write-chat-global"] },
+    expected: { user: false, tester: false, moderator: false, admin: true },
+  },
+  {
     permissions: { trade: ["cancel"] },
     expected: { user: false, tester: false, moderator: true, admin: true },
   },

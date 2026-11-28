@@ -1,6 +1,6 @@
 # chat
 
-Trade chat between the two parties of a trade, served over Effect RPC on a websocket. Staff read a trade's chat with `trade: ["read-chat-global"]`, or with `trade: ["read-chat"]` while it has an open report or dispute, and staff with `trade: ["message"]` write to both parties under that report. Message bodies are stored encrypted, and the web app's chat panel is the only client.
+Trade chat between the two parties of a trade, served over Effect RPC on a websocket. Staff read a trade's chat with `trade: ["read-chat-global"]`, or with `trade: ["read-chat"]` while it has an open report or dispute. Staff with `trade: ["message"]` write to both parties under that report, and staff with `trade: ["write-chat-global"]` write while nothing is open. Message bodies are stored encrypted, and the web app's chat panel is the only client.
 
 Chat runs as a single instance: `Send` and `Remove` wake open streams in process, and Redis only carries what the web app and schedules publish.
 
@@ -97,8 +97,8 @@ A stream subscribes to its trade's signal before it reads any history, so nothin
     |                                  |                                        |
     |------ Send {tradeId, body} ----->|                                        |
     |                                  |  canSendChat: a party on a live trade, |
-    |                                  |  or staff with trade:message under an  |
-    |                                  |  open report                           |
+    |                                  |  staff with trade:message under an     |
+    |                                  |  open report, or write-chat-global     |
     |                                  |  encrypt, insert the row and a         |
     |                                  |  notification for bob                  |
     |<--------- {messageId} -----------|  signal the trade                      |
@@ -115,19 +115,19 @@ A stream subscribes to its trade's signal before it reads any history, so nothin
 
 Decided in `packages/chat/src/policy.ts`, from the trade and report rows the handler read; only `ReportedMessage` checks the role alone.
 
-| Action            | A party                                                        | Staff who aren't a party                                                                                             |
-| ----------------- | -------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------- |
-| `Join`            | trade is accepted, disputed, completed, cancelled or timed out | `trade: ["read-chat-global"]`, or `trade: ["read-chat"]` and an open report, else `StaffAccessRequired`              |
-| `Send`            | trade is accepted or disputed, else `ChatReadOnly`             | `trade: ["message"]` and an open report, else `StaffAccessRequired`; ended trades included, audited under the report |
-| `Report`          | only the other party's messages                                | never (`Forbidden`)                                                                                                  |
-| `Remove`          | never (`Forbidden`)                                            | `trade: ["remove-message"]` and an open report, else `StaffAccessRequired`; audited under the report                 |
-| `ReportedMessage` | never (`Forbidden`)                                            | `report: ["read"]`; the copy of a message they sent themselves is `ReportNotFound`                                   |
+| Action            | A party                                                        | Staff who aren't a party                                                                                                                                                 |
+| ----------------- | -------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `Join`            | trade is accepted, disputed, completed, cancelled or timed out | `trade: ["read-chat-global"]`, or `trade: ["read-chat"]` and an open report, else `StaffAccessRequired`                                                                  |
+| `Send`            | trade is accepted or disputed, else `ChatReadOnly`             | `trade: ["message"]` and an open report, audited under it, or `trade: ["write-chat-global"]`, audited under no report; else `StaffAccessRequired`; ended trades included |
+| `Report`          | only the other party's messages                                | never (`Forbidden`)                                                                                                                                                      |
+| `Remove`          | never (`Forbidden`)                                            | `trade: ["remove-message"]` and an open report, else `StaffAccessRequired`; audited under the report                                                                     |
+| `ReportedMessage` | never (`Forbidden`)                                            | `report: ["read"]`; the copy of a message they sent themselves is `ReportNotFound`                                                                                       |
 
 - Anyone else, and any trade that isn't accepted or later, gets `ChatNotFound`, so a trade id can't be probed.
 - A staff member who is a party to the trade is treated as a party.
 - Parties are matched by user id, never by pinned address, so a deleted party's side matches no one.
 - A non-party whose linked COSMO account is pinned on the trade gets `ChatNotFound` whatever their role, because they deleted the account that was a party and the trade is still their own (`viewerPinned`).
-- An open report is one that is open or escalated, on the trade or one of its messages. Staff write only under one, because `Send` and `Remove` are audited under it. Reading isn't audited.
+- An open report is one that is open or escalated, on the trade or one of its messages. `Remove`, and `Send` without `write-chat-global`, need one because they are audited under it. Reading isn't audited.
 - A `Join` re-checks access, with the role and ban read again, on every signal and before every page after the first of a read. Resolving or dismissing a report publishes no signal, so a `read-chat` stream ends at its next page, at the next signal for the trade or at its token's `exp`. A lost `role-changed` event ends a demoted viewer's stream at the same point.
 - The report staff act under is the `reportId` a report page passes while it's open on the trade, else the trade's oldest open report.
 

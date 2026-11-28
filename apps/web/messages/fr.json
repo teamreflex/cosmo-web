@@ -1239,7 +1239,7 @@
       }
     }
   ],
-  "terms_chat_staff_access": "Les modérateurs ne peuvent lire la discussion d'un échange que tant que cet échange, ou l'un de ses messages, fait l'objet d'un signalement ou d'un litige ouvert. Les administrateurs peuvent lire la discussion de n'importe quel échange. Les uns comme les autres ne peuvent y écrire aux deux parties que tant que l'échange, ou l'un de ses messages, fait l'objet d'un signalement ou d'un litige ouvert. Un message signalé est conservé, chiffré, avec son signalement.",
+  "terms_chat_staff_access": "Les modérateurs ne peuvent lire la discussion d'un échange que tant que cet échange, ou l'un de ses messages, fait l'objet d'un signalement ou d'un litige ouvert, et ne peuvent y écrire aux deux parties que pendant ce temps. Les administrateurs peuvent lire la discussion de n'importe quel échange et y écrire aux deux parties à tout moment. Un message signalé est conservé, chiffré, avec son signalement.",
   "terms_source_code": "Le code source de l'application est disponible sur",
   "_comment_account": "Account page strings",
   "account_sections": "Sections du compte",

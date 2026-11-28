@@ -77,10 +77,10 @@ describe("canJoinChat", () => {
     ).toEqual({ kind: "staff", reportId: "report" });
   });
 
-  test("read-chat-global joins under an open report, else only reads", () => {
+  test("read-chat-global joins under an open report, else globally", () => {
     expect(
       outcome(canJoinChat(viewers.admin, trade("completed"), null)),
-    ).toEqual({ kind: "reader" });
+    ).toEqual({ kind: "global" });
     expect(
       outcome(canJoinChat(viewers.admin, trade("disputed"), "report")),
     ).toEqual({ kind: "staff", reportId: "report" });
@@ -131,12 +131,17 @@ describe("canSendChat", () => {
     );
   });
 
-  test("staff with no open report on the trade only read", () => {
+  test("with no open report, only write-chat-global writes", () => {
     expect(
       outcome(
-        canSendChat(viewers.moderator, { kind: "reader" }, trade("accepted")),
+        canSendChat(viewers.moderator, { kind: "global" }, trade("accepted")),
       ),
     ).toBe("StaffAccessRequired");
+    expect(
+      outcome(
+        canSendChat(viewers.admin, { kind: "global" }, trade("completed")),
+      ),
+    ).toEqual({ kind: "staff", reportId: null });
   });
 });
 
@@ -156,7 +161,7 @@ describe("canReportMessage", () => {
     ["a deleted party's", { kind: "party", side: "from" }, null],
     ["a staff message", { kind: "party", side: "from" }, staffSender],
     ["anything, as staff", { kind: "staff", reportId: "report" }, "to"],
-    ["anything, as a staff reader", { kind: "reader" }, "to"],
+    ["anything, as staff with no report", { kind: "global" }, "to"],
   ] as const)("refuses %s", (_label, access, sender) => {
     expect(outcome(canReportMessage(access, { sender }))).toBe("Forbidden");
   });
@@ -175,9 +180,9 @@ describe("canRemoveMessage", () => {
   });
 
   test("staff with no open report on the trade can't remove", () => {
-    expect(
-      outcome(canRemoveMessage(viewers.moderator, { kind: "reader" })),
-    ).toBe("StaffAccessRequired");
+    expect(outcome(canRemoveMessage(viewers.admin, { kind: "global" }))).toBe(
+      "StaffAccessRequired",
+    );
   });
 
   test("a staff member in their own trade can't remove as a party", () => {

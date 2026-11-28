@@ -1230,7 +1230,7 @@
       }
     }
   ],
-  "terms_chat_staff_access": "Moderators can read a trade's chat only while that trade, or one of its messages, has an open report or dispute. Administrators can read any trade's chat. Either can write in it to both parties only while the trade, or one of its messages, has an open report or dispute. A reported message is kept, encrypted, with its report.",
+  "terms_chat_staff_access": "Moderators can read a trade's chat only while that trade, or one of its messages, has an open report or dispute, and can write in it to both parties only then. Administrators can read any trade's chat and write in it to both parties at any time. A reported message is kept, encrypted, with its report.",
   "terms_source_code": "Source code for this application is available on",
   "_comment_account": "Account page strings",
   "account_sections": "Account sections",

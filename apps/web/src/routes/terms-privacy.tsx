@@ -21,7 +21,7 @@ function TermsPrivacy() {
           <CardTitle className="flex flex-wrap items-baseline gap-x-2">
             {m.terms_title()}
             <span className="text-xs font-normal text-muted-foreground">
-              {m.terms_updated({ date: "26/11/26" })}
+              {m.terms_updated({ date: "28/11/26" })}
             </span>
           </CardTitle>
         </CardHeader>

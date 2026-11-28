@@ -48,8 +48,9 @@ export class ChatNotFound extends Schema.TaggedError<ChatNotFound>()(
 }
 
 /**
- * Staff without `globalChatReading` read a chat, and staff write to or
- * remove from one, only while it has an open report or dispute.
+ * Staff without `globalChatReading` read a chat, staff without
+ * `globalChatWriting` write to one, and staff remove from one, only while it
+ * has an open report or dispute.
  */
 export class StaffAccessRequired extends Schema.TaggedError<StaffAccessRequired>()(
   "StaffAccessRequired",

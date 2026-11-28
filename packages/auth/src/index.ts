@@ -11,6 +11,7 @@ export const statement = {
     "view",
     "read-chat",
     "read-chat-global",
+    "write-chat-global",
     "cancel",
     "resolve-dispute",
     "remove-message",
@@ -30,7 +31,7 @@ export const roles = {
   user: ac.newRole({}),
   tester: ac.newRole({}),
   moderator: ac.newRole({
-    // every trade but read-chat-global, which reads chats with no open report
+    // every trade but read-chat-global and write-chat-global, which reach chats with no open report
     trade: [
       "view",
       "read-chat",

@@ -127,7 +127,8 @@ export class ChatStore extends Context.Service<
      * Inserts a text message and a `trade_message` notification for each
      * recipient who doesn't already have one unread from the sender for the
      * trade. A message sent as staff is flagged and audited as
-     * `trade:message` under the report that lets them in.
+     * `trade:message` under the report that lets them in, or under none
+     * when they write with nothing open.
      */
     readonly insertMessage: (message: {
       tradeId: string;

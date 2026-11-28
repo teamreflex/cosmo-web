@@ -29,7 +29,7 @@ export type MemoryAudit = {
   staffId: string;
   action: "trade:remove-message" | "trade:message";
   targetId: string;
-  reportId: string;
+  reportId: string | null;
 };
 
 /**

@@ -36,15 +36,17 @@ export type ChatTrade = {
 /**
  * How the viewer reads the chat: as a party, as staff under an open report
  * or dispute on the trade or one of its messages, or as staff holding
- * `globalChatReading` who only read because nothing on the trade is open.
+ * `globalChatReading` with nothing on the trade open.
  */
 export type ChatAccess =
   | { kind: "party"; side: TradeSide }
   | { kind: "staff"; reportId: string }
-  | { kind: "reader" };
+  | { kind: "global" };
 
-// who a message is sent as: a party, or staff under the report it's audited under
-export type SendAccess = Exclude<ChatAccess, { kind: "reader" }>;
+// who a message is sent as: a party, or staff under the report it's audited under, if any
+export type SendAccess =
+  | { kind: "party"; side: TradeSide }
+  | { kind: "staff"; reportId: string | null };
 
 // a conversation opens once an offer is accepted and stays readable after it ends
 const chatStatuses: readonly TradeOfferStatus[] = [
@@ -80,11 +82,11 @@ export const chatReaders: Permissions[] = [chatReading, globalChatReading];
  * A party joins an accepted or later trade. Staff holding `chatReading` or
  * `globalChatReading` join under `openReportId` while it names an open
  * report or dispute on the trade or one of its messages; with
- * `globalChatReading` they also join without one, only to read. Staff
- * holding only `chatReading` are told the chat is closed to them. A viewer
- * whose linked COSMO account is pinned on the trade but who isn't a party
- * deleted the account that was, so the trade is theirs, never staff's.
- * Anyone else is told the chat doesn't exist.
+ * `globalChatReading` they also join without one. Staff holding only
+ * `chatReading` are told the chat is closed to them. A viewer whose linked
+ * COSMO account is pinned on the trade but who isn't a party deleted the
+ * account that was, so the trade is theirs, never staff's. Anyone else is
+ * told the chat doesn't exist.
  */
 export function canJoinChat(
   viewer: ChatViewer,
@@ -106,7 +108,7 @@ export function canJoinChat(
     return Effect.succeed({ kind: "staff", reportId: openReportId });
   }
   if (global) {
-    return Effect.succeed({ kind: "reader" });
+    return Effect.succeed({ kind: "global" });
   }
   return reportScoped
     ? Effect.fail(new StaffAccessRequired())
@@ -116,10 +118,16 @@ export function canJoinChat(
 // staff write to both parties while the trade has an open report
 export const staffMessaging = { trade: ["message"] } satisfies Permissions;
 
+// staff write to both parties of a trade with no open report
+export const globalChatWriting = {
+  trade: ["write-chat-global"],
+} satisfies Permissions;
+
 /**
  * A party writes only while the trade is live. Staff holding
- * `staffMessaging` write while an open report or dispute lets them, ended
- * trades included, and are audited under it.
+ * `staffMessaging` write while an open report or dispute lets them, and are
+ * audited under it. Staff holding `globalChatWriting` also write with nothing
+ * open, audited under no report. Both include ended trades.
  */
 export function canSendChat(
   viewer: ChatViewer,
@@ -127,8 +135,10 @@ export function canSendChat(
   trade: ChatTrade,
 ): Effect.Effect<SendAccess, ChatReadOnly | StaffAccessRequired> {
   switch (access.kind) {
-    case "reader":
-      return Effect.fail(new StaffAccessRequired());
+    case "global":
+      return can(viewer.role, globalChatWriting)
+        ? Effect.succeed({ kind: "staff", reportId: null })
+        : Effect.fail(new StaffAccessRequired());
     case "staff":
       return can(viewer.role, staffMessaging)
         ? Effect.succeed(access)
@@ -159,7 +169,7 @@ export function canRemoveMessage(
   viewer: ChatViewer,
   access: ChatAccess,
 ): Effect.Effect<string, Forbidden | StaffAccessRequired> {
-  if (access.kind === "reader") {
+  if (access.kind === "global") {
     return Effect.fail(new StaffAccessRequired());
   }
   return access.kind === "staff" &&

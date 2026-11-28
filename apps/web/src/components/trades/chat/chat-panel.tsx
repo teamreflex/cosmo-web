@@ -60,7 +60,7 @@ import {
   isStaffSender,
   MAX_MESSAGE_LENGTH,
 } from "@apollo/chat/items";
-import { staffMessaging } from "@apollo/chat/policy";
+import { globalChatWriting, staffMessaging } from "@apollo/chat/policy";
 import { sanitizeMessage } from "@apollo/chat/sanitize";
 import {
   type MessageReportReason,
@@ -109,7 +109,7 @@ type Props = {
   trade: TradeView;
   // the viewer's side, or null for staff
   side: TradeSide | null;
-  // staff only: the open report they write under; without one they only read
+  // staff only: the open report they write under, when there is one
   reportId?: string;
   // a message from the other party or staff arrived after the history
   onIncoming?: () => void;
@@ -119,9 +119,10 @@ type Props = {
 /**
  * A trade's chat: its messages and events as they happen, and a composer
  * while the trade is live. Staff read it with `globalChatReading`, or with
- * `chatReading` while it has an open report, and with `staffMessaging` write
- * to both parties under that report, ended trades included. A trade event
- * refetches the trade, so the page around it stays current.
+ * `chatReading` while it has an open report. They write to both parties with
+ * `staffMessaging` under that report, or with `globalChatWriting` when
+ * nothing is open, ended trades included. A trade event refetches the trade,
+ * so the page around it stays current.
  */
 export default function ChatPanel({
   trade,
@@ -136,7 +137,9 @@ export default function ChatPanel({
   // as canSendChat decides
   const canSend =
     side === null
-      ? reportId !== undefined && hasPermission(staffMessaging)
+      ? hasPermission(
+          reportId === undefined ? globalChatWriting : staffMessaging,
+        )
       : trade.state.status === "accepted" || trade.state.status === "disputed";
   const failed = AsyncResult.isFailure(result);
   const conversation = AsyncResult.isSuccess(result)
@@ -771,8 +774,8 @@ function Composer({
 }
 
 /**
- * Why there's no composer: staff without `staffMessaging` only read, and an
- * ended trade's chat is read-only, with its bodies deleted
+ * Why there's no composer: staff without the permission to write only read,
+ * and an ended trade's chat is read-only, with its bodies deleted
  * CHAT_RETENTION_DAYS later.
  */
 function ReadOnlyNote({
