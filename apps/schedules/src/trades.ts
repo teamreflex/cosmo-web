@@ -118,6 +118,7 @@ export const lockLiveTrades = Effect.fn("lockLiveTrades")(function* (
       fromAddress: tradeOffers.fromAddress,
       toAddress: tradeOffers.toAddress,
       cancelledBy: tradeOffers.cancelledBy,
+      cancelRequestedBy: tradeOffers.cancelRequestedBy,
       proposedBy: tradeOffers.proposedBy,
     })
     .from(tradeOffers)

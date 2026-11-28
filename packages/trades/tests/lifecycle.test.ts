@@ -6,6 +6,7 @@ import type {
 } from "@apollo/database/web/types";
 import { describe, expect, test } from "bun:test";
 import {
+  cancelMode,
   type ClaimTerms,
   claimTerms,
   type DeadlineOwed,
@@ -69,6 +70,9 @@ function trade(
   switch (status) {
     case "pending":
       return directOffer(items);
+    case "accepted":
+    case "disputed":
+      return { status, cancelRequest: null, items };
     default:
       return { status, items };
   }
@@ -305,6 +309,204 @@ describe("partyAction", () => {
   });
 });
 
+describe("asking to cancel", () => {
+  const asked = (
+    status: "accepted" | "disputed",
+    by: TradeSide,
+    items: readonly TradeItemState[] = sale(),
+  ): TradeState => ({ status, cancelRequest: by, items });
+  const facts = { deadlinePassed: false, arrived: false };
+
+  test("only where cancelling alone is refused", () => {
+    // the payer may still cancel alone, so it can't ask
+    expect(
+      statusAfter(trade("accepted", sale()), {
+        type: "request_cancel",
+        by: "to",
+      }),
+    ).toBe("cancel_not_needed");
+    // the seller is owed the payment, so it asks
+    expect(
+      transition(trade("accepted", sale()), {
+        type: "request_cancel",
+        by: "from",
+      }),
+    ).toEqual({ ok: true, trade: asked("accepted", "from") });
+    // once something was sent, either side asks
+    const sent = [objekt("from", true), objekt("to")];
+    expect(
+      transition(trade("accepted", sent), { type: "request_cancel", by: "to" }),
+    ).toEqual({ ok: true, trade: asked("accepted", "to", sent) });
+    // a disputed trade can only be ended by asking
+    expect(
+      transition(trade("disputed", sale()), {
+        type: "request_cancel",
+        by: "to",
+      }),
+    ).toEqual({ ok: true, trade: asked("disputed", "to") });
+  });
+
+  test("one request waits at a time", () => {
+    for (const by of ["from", "to"] as const) {
+      expect(
+        statusAfter(asked("accepted", "from"), { type: "request_cancel", by }),
+      ).toBe("cancel_requested");
+    }
+  });
+
+  test("only the side that asked withdraws, and only the other side answers", () => {
+    const state = asked("accepted", "from");
+    expect(transition(state, { type: "withdraw_cancel", by: "from" })).toEqual({
+      ok: true,
+      trade: trade("accepted", sale()),
+    });
+    expect(statusAfter(state, { type: "withdraw_cancel", by: "to" })).toBe(
+      "wrong_party",
+    );
+    expect(statusAfter(state, { type: "decline_cancel", by: "from" })).toBe(
+      "wrong_party",
+    );
+    expect(statusAfter(state, { type: "agree_cancel", by: "from" })).toBe(
+      "wrong_party",
+    );
+    expect(transition(state, { type: "decline_cancel", by: "to" })).toEqual({
+      ok: true,
+      trade: trade("accepted", sale()),
+    });
+    expect(transition(state, { type: "agree_cancel", by: "to" })).toEqual({
+      ok: true,
+      trade: { status: "cancelled", cancelledBy: "both", items: sale() },
+    });
+  });
+
+  test("answering needs a request", () => {
+    for (const type of [
+      "withdraw_cancel",
+      "decline_cancel",
+      "agree_cancel",
+    ] as const) {
+      expect(statusAfter(trade("accepted", sale()), { type, by: "to" })).toBe(
+        "no_cancel_request",
+      );
+    }
+  });
+
+  test("agreeing cancels a disputed trade too", () => {
+    expect(
+      statusAfter(asked("disputed", "to"), {
+        type: "agree_cancel",
+        by: "from",
+      }),
+    ).toBe("cancelled");
+  });
+
+  test("only a live trade takes a request", () => {
+    for (const status of ["completed", "timed_out"] as const) {
+      expect(
+        statusAfter(trade(status, sale()), {
+          type: "request_cancel",
+          by: "to",
+        }),
+      ).toBe("wrong_status");
+    }
+  });
+
+  test("anything sent or paid clears a request made before it", () => {
+    const state = asked("accepted", "from", [objekt("from"), payment("to")]);
+    for (const event of [
+      { type: "transfer", item: 0 },
+      { type: "accept_substitute", item: 0, by: "to" },
+      { type: "mark_paid", item: 1, by: "to" },
+      { type: "confirm_payment", item: 1, by: "from" },
+    ] satisfies TradeEvent[]) {
+      const result = transition(state, event);
+      expect(result.ok && "cancelRequest" in result.trade).toBe(true);
+      expect(result.ok && result.trade).toMatchObject({ cancelRequest: null });
+    }
+  });
+
+  test("a party's dispute and the deadline keep a request; a ban's clears it", () => {
+    const sent = [objekt("from", true), objekt("to")];
+    expect(
+      transition(asked("accepted", "to", sent), {
+        type: "dispute",
+        by: "from",
+      }),
+    ).toEqual({ ok: true, trade: asked("disputed", "to", sent) });
+    expect(
+      transition(asked("accepted", "to", sent), { type: "time_out" }),
+    ).toEqual({ ok: true, trade: asked("disputed", "to", sent) });
+    expect(
+      transition(asked("accepted", "to", sent), {
+        type: "dispute",
+        by: "staff",
+      }),
+    ).toEqual({ ok: true, trade: trade("disputed", sent) });
+  });
+
+  test("a staff extend clears a request", () => {
+    const sent = [objekt("from", true), objekt("to")];
+    expect(
+      transition(asked("disputed", "to", sent), {
+        type: "staff_extend",
+      }),
+    ).toEqual({ ok: true, trade: trade("accepted", sent) });
+  });
+
+  test("asking and agreeing wait for an arrival the drain hasn't recorded", () => {
+    const arrived = { deadlinePassed: false, arrived: true };
+    expect(
+      partyAction(
+        trade("accepted", sale()),
+        { type: "request_cancel", by: "from" },
+        arrived,
+      ),
+    ).toEqual({ ok: false, reason: "transfer_pending" });
+    expect(
+      partyAction(
+        asked("accepted", "from"),
+        { type: "agree_cancel", by: "to" },
+        arrived,
+      ),
+    ).toEqual({ ok: false, reason: "transfer_pending" });
+    // taking a request back or keeping the trade never waits
+    expect(
+      partyAction(
+        asked("accepted", "from"),
+        { type: "decline_cancel", by: "to" },
+        arrived,
+      ).ok,
+    ).toBe(true);
+  });
+
+  test("nothing is asked or agreed past the deadline", () => {
+    const passed = { deadlinePassed: true, arrived: false };
+    expect(
+      partyAction(
+        asked("accepted", "from"),
+        { type: "agree_cancel", by: "to" },
+        passed,
+      ),
+    ).toEqual({ ok: false, reason: "deadline_passed" });
+  });
+
+  test("cancelMode", () => {
+    expect(cancelMode(trade("accepted", sale()), "to", facts)).toBe("now");
+    expect(cancelMode(trade("accepted", sale()), "from", facts)).toBe("ask");
+    expect(cancelMode(trade("disputed", sale()), "to", facts)).toBe("ask");
+    // the side asking can't ask again; the payer may still cancel alone
+    expect(cancelMode(asked("accepted", "from"), "to", facts)).toBe("now");
+    expect(cancelMode(asked("accepted", "from"), "from", facts)).toBe(null);
+    expect(
+      cancelMode(trade("accepted", sale()), "from", {
+        deadlinePassed: false,
+        arrived: true,
+      }),
+    ).toBe(null);
+    expect(cancelMode(trade("completed", sale()), "to", facts)).toBe(null);
+  });
+});
+
 describe("transition: items", () => {
   const swap = [objekt("from"), objekt("to"), objekt("to")];
 
@@ -335,6 +537,7 @@ describe("transition: items", () => {
       ok: true,
       trade: {
         status: "disputed",
+        cancelRequest: null,
         items: [objekt("from", true), objekt("to", true)],
       },
     });
@@ -441,7 +644,7 @@ describe("transition: timing out", () => {
     ];
     expect(transition(trade("accepted", items), { type: "time_out" })).toEqual({
       ok: true,
-      trade: { status: "disputed", items },
+      trade: { status: "disputed", cancelRequest: null, items },
     });
   });
 
@@ -464,7 +667,11 @@ describe("transition: payments", () => {
       transition(accepted, { type: "confirm_payment", item: 1, by: "from" }),
     ).toEqual({
       ok: true,
-      trade: { status: "accepted", items: sale(false, true) },
+      trade: {
+        status: "accepted",
+        cancelRequest: null,
+        items: sale(false, true),
+      },
     });
   });
 
@@ -595,7 +802,11 @@ describe("transition: marking paid", () => {
     );
     expect(transition(trade("accepted", sale(true)), markPaid("to"))).toEqual({
       ok: true,
-      trade: { status: "accepted", items: sale(true, false, true) },
+      trade: {
+        status: "accepted",
+        cancelRequest: null,
+        items: sale(true, false, true),
+      },
     });
     expect(statusAfter(trade("disputed", sale()), markPaid("to"))).toBe(
       "disputed",
@@ -1391,12 +1602,21 @@ describe("tradeState", () => {
 
   test("reads items in order, by what their timestamps say", () => {
     expect(
-      tradeState({ status: "accepted", cancelledBy: null, proposedBy: null }, [
-        { kind: "objekt", sender: "from", ...unsent, transferredAt: at },
-        { kind: "objekt", sender: "to", ...unsent },
-      ]),
+      tradeState(
+        {
+          status: "accepted",
+          cancelledBy: null,
+          proposedBy: null,
+          cancelRequestedBy: null,
+        },
+        [
+          { kind: "objekt", sender: "from", ...unsent, transferredAt: at },
+          { kind: "objekt", sender: "to", ...unsent },
+        ],
+      ),
     ).toEqual({
       status: "accepted",
+      cancelRequest: null,
       items: [objekt("from", true), objekt("to")],
     });
   });
@@ -1404,7 +1624,12 @@ describe("tradeState", () => {
   test("carries who cancelled", () => {
     expect(
       tradeState(
-        { status: "cancelled", cancelledBy: "staff", proposedBy: null },
+        {
+          status: "cancelled",
+          cancelledBy: "staff",
+          proposedBy: null,
+          cancelRequestedBy: null,
+        },
         [],
       ),
     ).toEqual({ status: "cancelled", cancelledBy: "staff", items: [] });
@@ -1412,19 +1637,35 @@ describe("tradeState", () => {
 
   test("a pending direct offer carries its proposer and no listing", () => {
     expect(
-      tradeState({ status: "pending", cancelledBy: null, proposedBy: "from" }, [
-        { kind: "objekt", sender: "from", ...unsent },
-        { kind: "objekt", sender: "to", ...unsent },
-      ]),
+      tradeState(
+        {
+          status: "pending",
+          cancelledBy: null,
+          proposedBy: "from",
+          cancelRequestedBy: null,
+        },
+        [
+          { kind: "objekt", sender: "from", ...unsent },
+          { kind: "objekt", sender: "to", ...unsent },
+        ],
+      ),
     ).toEqual(directOffer([objekt("from"), objekt("to")]));
   });
 
   test("a pending offer with any item from a listing offers on that listing", () => {
     expect(
-      tradeState({ status: "pending", cancelledBy: null, proposedBy: "to" }, [
-        { kind: "objekt", sender: "from", ...unsent, listingId },
-        { kind: "objekt", sender: "to", ...unsent },
-      ]),
+      tradeState(
+        {
+          status: "pending",
+          cancelledBy: null,
+          proposedBy: "to",
+          cancelRequestedBy: null,
+        },
+        [
+          { kind: "objekt", sender: "from", ...unsent, listingId },
+          { kind: "objekt", sender: "to", ...unsent },
+        ],
+      ),
     ).toEqual(listingOffer([objekt("from"), objekt("to")]));
   });
 });

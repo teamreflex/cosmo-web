@@ -40,6 +40,7 @@ Apollo matches people who want to swap objekts and records each swap, but never 
     |    receiver in $acceptSubstitute, a payment confirmed
     |    received by its recipient in $confirmPayment)
     +-- a party cancels, nothing sent or arrived yet ------------> cancelled
+    +-- one party asks to cancel, the other agrees -------------> cancelled
     +-- a party opens a dispute, or a party is banned -----------> disputed
     +-- trade-timers: deadline_at <= the drain's watermark
     |     nothing done (no token arrived, no payment confirmed

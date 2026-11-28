@@ -93,6 +93,12 @@ export function describeEvent(
           markup={bold}
         />
       );
+    case "cancel_requested":
+    case "cancel_request_withdrawn":
+    case "cancel_request_declined":
+    case "cancel_agreed":
+    case "cancel_request_cleared":
+      return describeCancelRequest(side, nameOf, event);
     case "disputed":
       return describeDispute(trade, side, event);
     case "deadline_extended":
@@ -219,6 +225,59 @@ export function describeEvent(
         : describeOfferEvent(trade, side, event);
   }
 }
+
+/**
+ * A step of a request to cancel, as the party who took it reads it and as
+ * anyone else does. Clearing it is nobody's step.
+ */
+function describeCancelRequest(
+  side: TradeSide | null,
+  nameOf: (side: TradeSide) => string,
+  event: Extract<
+    TradeEvent,
+    {
+      type:
+        | "cancel_requested"
+        | "cancel_request_withdrawn"
+        | "cancel_request_declined"
+        | "cancel_agreed"
+        | "cancel_request_cleared";
+    }
+  >,
+) {
+  if (event.type === "cancel_request_cleared") {
+    return m.trade_page_event_cancel_request_cleared();
+  }
+  const copy = cancelRequestCopy[event.type];
+  return event.by === side ? (
+    copy.you()
+  ) : (
+    <ParaglideMessage
+      message={copy.them}
+      inputs={{ name: nameOf(event.by) }}
+      markup={bold}
+    />
+  );
+}
+
+const cancelRequestCopy = {
+  cancel_requested: {
+    you: m.trade_page_event_cancel_requested_you,
+    them: m.trade_page_event_cancel_requested_them,
+  },
+  cancel_request_withdrawn: {
+    you: m.trade_page_event_cancel_request_withdrawn_you,
+    them: m.trade_page_event_cancel_request_withdrawn_them,
+  },
+  cancel_request_declined: {
+    you: m.trade_page_event_cancel_request_declined_you,
+    them: m.trade_page_event_cancel_request_declined_them,
+  },
+  cancel_agreed: {
+    you: m.trade_page_event_cancel_agreed_you,
+    them: m.trade_page_event_cancel_agreed_them,
+  },
+};
 
 /**
  * Which wording the viewer reads: `you` on `actor`'s side, `them` on its

@@ -757,6 +757,11 @@ export const tradeOffers = pgTable(
       .notNull()
       .default([]),
     cancelledBy: tradeCanceller("cancelled_by"),
+    /**
+     * The side asking the other to agree to cancel a live trade, or null.
+     * Every way a trade ends nulls it, and only a live trade's is read.
+     */
+    cancelRequestedBy: tradeSide("cancel_requested_by"),
     proposedBy: tradeSide("proposed_by"),
     disputeReportId: uuid("dispute_report_id").references(() => reports.id, {
       onDelete: "set null",

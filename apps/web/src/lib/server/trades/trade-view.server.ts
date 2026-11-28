@@ -220,6 +220,7 @@ export async function readTradeView(
       fromAddress: true,
       toAddress: true,
       cancelledBy: true,
+      cancelRequestedBy: true,
       proposedBy: true,
       deadlineAt: true,
       expiresAt: true,

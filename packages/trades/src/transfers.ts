@@ -6,6 +6,7 @@ import type {
 } from "@apollo/database/web/types";
 import { addr } from "@apollo/util";
 import {
+  cancelRequestCleared,
   isOpenTrade,
   otherSide,
   type TradeState,
@@ -301,9 +302,10 @@ export function toChainRow(
 /**
  * One locked trade's events from a batch, in row order: each item that
  * arrived, and each token that moved elsewhere or turned untransferable,
- * which the trade page shows, with the state the arrivals leave the trade
- * in. Writes nothing; the caller applies every trade's arrivals in one
- * update and ends the trades left owing nothing.
+ * which the trade page shows, and the clearing of a request to cancel an
+ * arrival made stale, with the state the arrivals leave the trade in.
+ * Writes nothing; the caller applies every trade's arrivals in one update
+ * and ends the trades left owing nothing.
  */
 export function recordChainEvents(
   trade: {
@@ -343,6 +345,13 @@ export function recordChainEvents(
     events.push({
       tradeId: trade.id,
       event: { type: event.type, tokenId: event.tokenId },
+    });
+  }
+  // an arrival clears a request to cancel made before it; a completed trade clears it with its status
+  if (cancelRequestCleared(trade.state, state)) {
+    events.push({
+      tradeId: trade.id,
+      event: { type: "cancel_request_cleared" },
     });
   }
   return { state, arrivals, events };

@@ -71,6 +71,17 @@ const KnownTradeEvent = Schema.Union([
     by: Schema.Literal("staff"),
     note: StaffNote,
   }),
+  Schema.Struct({ type: Schema.Literal("cancel_requested"), by: TradeSide }),
+  Schema.Struct({
+    type: Schema.Literal("cancel_request_withdrawn"),
+    by: TradeSide,
+  }),
+  Schema.Struct({
+    type: Schema.Literal("cancel_request_declined"),
+    by: TradeSide,
+  }),
+  Schema.Struct({ type: Schema.Literal("cancel_request_cleared") }),
+  Schema.Struct({ type: Schema.Literal("cancel_agreed"), by: TradeSide }),
   Schema.Struct({
     type: Schema.Literal("disputed"),
     by: TradeSide,

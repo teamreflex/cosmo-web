@@ -38,15 +38,16 @@ One `reports` table holds every report. `target_type` says what was reported, an
 | ----------------------------------------------------------- | ----------------------- | ------------------------------------------------------------- |
 | `$resolveReport`, `$dismissReport`                          | user, message, feedback | that report; a trade report is refused `report_trade_dispute` |
 | staff complete, cancel or extend the trade (`actOnTrade()`) | trade                   | every open report on the trade resolved                       |
+| the parties agree to cancel the trade (`$agreeCancel`)      | trade                   | every open report on the trade resolved, with no resolver     |
 | `$banUser` from the report page                             | user, message, feedback | every open report on that report's target resolved            |
 | `$removeFeedback`                                           | feedback                | every open report on the rating resolved                      |
 | chat `Remove`                                               | message                 | nothing; staff resolve the report afterwards                  |
 
 - `resolved` and `dismissed` are final; nothing reopens a report. `reports_resolved_chk` ties `resolved_at` to those two statuses.
 - `transitionReport()` (`lib/server/reports.server.ts`) guards on the current status, so a staff member who loses a race gets `report_status_changed` instead of overwriting the other's decision.
-- A trade report closes only when staff settle the trade, because closing it as a report would leave the trade frozen ([`trades/lifecycle.md`](trades/lifecycle.md)). It can still be escalated.
+- A trade report closes only when its trade is settled, by staff or by the parties agreeing to cancel it, because closing it as a report would leave the trade frozen ([`trades/lifecycle.md`](trades/lifecycle.md#asking-to-cancel)). It can still be escalated.
 - A ban resolves only the reports on the one target it was started from: the user, the one message or the one rating. Reports on the user's other messages or ratings stay open, and a ban started from `/admin/accounts` resolves nothing. The ban itself is in [`auth.md`](auth.md#ban).
-- Every closing path writes one audit row per report it closes, in the same transaction.
+- Every staff closing path writes one audit row per report it closes, in the same transaction. The parties' cancel writes none and leaves `resolved_by` null; the report page tells it from a deleted resolver by the trade's `both` canceller.
 
 ### Hidden from the staff member they concern
 

@@ -83,6 +83,7 @@ export async function fetchMarketActivity(
         toAddress: tradeOffers.toAddress,
         parentId: tradeOffers.parentId,
         cancelledBy: tradeOffers.cancelledBy,
+        cancelRequestedBy: tradeOffers.cancelRequestedBy,
         proposedBy: tradeOffers.proposedBy,
         deadlineAt: tradeOffers.deadlineAt,
         expiresAt: tradeOffers.expiresAt,
@@ -138,6 +139,7 @@ export async function fetchMarketActivity(
           toUserId: page.toUserId,
           parentId: page.parentId,
           cancelledBy: page.cancelledBy,
+          cancelRequestedBy: page.cancelRequestedBy,
           proposedBy: page.proposedBy,
           deadlineAt: page.deadlineAt,
           expiresAt: page.expiresAt,
@@ -196,6 +198,7 @@ type PageTrade = Pick<
   TradeOffer,
   | "status"
   | "cancelledBy"
+  | "cancelRequestedBy"
   | "proposedBy"
   | "parentId"
   | "deadlineAt"

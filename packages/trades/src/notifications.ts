@@ -16,13 +16,20 @@ const EMAIL_NOTIFICATION_BITS = {
   trade_disputed: 5,
   trade_dispute_resolved: 6,
   trade_deadline_extended: 7,
+  trade_cancel_requested: 8,
+  trade_cancel_agreed: 9,
 } as const satisfies Partial<Record<NotificationType, number>>;
 export type EmailNotificationType = keyof typeof EMAIL_NOTIFICATION_BITS;
 
 // the switches on /account#notifications, each covering a group of types
 const emailNotificationCategories = {
   offers: ["offer_received", "offer_countered", "offer_accepted"],
-  activeTrades: ["listing_claimed", "trade_cancelled"],
+  activeTrades: [
+    "listing_claimed",
+    "trade_cancel_requested",
+    "trade_cancel_agreed",
+    "trade_cancelled",
+  ],
   disputes: [
     "trade_disputed",
     "trade_dispute_resolved",

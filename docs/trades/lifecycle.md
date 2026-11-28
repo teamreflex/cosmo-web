@@ -4,15 +4,15 @@
 
 ## Statuses
 
-| Status                                                   | Reached by                                                                                                                        |
-| -------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------- |
-| `pending`                                                | a direct offer, a counter, an offer on a listing ([offers.md](offers.md))                                                         |
-| `accepted`                                               | a claim, an accepted offer, a staff extend                                                                                        |
-| `completed`                                              | every item done: a token's arrival (drain), an accepted copy or a payment's confirmation, a staff complete, a staff extend        |
-| `cancelled`                                              | a party while nobody has acted: nothing sent, no payment marked paid or confirmed (`cancelled_by` names them), or staff           |
-| `timed_out`                                              | the deadline passed the watermark with nothing done: no token arrived, no payment confirmed or marked paid                        |
-| `disputed`                                               | a party's dispute, a ban (`party_banned`), the deadline with something done or marked paid and something owed (`deadline_passed`) |
-| `declined`, `withdrawn`, `countered`, `expired`, `stale` | the ways a pending offer ends                                                                                                     |
+| Status                                                   | Reached by                                                                                                                                     |
+| -------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------- |
+| `pending`                                                | a direct offer, a counter, an offer on a listing ([offers.md](offers.md))                                                                      |
+| `accepted`                                               | a claim, an accepted offer, a staff extend                                                                                                     |
+| `completed`                                              | every item done: a token's arrival (drain), an accepted copy or a payment's confirmation, a staff complete, a staff extend                     |
+| `cancelled`                                              | a party while nobody has acted: nothing sent, no payment marked paid or confirmed (`cancelled_by` names them), both parties (`both`), or staff |
+| `timed_out`                                              | the deadline passed the watermark with nothing done: no token arrived, no payment confirmed or marked paid                                     |
+| `disputed`                                               | a party's dispute, a ban (`party_banned`), the deadline with something done or marked paid and something owed (`deadline_passed`)              |
+| `declined`, `withdrawn`, `countered`, `expired`, `stale` | the ways a pending offer ends                                                                                                                  |
 
 - Live means `accepted` or `disputed` (`liveTradeStatuses`). Open means pending or live (`openTradeStatuses`).
 - A disputed trade's deadline stops. Transfers are still recorded, but nothing completes it on its own.
@@ -25,6 +25,7 @@
 | `accepted`               | the last item done is a payment confirmation    | the payment's recipient                 | `completed`                                        |
 | `accepted`               | the last item done is an accepted copy          | the objekt's receiver                   | `completed`                                        |
 | `accepted`               | `cancel`, nothing sent, arrived or marked paid  | a party not owed an unconfirmed payment | `cancelled`                                        |
+| `accepted` or `disputed` | `agree_cancel` to the other party's request     | the party who didn't ask                | `cancelled` (`both`)                               |
 | `accepted`               | `dispute`, before the deadline                  | a party, or a ban                       | `disputed`                                         |
 | `accepted`               | `time_out`, deadline at or before the watermark | `trade-timers`                          | `timed_out` or `disputed`                          |
 | `accepted` or `disputed` | `staff_cancel`                                  | staff with `trade: ["cancel"]`          | `cancelled`                                        |
@@ -42,6 +43,23 @@
 
 - A dispute files a `trade` report, sets `dispute_report_id`, freezes the trade and notifies the other party.
 - A cancel notifies the other party and changes nothing on the listing's pool, since the picks never left it.
+
+## Asking to cancel
+
+Where a party can't cancel alone, Cancel asks the other party to agree (`askToCancel()`); `cancelMode()` says which a party's Cancel does. `cancel_requested_by` holds the side waiting on an answer.
+
+| Event             | Server function   | Who                                                                                              | Writes                                                                                                       |
+| ----------------- | ----------------- | ------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------ |
+| `request_cancel`  | `$requestCancel`  | a party where `cancel` is refused for `payment_due` or `already_started`, or on a disputed trade | `cancel_requested_by`, a `cancel_requested` event, `trade_cancel_requested` to the other party               |
+| `withdraw_cancel` | `$withdrawCancel` | the side that asked                                                                              | clears it, a `cancel_request_withdrawn` event                                                                |
+| `decline_cancel`  | `$declineCancel`  | the other side                                                                                   | clears it, a `cancel_request_declined` event                                                                 |
+| `agree_cancel`    | `$agreeCancel`    | the other side                                                                                   | `endTrade()` to `cancelled` by `both`, a `cancel_agreed` event, `trade_cancel_agreed` to the side that asked |
+
+- One request waits at a time (`cancel_requested`), and only a live trade holds one, since [ending a trade](#ending-a-trade) nulls the column.
+- Anything sent or paid clears a request made before it, so nobody agrees to a cancel asked of a different trade: `transition()` returns a cleared state for every item event and a staff extend, and each writer stores it with a `cancel_request_cleared` event where `cancelRequestCleared()` says so (`clearCancelRequest()` on the web, the drain for arrivals, `$staffExtendTradeDeadline` in the update that re-accepts the trade). A party's dispute and the deadline keep a request; a ban's dispute clears it, leaving the trade to staff.
+- `partyAction()` refuses asking and agreeing with `trade_transfer_pending` while a token is at its receiver before the drain recorded it, because the drain is about to clear the request. Like a cancel's, that check reads the indexer before the lock, so it's best effort; the page shows Cancel disabled meanwhile.
+- Agreeing on a disputed trade resolves its open reports (`resolveReportsAsParties()`), as [moderation.md](../moderation.md) describes.
+- A mutual cancel can't be rated ([feedback.md](feedback.md)), and Apollo can't see anything sent back, so the dialogs leave any return to the parties. A returned pool objekt doesn't rejoin its listing.
 
 ## Accepting a different copy
 
@@ -63,13 +81,13 @@
 - `$confirmPayment` goes through `partyAction()` like a cancel: `trade_status_changed` when the trade is neither accepted nor disputed, then `trade_deadline_passed` on an accepted trade past its deadline, whoever calls, then `trade_status_changed` when the caller sends the payment rather than receives it, then `payment_method_unaccepted` for a method outside the trade's `payment_methods`, which the claim copied from the listing.
 - A disputed trade records the confirmation, since its clock is stopped, and stays disputed for staff.
 - It stamps `confirmed_at` and `method` and writes a `payment_confirmed` event. When that settles an accepted trade it ends it here with `endTrade()`, a `completed` event (`by: null`) and `trade_completed` to both parties, as the drain does for a last token; otherwise it notifies nobody.
-- Until it is confirmed a payment is owed: the party who pays can cancel until they mark it paid or anything else starts, its recipient can't cancel at all, and a deadline with nothing sent and the payment neither confirmed nor marked paid times the trade out. A deadline with an objekt sent, a payment confirmed or a payment marked paid, and something still owed, disputes it.
+- Until it is confirmed a payment is owed: the party who pays can cancel until they mark it paid or anything else starts, its recipient can only ask the payer to agree to cancel, and a deadline with nothing sent and the payment neither confirmed nor marked paid times the trade out. A deadline with an objekt sent, a payment confirmed or a payment marked paid, and something still owed, disputes it.
 
 ## Ending a trade
 
 `endTrade()` exists in both apps (`lib/server/trades/trade.server.ts` and `apps/schedules/src/trades.ts`) and does the same steps:
 
-1. Sets the status, `cancelled_by` and `ended_at`, guarded on the status it locked.
+1. Sets the status, `cancelled_by` and `ended_at`, and nulls `cancel_requested_by`, guarded on the status it locked.
 2. Clears `live` on its items.
 3. Locks its listings in id order.
 4. If it completed, marks its picks `left_at` in each listing's pool; a buy listing's trade has none.
@@ -104,7 +122,7 @@ Staff act through `lib/functions/staff-trades.ts` and `actOnTrade()` in `lib/ser
 - Each action resolves the trade's open reports and writes a staff audit row in the same transaction. How trade reports relate to other reports is in [docs/moderation.md](../moderation.md).
 - `$staffCancelTrade` cancels any accepted or disputed trade. The trade page's dialog requires a note, but the server also accepts a cancel without one.
 - `$staffCompleteTrade` completes a disputed trade whatever its items have done.
-- `$staffExtendTradeDeadline` gives a disputed trade a new deadline from `extendedDeadline()`: the time it had left when it was last frozen, plus 24, 48 or 72 hours. It returns to `accepted` with `dispute_report_id` cleared.
+- `$staffExtendTradeDeadline` gives a disputed trade a new deadline from `extendedDeadline()`: the time it had left when it was last frozen, plus 24, 48 or 72 hours. It returns to `accepted` with `dispute_report_id` and any request to cancel cleared.
 - An extend completes the trade instead when everything has arrived. Otherwise it is refused `trade_party_banned` while a party is banned, because they couldn't sign in to finish it.
 - `/admin/reports` offers complete and extend to `resolve-dispute` holders, and cancel to `cancel` holders.
 - Banning the poster is the only way staff remove a listing.

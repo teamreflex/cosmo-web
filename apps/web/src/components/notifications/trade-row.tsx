@@ -177,6 +177,22 @@ function describeTrade(notification: TradeItem, username: string) {
           markup={bold}
         />
       );
+    case "trade_cancel_requested":
+      return (
+        <ParaglideMessage
+          message={m.notification_trade_cancel_requested}
+          inputs={{ username }}
+          markup={bold}
+        />
+      );
+    case "trade_cancel_agreed":
+      return (
+        <ParaglideMessage
+          message={m.notification_trade_cancel_agreed}
+          inputs={{ username }}
+          markup={bold}
+        />
+      );
     case "trade_disputed":
       return staff ? (
         <ParaglideMessage

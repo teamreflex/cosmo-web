@@ -83,7 +83,23 @@ export default function ReportActions({ report }: Props) {
     }
     case "resolved":
     case "dismissed": {
-      const { resolver } = report;
+      const { resolver, target } = report;
+      // a dispute its parties settled by agreeing to cancel has no resolver
+      const state =
+        target.type === "trade" ? target.trade?.view.state : undefined;
+      if (
+        resolver === null &&
+        state?.status === "cancelled" &&
+        state.cancelledBy === "both"
+      ) {
+        return (
+          <div className="border-t bg-muted/40 px-4 py-3 text-xs text-muted-foreground">
+            {m.admin_reports_resolved_by_parties()}
+            {" · "}
+            <Timestamp date={report.resolvedAt} relative="long" />
+          </div>
+        );
+      }
       return (
         <div className="border-t bg-muted/40 px-4 py-3 text-xs text-muted-foreground">
           <ParaglideMessage

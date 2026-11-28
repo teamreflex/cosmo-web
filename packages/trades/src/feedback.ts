@@ -22,9 +22,9 @@ export type RateableEnding = Exclude<EndedTradeStatus, "timed_out">;
  * ratings show who let a trade down. A completed trade always may be rated,
  * as may one staff cancelled, since staff usually end a dispute against a
  * silent party that way. A trade times out only when neither side sent
- * anything, so neither stands out to rate. A party may only cancel before
- * anything is sent, so their cancel can't be rated either, and a disputed
- * trade waits for staff to end it.
+ * anything, so neither stands out to rate. A party cancels alone only before
+ * anything is sent, and a cancel both parties agreed to blames neither, so
+ * neither can be rated, and a disputed trade waits for it to end.
  */
 function rateableEnding(state: TradeState): RateableEnding | null {
   switch (state.status) {

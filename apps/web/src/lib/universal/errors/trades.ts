@@ -22,6 +22,7 @@ export const tradeErrorCodes = [
   "trade_cancel_started",
   "trade_cancel_started_payment",
   "trade_cancel_payment_due",
+  "trade_transfer_pending",
   "trade_deadline_passed",
   "trade_own",
   "trade_party_banned",

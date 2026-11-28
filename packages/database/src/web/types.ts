@@ -107,6 +107,8 @@ const tradeTypesAfterRetired = [
   "offer_countered",
   "offer_expired",
   "offer_stale",
+  "trade_cancel_requested",
+  "trade_cancel_agreed",
 ] as const;
 
 /**
@@ -425,6 +427,8 @@ export const liveTradeStatuses = [
   "disputed",
 ] as const satisfies readonly TradeStatus[];
 
+export type LiveTradeStatus = (typeof liveTradeStatuses)[number];
+
 // a trade still under way: a pending offer, or a live trade
 export const openTradeStatuses = [
   "pending",
@@ -471,7 +475,8 @@ export type OfferCloser = (typeof offerClosers)[number];
 export const staleReasons = ["moved", "untransferable"] as const;
 export type StaleReason = (typeof staleReasons)[number];
 
-export const tradeCancellers = ["from", "to", "staff"] as const;
+// a party, staff, or `both` when one party agreed to the other's request to cancel
+export const tradeCancellers = ["from", "to", "staff", "both"] as const;
 export type TradeCanceller = (typeof tradeCancellers)[number];
 
 export const tradeItemKinds = ["objekt", "payment"] as const;
@@ -542,6 +547,16 @@ export type TradeEvent =
   | { type: "completed"; by: "staff"; note: string | null }
   | { type: "cancelled"; by: TradeSide }
   | { type: "cancelled"; by: "staff"; note: string | null }
+  // a party asked the other to agree to cancel, where it couldn't cancel alone
+  | { type: "cancel_requested"; by: TradeSide }
+  // the party who asked took it back
+  | { type: "cancel_request_withdrawn"; by: TradeSide }
+  // the other party kept the trade going
+  | { type: "cancel_request_declined"; by: TradeSide }
+  // an objekt arrived or a payment moved on, which clears a request made before it
+  | { type: "cancel_request_cleared" }
+  // the other party agreed, which cancelled the trade
+  | { type: "cancel_agreed"; by: TradeSide }
   | {
       type: "disputed";
       by: TradeSide;

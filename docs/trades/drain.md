@@ -59,4 +59,5 @@
 
 - A transfer the drain recorded is never undone, even if a reorg later removes it from the chain.
 - A party may cancel while a transfer is still in flight, because the cancel check reads only what the indexer has seen. The drain then ignores the transfer, since the trade is no longer live.
+- An arrival clears a waiting request to cancel (`recordChainEvents()` writes `cancel_request_cleared`), so it can't be agreed after something was sent ([lifecycle.md](lifecycle.md#asking-to-cancel)).
 - A rolled-back transferability row can't be told apart from a real one, so it still breaks listings and turns offers stale.

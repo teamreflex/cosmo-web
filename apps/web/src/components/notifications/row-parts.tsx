@@ -14,6 +14,7 @@ import {
   IconGavel,
   IconHourglassEmpty,
   IconMessage,
+  IconQuestionMark,
   IconStar,
   IconX,
 } from "@tabler/icons-react";
@@ -124,6 +125,15 @@ const typeBadges = {
     className: "bg-amber-400 text-amber-950",
   },
   trade_cancelled: {
+    icon: IconX,
+    className: "bg-muted-foreground text-background",
+  },
+  // the recipient's move: agree to cancel or keep the trade
+  trade_cancel_requested: {
+    icon: IconQuestionMark,
+    className: "bg-cosmo text-white",
+  },
+  trade_cancel_agreed: {
     icon: IconX,
     className: "bg-muted-foreground text-background",
   },

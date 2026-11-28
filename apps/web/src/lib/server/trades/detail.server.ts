@@ -143,6 +143,7 @@ function readListingTrades(listingId: string) {
       id: true,
       status: true,
       cancelledBy: true,
+      cancelRequestedBy: true,
       proposedBy: true,
       toUserId: true,
       toAddress: true,

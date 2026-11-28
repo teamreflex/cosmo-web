@@ -29,7 +29,11 @@ import {
 } from "@apollo/database/web/schema";
 import { bumpUpdatedAt } from "@apollo/database/web/sql";
 import { DatabaseWeb, type WebTx } from "@apollo/services/database-web";
-import { offerTransition, proposerId } from "@apollo/trades/lifecycle";
+import {
+  cancelRequestCleared,
+  offerTransition,
+  proposerId,
+} from "@apollo/trades/lifecycle";
 import { DRAIN_CURSOR_NAME } from "@apollo/trades/timers";
 import {
   expectedItems,
@@ -426,6 +430,21 @@ const applyTrades = (tx: WebTx, rows: readonly OutboxRow[]) =>
           inArray(
             tradeOffers.id,
             pending.map(({ trade }) => trade.id),
+          ),
+        );
+    }
+    // an arrival clears a request to cancel made before it (recordChainEvents())
+    const cleared = pending.filter(({ trade, state }) =>
+      cancelRequestCleared(trade.state, state),
+    );
+    if (cleared.length > 0) {
+      yield* tx
+        .update(tradeOffers)
+        .set({ cancelRequestedBy: null })
+        .where(
+          inArray(
+            tradeOffers.id,
+            cleared.map(({ trade }) => trade.id),
           ),
         );
     }

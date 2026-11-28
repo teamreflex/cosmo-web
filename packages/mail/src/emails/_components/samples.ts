@@ -134,6 +134,27 @@ export const sampleItems = {
     youSend: { part: "send", objekts: [chaeyeon, jiyeon], payments: [] },
     deadlineAt: deadline,
   },
+  trade_cancel_requested: {
+    type: "trade_cancel_requested",
+    id: "9",
+    party: "Kairu",
+    url: "https://apollo.cafe/trade/9",
+    youGet: {
+      part: "pay",
+      objekts: [],
+      payments: [{ amount: "12.50", currency: "USD" }],
+    },
+    youSend: { part: "send", objekts: [soomin], payments: [] },
+    deadlineAt: deadline,
+  },
+  trade_cancel_agreed: {
+    type: "trade_cancel_agreed",
+    id: "10",
+    party: "Nites",
+    url: "https://apollo.cafe/trade/10",
+    youGet: { part: "send", objekts: [kaede], payments: [] },
+    youSend: { part: "send", objekts: [jiyeon], payments: [] },
+  },
 } satisfies {
   [T in NotificationItem["type"]]: Extract<NotificationItem, { type: T }>;
 };

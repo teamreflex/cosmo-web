@@ -47,6 +47,8 @@ export type NotificationItem = NotificationItemBase &
     | ({ type: "offer_accepted" } & Deadlined)
     | ({ type: "listing_claimed" } & Deadlined)
     | ({ type: "trade_deadline_extended" } & Deadlined)
+    | ({ type: "trade_cancel_requested" } & Deadlined)
+    | { type: "trade_cancel_agreed" }
     | { type: "trade_cancelled"; byStaff: boolean }
     | { type: "trade_disputed"; byStaff: boolean }
     | { type: "trade_dispute_resolved"; outcome: "completed" | "cancelled" }

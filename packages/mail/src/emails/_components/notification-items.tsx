@@ -44,6 +44,10 @@ export function itemLine(item: NotificationItem, appName: string): string {
       return `${party} accepted your listing`;
     case "trade_deadline_extended":
       return `A moderator gave your trade with ${party} more time`;
+    case "trade_cancel_requested":
+      return `${party} asked to cancel your trade`;
+    case "trade_cancel_agreed":
+      return `${party} agreed to cancel your trade`;
     case "trade_cancelled":
       return item.byStaff
         ? `${appName} staff cancelled your trade with ${party}`
@@ -71,8 +75,13 @@ function itemDetail(item: NotificationItem): string | null {
       return item.deadlineAt === null
         ? null
         : `${sendYourSide[item.youSend.part]} by ${formatTime(item.deadlineAt)}.`;
+    case "trade_cancel_requested":
+      return item.deadlineAt === null
+        ? "Open the trade to agree or keep it."
+        : `It carries on until you answer, and its deadline is ${formatTime(item.deadlineAt)}. Open the trade to agree or keep it.`;
     case "trade_disputed":
       return "The trade is frozen until a moderator settles it.";
+    case "trade_cancel_agreed":
     case "trade_cancelled":
     case "trade_dispute_resolved":
       return null;

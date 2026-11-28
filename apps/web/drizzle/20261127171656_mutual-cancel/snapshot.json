@@ -1,0 +1,118 @@
+{
+  "type": "diff",
+  "version": "10",
+  "dialect": "postgres",
+  "id": "2697282f-8933-45fe-9f2e-97852acc5b49",
+  "prevIds": [
+    "0981d7a2-bdd4-4035-b429-d632ed5ceaf8"
+  ],
+  "footprints": [
+    {
+      "statementType": "alter_enum",
+      "statementTarget": [
+        "enum",
+        "public",
+        "notification_type"
+      ],
+      "writes": [
+        "s|enum|public.notification_type"
+      ],
+      "reads": [
+        "n|sch|public"
+      ]
+    },
+    {
+      "statementType": "alter_enum",
+      "statementTarget": [
+        "enum",
+        "public",
+        "trade_canceller"
+      ],
+      "writes": [
+        "s|enum|public.trade_canceller"
+      ],
+      "reads": [
+        "n|sch|public"
+      ]
+    },
+    {
+      "statementType": "add_column",
+      "statementTarget": [
+        "column",
+        "public",
+        "trade_offers",
+        "cancel_requested_by"
+      ],
+      "writes": [
+        "s|col|public.trade_offers.cancel_requested_by",
+        "n|col|public.trade_offers.cancel_requested_by",
+        "e|col|public.trade_offers.cancel_requested_by"
+      ],
+      "reads": [
+        "n|tbl|public.trade_offers",
+        "n|sch|public",
+        "n|enum|public.trade_side"
+      ]
+    }
+  ],
+  "deltas": [
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "trade_offers",
+        "name": "cancel_requested_by",
+        "type": "trade_side",
+        "typeSchema": "public",
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "alter",
+      "key": "enums\u0000[\"public\",\"notification_type\"]",
+      "set": {
+        "values": [
+          "trade_have",
+          "trade_want",
+          "listing_claimed",
+          "trade_completed",
+          "trade_timed_out",
+          "trade_cancelled",
+          "trade_disputed",
+          "trade_dispute_resolved",
+          "trade_deadline_extended",
+          "trade_token_moved",
+          "trade_token_untransferable",
+          "listing_closed",
+          "trade_message",
+          "feedback_received",
+          "offer_received",
+          "offer_accepted",
+          "offer_declined",
+          "offer_countered",
+          "offer_expired",
+          "offer_stale",
+          "trade_cancel_requested",
+          "trade_cancel_agreed"
+        ]
+      }
+    },
+    {
+      "op": "alter",
+      "key": "enums\u0000[\"public\",\"trade_canceller\"]",
+      "set": {
+        "values": [
+          "from",
+          "to",
+          "staff",
+          "both"
+        ]
+      }
+    }
+  ]
+}
