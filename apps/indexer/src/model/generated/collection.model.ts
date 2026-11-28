@@ -45,6 +45,9 @@ export class Collection {
   @Column("text", { nullable: false })
   member!: string;
 
+  @Column("text", { array: true, nullable: false })
+  members!: string[];
+
   @Index()
   @Column("text", { nullable: false })
   artist!: string;

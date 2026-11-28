@@ -47,6 +47,7 @@ export const collections = pgTable("collection", {
   collectionId: varchar("collection_id", { length: 255 }).notNull(),
   season: varchar("season", { length: 32 }).notNull(),
   member: varchar("member", { length: 32 }).notNull(),
+  members: text("members").array().notNull(),
   artist: varchar("artist", { length: 32 }).notNull(),
   collectionNo: varchar("collection_no", { length: 8 }).notNull(),
   class: varchar("class", { length: 8 }).notNull(),

@@ -11,6 +11,7 @@ export const collectionDocumentSchema = z.object({
   createdAt: z.number(),
   artist: z.string(),
   member: z.string(),
+  members: z.array(z.string()),
   season: z.string(),
   class: z.string(),
   collectionNo: z.string(),

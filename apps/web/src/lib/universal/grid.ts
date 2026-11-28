@@ -622,8 +622,11 @@ function buildUnitLedgers(input: {
 
     const pairs: UnitPair[] = [];
     for (const [pairString, slug] of pairSlugs) {
-      // resolve "idN X idM" via member aliases, falling back to the raw token
-      const [aliasA, aliasB] = pairString.split(" X ");
+      /**
+       * resolve "idN X idM" via member aliases, falling back to the raw
+       * token; COSMO writes the x in either case
+       */
+      const [aliasA, aliasB] = pairString.split(/ x /i);
       if (!aliasA || !aliasB) continue;
 
       const owned = ownedPairs?.get(pairString) ?? 0;

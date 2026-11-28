@@ -5,15 +5,31 @@ export type CosmoObjektMetadataV1 = typeof MetadataV1Schema.Type;
 export type CosmoObjektMetadataV3 = typeof MetadataV3Schema.Type;
 
 /**
+ * v3 metadata in the v1 shape, plus `members`: every `Member` trait,
+ * de-duplicated and sorted. A Unit collection lists each member and its
+ * pairing label ("S15 x S21") as separate traits, and `member` holds only one.
+ */
+export type NormalizedObjektMetadata = CosmoObjektMetadataV1 & {
+  objekt: { members: string[] };
+};
+
+/**
  * Attempt to convert v3 metadata to v1 metadata.
  */
 export function normalizeV3(
   metadata: CosmoObjektMetadataV3,
   tokenId: string,
-): CosmoObjektMetadataV1 {
+): NormalizedObjektMetadata {
   const artist = getTrait(metadata, tokenId, "Artist").toLowerCase();
   const className = getTrait(metadata, tokenId, "Class");
   const member = getTrait(metadata, tokenId, "Member");
+  const members = [
+    ...new Set(
+      metadata.attributes
+        .filter((attr) => attr.trait_type === "Member")
+        .map((attr) => attr.value),
+    ),
+  ].toSorted();
   const season = getTrait(metadata, tokenId, "Season");
   const collection = getTrait(metadata, tokenId, "Collection");
 
@@ -29,6 +45,7 @@ export function normalizeV3(
       collectionId: metadata.name.replace(/ #\d+$/, ""),
       season: season,
       member: member,
+      members: members,
       collectionNo: collection,
       class: className,
       artists: [artist],

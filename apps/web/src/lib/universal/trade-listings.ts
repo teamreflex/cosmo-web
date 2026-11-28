@@ -71,6 +71,7 @@ const collectionValues = {
   slug: z.string(),
   artist: z.string(),
   member: z.string(),
+  members: z.array(z.string()).min(1),
   season: z.string(),
   class: z.string(),
   onOffline: z.string(),

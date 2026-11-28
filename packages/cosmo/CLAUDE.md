@@ -29,7 +29,8 @@ Rules for changing the COSMO client. The client policy, credential and QR login 
 
 ## Gotchas
 
-- Metadata comes from `fetchMetadataV3`. `normalizeV3` maps it into the v1-shaped `CosmoObjektMetadataV1` and fills the fields v3 lacks with placeholders, listed in [`apps/indexer/CLAUDE.md`](../../apps/indexer/CLAUDE.md).
+- Metadata comes from `fetchMetadataV3`. `normalizeV3` maps it into the v1 shape and fills the fields v3 lacks with placeholders, listed in [`apps/indexer/CLAUDE.md`](../../apps/indexer/CLAUDE.md). It returns `NormalizedObjektMetadata`, which adds `objekt.members`; `MetadataV1Schema` stays as v1 bodies are, because `fetchMetadataV1` decodes with it.
+- `objekt.member` is one `Member` trait and `objekt.members` all of them ([`docs/cosmo.md`](../../docs/cosmo.md#members)). The Unit case in `getTrait()` matches on the value alone, so collect other multi-valued traits with their own `trait_type` filter.
 - `normalizeV3` throws a plain `Error` when a trait is missing.
 - The AES key is an argument, never module state, because staff rotate it from the admin cache page. Where callers read it is in the README's Credentials diagram.
 - The AES wire format is `base64(iv16 ++ AES-256-CBC ciphertext)`, pinned by `tests/encryption.test.ts`.

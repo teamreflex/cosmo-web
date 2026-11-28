@@ -20,6 +20,7 @@ const attributes = (member: string, number: string): ObjektAttributes => ({
   slug: `atom02-${member.toLowerCase()}-${number.toLowerCase()}`,
   artist: "artms",
   member,
+  members: [member],
   season: "Atom02",
   class: "First",
   onOffline: "online",

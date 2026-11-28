@@ -154,6 +154,11 @@ export type ObjektAttributes = {
   slug: string;
   artist: string;
   member: string;
+  /**
+   * Every member the collection names; a Unit collection lists each member
+   * and its pairing label, and `member` holds only the label.
+   */
+  members: string[];
   season: string;
   class: string;
   onOffline: string;
@@ -166,7 +171,8 @@ export type ObjektAttributes = {
 export type IndexedAttributes = ObjektAttributes & { collectionNo: string };
 
 /**
- * Whether the objekt is in the range: every narrowed column holds its value.
+ * Whether the objekt is in the range: every narrowed column holds its value,
+ * and the member column holds one of the members the objekt's collection names.
  */
 export function matchesRange(
   filter: RangeFilter,
@@ -177,7 +183,8 @@ export function matchesRange(
 
   return (
     holds(filter.artist, objekt.artist) &&
-    holds(filter.member, objekt.member) &&
+    (filter.member.length === 0 ||
+      objekt.members.some((member) => filter.member.includes(member))) &&
     holds(filter.collectionNo, objekt.collectionNo) &&
     holds(filter.season, objekt.season) &&
     holds(filter.class, objekt.class) &&

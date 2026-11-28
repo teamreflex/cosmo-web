@@ -743,6 +743,7 @@ export function listingPick({
       slug: collection.slug,
       artist: collection.artist,
       member: collection.member,
+      members: collection.members,
       collectionNo: collection.collectionNo,
       season: collection.season,
       class: collection.class,

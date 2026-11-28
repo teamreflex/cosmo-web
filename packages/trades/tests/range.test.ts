@@ -47,6 +47,7 @@ describe("matchesRange", () => {
   const heejin = {
     artist: "artms",
     member: "HeeJin",
+    members: ["HeeJin"],
     collectionNo: "201Z",
     season: "Atom02",
     class: "First",
@@ -76,12 +77,26 @@ describe("matchesRange", () => {
     const members = rangeFilterSchema.parse({ member: ["heejin"] });
     expect(matchesRange(members, heejin)).toBe(false);
   });
+
+  test("a member column matches any member the collection names", () => {
+    const unit = {
+      ...heejin,
+      member: "HeeJin x KimLip",
+      members: ["HeeJin", "HeeJin x KimLip", "KimLip"],
+      class: "Unit",
+    };
+    const wants = (member: string) =>
+      rangeFilterSchema.parse({ member: [member] });
+    expect(matchesRange(wants("KimLip"), unit)).toBe(true);
+    expect(matchesRange(wants("JinSoul"), unit)).toBe(false);
+  });
 });
 
 describe("matchesRanges", () => {
   const seoyeon = {
     artist: "triples",
     member: "SeoYeon",
+    members: ["SeoYeon"],
     collectionNo: "101Z",
     season: "Atom02",
     class: "First",
@@ -103,6 +118,7 @@ describe("matchesRanges", () => {
         ...seoyeon,
         artist: "artms",
         member: "HeeJin",
+        members: ["HeeJin"],
         season: "Ever01",
       }),
     ).toBe(true);

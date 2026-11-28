@@ -1,4 +1,9 @@
-import { Field, FieldError, FieldLabel } from "@/components/ui/field";
+import {
+  Field,
+  FieldDescription,
+  FieldError,
+  FieldLabel,
+} from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import {
   Select,
@@ -15,6 +20,7 @@ import type { UpdateCollectionInput } from "@/lib/universal/schema/collections";
 import { cn } from "@/lib/utils";
 import { validOnlineTypes } from "@apollo/cosmo/types/common";
 import { useSuspenseQuery } from "@tanstack/react-query";
+import { useState } from "react";
 import { Controller, useFormContext, useWatch } from "react-hook-form";
 import CollectionMediaUpload from "./collection-media-upload";
 
@@ -133,6 +139,28 @@ export default function CollectionForm(props: Props) {
                     ))}
                   </SelectContent>
                 </Select>
+                <FieldError errors={[fieldState.error]} />
+              </Field>
+            )}
+          />
+
+          {/* Members */}
+          <Controller
+            control={form.control}
+            name="members"
+            render={({ field, fieldState }) => (
+              <Field data-invalid={fieldState.invalid}>
+                <FieldLabel htmlFor="members">
+                  {m.admin_collection_members()}
+                </FieldLabel>
+                <MembersInput
+                  value={field.value}
+                  onChange={field.onChange}
+                  dirty={fieldState.isDirty}
+                />
+                <FieldDescription>
+                  {m.admin_collection_members_description()}
+                </FieldDescription>
                 <FieldError errors={[fieldState.error]} />
               </Field>
             )}
@@ -343,6 +371,57 @@ export default function CollectionForm(props: Props) {
       </div>
     </div>
   );
+}
+
+/**
+ * The members as comma-separated text. The text is kept as typed, so a
+ * trailing comma survives until the next name, and the field gets the
+ * parsed list on every change.
+ */
+function MembersInput({
+  value,
+  onChange,
+  dirty,
+}: {
+  value: string[];
+  onChange: (members: string[]) => void;
+  dirty: boolean;
+}) {
+  const [text, setText] = useState(() => value.join(", "));
+  const [synced, setSynced] = useState(value);
+
+  // a refetch from COSMO replaces the list from outside
+  if (value !== synced) {
+    setSynced(value);
+    if (!sameMembers(value, parseMembers(text))) {
+      setText(value.join(", "));
+    }
+  }
+
+  return (
+    <Input
+      id="members"
+      className={cn(dirty && "border-cosmo")}
+      value={text}
+      onChange={(e) => {
+        const parsed = parseMembers(e.target.value);
+        setText(e.target.value);
+        setSynced(parsed);
+        onChange(parsed);
+      }}
+    />
+  );
+}
+
+function parseMembers(text: string) {
+  return text
+    .split(",")
+    .map((name) => name.trim())
+    .filter((name) => name.length > 0);
+}
+
+function sameMembers(a: string[], b: string[]) {
+  return a.length === b.length && a.every((name, i) => name === b[i]);
 }
 
 function Section({
